@@ -19,6 +19,9 @@ class AppGaps {
   /// Gap28: 28 pixels
   static Widget get gap28Vertical => const SizedBox(height: 28);
   static Widget get gap28Horizontal => const SizedBox(width: 28);
+  /// Gap28: 28 pixels
+  static Widget get gap48Vertical => const SizedBox(height: 48);
+  static Widget get gap48Horizontal => const SizedBox(width: 48);
 
 // Add more gap sizes as needed
   static Widget  gapCustomVertical(double height) =>  SizedBox(height: height);

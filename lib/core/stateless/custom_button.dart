@@ -7,6 +7,8 @@ import 'label.dart';
 class CustomButton extends StatelessWidget {
   final String text;
   final ButtonStyle? style;
+  final double? width;
+  final double? height;
   final VoidCallback onPressed;
   final AlignmentGeometry? alignment;
 
@@ -15,6 +17,8 @@ class CustomButton extends StatelessWidget {
       required this.text,
       required this.onPressed,
       this.style,
+      this.width,
+      this.height,
       this.alignment});
 
   @override
@@ -26,8 +30,12 @@ class CustomButton extends StatelessWidget {
           child: ElevatedButton(
             style: style ??
                 context.theme.elevatedButtonTheme.style!.copyWith(
+
                   padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 80, vertical: 20)),
+                      const EdgeInsets.symmetric(horizontal: 150, vertical: 20)),
+                  backgroundColor: WidgetStateProperty.all(
+                      const Color.fromRGBO(44, 102, 153, 1)),
+                  minimumSize: width ==null|| height==null ? null:WidgetStateProperty.all(Size(width!, height!))
                 ),
             onPressed: onPressed,
             child: Label(

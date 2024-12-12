@@ -12,17 +12,20 @@ class AuthBloc extends Cubit<AuthState> {
   final RegisterUseCase _registerUseCase;
 
   Future<void> login(String username, String password) async {
+    emit(state.copyWith(status: AuthStateStatus.loading));
     final result =
         await _loginUseCase(AuthParams(username: username, password: password));
     result.fold((left) {
       emit(state.copyWith(
           status: AuthStateStatus.error, errorMessage: left.message));
     }, (right) {
+      logger('user is  $right');
       emit(state.copyWith(status: AuthStateStatus.success, user: right));
     });
   }
 
   Future<void> register(String username, String password) async {
+    emit(state.copyWith(status: AuthStateStatus.loading));
     final result = await _registerUseCase(
         AuthParams(username: username, password: password));
     result.fold((left) {

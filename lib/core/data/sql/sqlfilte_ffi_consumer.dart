@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 import 'package:excel/excel.dart';
 import 'package:path/path.dart';
@@ -36,106 +37,106 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
   @override
   Future<Either<Failure, void>> initDatabase(String databaseName) async {
     try {
-      logger('init');
+      logger('Initializing database');
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
 
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, databaseName);
 
-      // Open the database with version 2 (increment the version)
+      // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 2, // Incremented version number
+        version: 2, // Updated version
         onCreate: (db, version) async {
-          // Initial schema for version 1 (creating the tables)
+          logger('Creating database schema');
+          // Create the 'users' table
           await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            isAdmin BOOLEAN NOT NULL DEFAULT 0 -- New isAdmin column
           )
         ''');
 
-          // Create the 'restaurants' table (for drinks and dishes)
+          // Create the 'restaurants' table
           await db.execute('''
           CREATE TABLE IF NOT EXISTS restaurants (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            image TEXT,  -- URL or file path for image
+            image TEXT,
             price REAL NOT NULL,
-            type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))  -- Restrict type to 'drink' or 'dish'
+            type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
           )
         ''');
 
-          // Create the 'rooms' table (for PS4/PS5 room state management)
+          // Create the 'rooms' table
           await db.execute('''
           CREATE TABLE IF NOT EXISTS rooms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),  -- Restrict to PS4 or PS5
-            state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused')),  -- Valid states
-            open_time BOOLEAN NOT NULL,  -- True or False for open/closed
-            is_multiplayer BOOLEAN NOT NULL  -- True or False for multiplayer or single-player
+            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+            state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused')),
+            open_time BOOLEAN NOT NULL,
+            is_multiplayer BOOLEAN NOT NULL
           )
         ''');
 
-          // Create the 'shifts' table (for tracking shifts and collected money)
+          // Create the 'shifts' table
           await db.execute('''
           CREATE TABLE IF NOT EXISTS shifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            total_collected_money REAL NOT NULL,  -- Total money collected in shift
-            from_time TIMESTAMP NOT NULL,  -- Shift start time
-            to_time TIMESTAMP NOT NULL  -- Shift end time
+            total_collected_money REAL NOT NULL,
+            from_time TIMESTAMP NOT NULL,
+            to_time TIMESTAMP NOT NULL
           )
         ''');
+
+          // Insert default users (optional)
+          await db.insert(
+            'users',
+            {
+              'username': 'admin_user',
+              'password': _hashPassword('123456'), // Hashed password
+              'isAdmin': 1, // Admin role
+            },
+          );
+          await db.insert(
+            'users',
+            {
+              'username': 'test_user',
+              'password': _hashPassword('123456'), // Hashed password
+              'isAdmin': 0, // Regular user
+            },
+          );
+          logger('Default users added');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          // Handle schema migration when upgrading from version 1 to version 2
           if (oldVersion < 2) {
-            // You can add any new tables or modify the schema here for version 2
+            logger('Upgrading database to version $newVersion');
 
-            // For example, creating new tables if needed:
+            // Add isAdmin column to users table
             await db.execute('''
-            CREATE TABLE IF NOT EXISTS restaurants (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL,
-              image TEXT,
-              price REAL NOT NULL,
-              type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
-            )
+            ALTER TABLE users ADD COLUMN isAdmin BOOLEAN NOT NULL DEFAULT 0
           ''');
 
-            await db.execute('''
-            CREATE TABLE IF NOT EXISTS rooms (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-              state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused')),
-              open_time BOOLEAN NOT NULL,
-              is_multiplayer BOOLEAN NOT NULL
-            )
-          ''');
-
-            await db.execute('''
-            CREATE TABLE IF NOT EXISTS shifts (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              total_collected_money REAL NOT NULL,
-              from_time TIMESTAMP NOT NULL,
-              to_time TIMESTAMP NOT NULL
-            )
-          ''');
+            // Any additional upgrades can be added here
           }
         },
       );
 
-      loggerWarn('initialized');
+      logger('Database initialized');
       return Right(null); // Success
     } catch (e) {
-      loggerError(e);
-      return Left(
-          UnknownFailure(message: 'Database initialization failed: $e'));
+      loggerError('Database initialization failed: $e');
+      return Left(UnknownFailure(message: 'Database initialization failed: $e'));
     }
   }
-
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
+  }
   @override
   Future<Either<Failure, int>> add(
       String table, Map<String, dynamic> data) async {

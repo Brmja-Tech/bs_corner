@@ -14,7 +14,7 @@ extension ThemeExtensions on BuildContext {
   TextTheme get appTextTheme => Theme.of(this).textTheme;
 
   //width
-  double get screenWidth => MediaQuery.of(this).size.width;
+  double get width => MediaQuery.of(this).size.width;
 
   //height
   double get height => MediaQuery.of(this).size.height;

@@ -50,7 +50,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         (failure) => Left(failure),
         (users) {
           if (users.isEmpty) {
-            return Left(AuthFailure('قائمة المستخدمين فارغة'));
+            return Left(AuthFailure('خطأ في تسجيل البيانات'));
           }
           final user = users.first;
           return Right(user);
