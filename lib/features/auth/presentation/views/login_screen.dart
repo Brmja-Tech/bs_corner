@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_text_field.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
@@ -66,7 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             children: [
                               AppGaps.gap28Vertical,
-                              Image.asset('assets/images/logo.png',height: 150,),
+                              Image.asset(
+                                'assets/images/logo.png',
+                                height: 150,
+                              ),
                               AppGaps.gap28Vertical,
                               Padding(
                                 padding:
@@ -129,12 +133,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                         width: double.infinity - 20,
                                         height: 60,
                                         onPressed: () {
-                                          if (formKey.currentState!
-                                              .validate()) {
+                                          if (nameController.text.isNotEmpty ||
+                                              passwordController
+                                                  .text.isNotEmpty) {
                                             context.read<AuthBloc>().login(
-                                                nameController.text.trim(),
-                                                passwordController.text.trim());
+                                                nameController.text,
+                                                passwordController.text);
+                                            return;
                                           }
+                                          context.showErrorMessage(
+                                              'ادخل بيانات التسجيل');
                                         });
                                   },
                                 ),
