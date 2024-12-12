@@ -23,11 +23,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     nameController.dispose();
     passwordController.dispose();
+    scrollController.dispose();
+    formKey.currentState?.dispose();
     super.dispose();
   }
 
@@ -57,73 +61,93 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        child: Column(
-                          children: [
-                            AppGaps.gap28Vertical,
-                            Image.asset('assets/images/logo.png'),
-                            AppGaps.gap28Vertical,
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 40),
-                              child: CustomTextFormField(
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            children: [
+                              AppGaps.gap28Vertical,
+                              Image.asset('assets/images/logo.png',height: 150,),
+                              AppGaps.gap28Vertical,
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 40),
+                                child: CustomTextFormField(
                                   controller: nameController,
                                   hintText: 'اسم المستخدم',
-                                  prefixIcon: Icons.email),
-                            ),
-                            AppGaps.gap28Vertical,
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 40),
-                              child: CustomTextFormField(
-                                controller: passwordController,
-                                hintText: 'كلمة المرور',
-                                prefixIcon: Icons.lock,
-                                isPassword: true,
+                                  prefixIcon: Icons.person,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'اسم المستخدم مطلوب';
+                                    }
+                                    return '';
+                                  },
+                                ),
                               ),
-                            ),
-                            AppGaps.gap48Vertical,
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 35.0),
-                              child: BlocConsumer<AuthBloc, AuthState>(
-                                listener: (context, state) {
-                                  if (state.isError) {
-                                    context.showErrorMessage(
-                                        state.errorMessage ?? '');
-                                  }
-                                  if (state.isSuccess) {
-                                    context.showSuccessMessage(
-                                        'تمت عمليه تسجيل الدخول بنجاح');
-                                    context.goWithNoReturn(BlocProvider(
-                                        create: (context) => sl<ReportsBloc>(),
-                                        child: const HomeScreen()));
-                                  }
-                                },
-                                builder: (context, state) {
-                                  if (state.isLoading) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                  return CustomButton(
-                                      text: 'تسجيل',
-                                      width: double.infinity - 20,
-                                      height: 60,
-                                      onPressed: () => context
-                                          .read<AuthBloc>()
-                                          .login(nameController.text.trim(),
-                                              passwordController.text.trim()));
-                                },
+                              AppGaps.gap28Vertical,
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 40),
+                                child: CustomTextFormField(
+                                    controller: passwordController,
+                                    hintText: 'كلمة المرور',
+                                    prefixIcon: Icons.lock,
+                                    isPassword: true,
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return 'كلمه المرور مطلوب';
+                                      }
+                                      return '';
+                                    }),
                               ),
-                            ),
-                            TextButton(
-                                onPressed: () =>
-                                    context.go(const RegisterScreen()),
-                                child: const Label(
-                                  text: 'إنشاء حساب',
-                                  selectable: false,
-                                ))
-                          ],
+                              AppGaps.gap48Vertical,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 35.0),
+                                child: BlocConsumer<AuthBloc, AuthState>(
+                                  listener: (context, state) {
+                                    if (state.isError) {
+                                      context.showErrorMessage(
+                                          state.errorMessage ?? '');
+                                    }
+                                    if (state.isSuccess) {
+                                      context.showSuccessMessage(
+                                          'تمت عمليه تسجيل الدخول بنجاح');
+                                      context.goWithNoReturn(BlocProvider(
+                                          create: (context) =>
+                                              sl<ReportsBloc>(),
+                                          child: const HomeScreen()));
+                                    }
+                                  },
+                                  builder: (context, state) {
+                                    if (state.isLoading) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+                                    return CustomButton(
+                                        text: 'تسجيل',
+                                        width: double.infinity - 20,
+                                        height: 60,
+                                        onPressed: () {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            context.read<AuthBloc>().login(
+                                                nameController.text.trim(),
+                                                passwordController.text.trim());
+                                          }
+                                        });
+                                  },
+                                ),
+                              ),
+                              TextButton(
+                                  onPressed: () =>
+                                      context.go(const RegisterScreen()),
+                                  child: const Label(
+                                    text: 'إنشاء حساب',
+                                    selectable: false,
+                                  ))
+                            ],
+                          ),
                         ))),
                 Expanded(
                   child: Container(
@@ -144,106 +168,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-        )
-
-        // Center(
-        //   child: Container(
-        //     width: context.screenWidth,
-        //     decoration: BoxDecoration(
-        //       borderRadius: BorderRadius.circular(20),
-        //     ),
-        //     child: Column(
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       children: [
-        //         const Label(
-        //           text: 'تسجيل الدخول',
-        //         ),
-        //         const SizedBox(height: 32),
-        //         TextFormField(
-        //           validator: (value) {
-        //             if (value == null || value.isEmpty) {
-        //               return ' الرجاء ادخال اسم المستخدم';
-        //             }
-        //             return null;
-        //           },
-        //           controller: nameController,
-        //           textAlign: TextAlign.center,
-        //           decoration: InputDecoration(
-        //             hintText: 'اسم المستخدم',
-        //             hintStyle: AppTextTheme.bodyMedium
-        //                 .copyWith(color: context.theme.primaryColor),
-        //             labelStyle: AppTextTheme.bodyMedium
-        //                 .copyWith(color: context.theme.primaryColor),
-        //             focusedBorder: OutlineInputBorder(
-        //               borderSide: BorderSide(color: context.theme.primaryColor),
-        //             ),
-        //             border: const OutlineInputBorder(),
-        //           ),
-        //           style: const TextStyle(color: Colors.black),
-        //         ),
-        //         const SizedBox(height: 16),
-        //         TextFormField(
-        //           validator: (value) {
-        //             if (value == null || value.isEmpty) {
-        //               return ' الرجاء ادخال كلمة المرور';
-        //             }
-        //             return null;
-        //           },
-        //           textAlign: TextAlign.center,
-        //           controller: passwordController,
-        //           decoration: InputDecoration(
-        //             hintText: 'كلمة المرور',
-        //             hintStyle: AppTextTheme.bodyMedium
-        //                 .copyWith(color: context.theme.primaryColor),
-        //             labelStyle: AppTextTheme.bodyMedium
-        //                 .copyWith(color: context.theme.primaryColor),
-        //             focusedBorder: const OutlineInputBorder(
-        //               borderSide: BorderSide(color: Colors.orange),
-        //             ),
-        //             border: const OutlineInputBorder(),
-        //           ),
-        //           obscureText: true,
-        //           style: const TextStyle(color: Colors.black),
-        //         ),
-        //         const SizedBox(height: 24),
-        //         BlocConsumer<AuthBloc, AuthState>(
-        //           listener: (listener, state) {
-        //             if (state.isSuccess) {
-        //               context.showSuccessMessage('تم تسجيل الدخول بنجاح');
-        //
-        //             }
-        //             if (state.isError) {
-        //               context.showErrorMessage(state.errorMessage!);
-        //             }
-        //           },
-        //           builder: (builder, state) {
-        //             if (state.status == AuthStateStatus.loading) {
-        //               return const CircularProgressIndicator();
-        //             }
-        //             return CustomButton(
-        //               text: 'تسجيل الدخول',
-        //               onPressed: () {
-        //                 loggerWarn('tapped');
-        //                 context
-        //                     .read<AuthBloc>()
-        //                     .login(nameController.text, passwordController.text);
-        //               },
-        //             );
-        //           },
-        //         ),
-        //         InkWell(
-        //           onTap: () => context.go(const RegisterScreen()),
-        //           child: Label(
-        //             text: 'ليس لديك حساب',
-        //             decoration: TextDecoration.underline,
-        //             style: AppTextTheme.bodyLarge.copyWith(color: Colors.blue),
-        //             selectable: false,
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-        );
+        ));
   }
 }
