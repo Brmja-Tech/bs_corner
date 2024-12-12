@@ -26,14 +26,7 @@ class CustomTextFormField extends StatelessWidget {
           color: Colors.grey,
         ),
         prefixIcon: Icon(prefixIcon, color: Colors.grey),
-        suffixIcon: isPassword
-            ? IconButton(
-          icon: const Icon(Icons.visibility_off, color: Colors.grey),
-          onPressed: () {
-            // Add functionality to toggle password visibility
-          },
-        )
-            : null,
+
         filled: true,
         contentPadding: const EdgeInsets.all(15),
         fillColor: Colors.white,

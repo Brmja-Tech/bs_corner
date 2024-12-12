@@ -2,11 +2,9 @@ import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
-import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/core/stateless/responsive_scaffold.dart';
 import 'package:pscorner/features/reports/data/repositories/tables.dart';
 import 'package:pscorner/features/reports/presentation/blocs/reports_cubit.dart';
@@ -19,6 +17,7 @@ class HomeScreen extends StatelessWidget {
     return ResponsiveScaffold(
       desktopBody: Center(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CustomButton(
               text: 'استخراج بيانات الموظفين',

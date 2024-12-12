@@ -47,7 +47,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 2, // Updated version
+        version: 3, // Updated version
         onCreate: (db, version) async {
           logger('Creating database schema');
           // Create the 'users' table
@@ -112,7 +112,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
           logger('Default users added');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 2) {
+          if (oldVersion < 3) {
             logger('Upgrading database to version $newVersion');
 
             // Add isAdmin column to users table

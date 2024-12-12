@@ -25,6 +25,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       final result = await _dbConsumer.add('users', {
         'username': params.username,
         'password': hashedPassword,
+        'isAdmin': params.isAdmin ? 1 : 0,
       });
       return result.fold(
         (failure) => Left(failure),
@@ -71,8 +72,10 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 class AuthParams extends Equatable {
   final String username;
   final String password;
+  final bool isAdmin;
 
-  const AuthParams({required this.username, required this.password});
+  const AuthParams(
+      {required this.username, required this.password, this.isAdmin = false});
 
   @override
   List<Object?> get props => [username, password];

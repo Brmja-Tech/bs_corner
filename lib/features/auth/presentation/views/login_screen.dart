@@ -4,9 +4,11 @@ import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_text_field.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
+import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/core/stateless/responsive_scaffold.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_state.dart';
+import 'package:pscorner/features/auth/presentation/views/register_screen.dart';
 import 'package:pscorner/features/home/presentation/views/home_screen.dart';
 import 'package:pscorner/features/reports/presentation/blocs/reports_cubit.dart';
 import 'package:pscorner/service_locator/service_locator.dart';
@@ -88,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   if (state.isError) {
                                     context.showErrorMessage(
                                         state.errorMessage ?? '');
-                                    context.goWithNoReturn(BlocProvider(
-                                        create: (context) => sl<ReportsBloc>(),
-                                        child: const HomeScreen()));
                                   }
                                   if (state.isSuccess) {
                                     context.showSuccessMessage(
                                         'تمت عمليه تسجيل الدخول بنجاح');
+                                    context.goWithNoReturn(BlocProvider(
+                                        create: (context) => sl<ReportsBloc>(),
+                                        child: const HomeScreen()));
                                   }
                                 },
                                 builder: (context, state) {
@@ -113,7 +115,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                               passwordController.text.trim()));
                                 },
                               ),
-                            )
+                            ),
+                            TextButton(
+                                onPressed: () =>
+                                    context.go(const RegisterScreen()),
+                                child: const Label(
+                                  text: 'إنشاء حساب',
+                                  selectable: false,
+                                ))
                           ],
                         ))),
                 Expanded(
