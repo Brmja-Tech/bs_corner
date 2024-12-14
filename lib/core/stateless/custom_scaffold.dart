@@ -17,28 +17,8 @@ class CustomScaffold extends StatelessWidget {
       desktopBody: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Drawer for Desktop
-
-          CustomDrawer(
-            selectedIndex: selectedIndex,
-          ),
-          // Main Body
-          Expanded(
-            child: body,
-          ),
-        ],
-      ),
-      tabletBody: Row(
-        children: [
-          // Drawer for Desktop
-
-          CustomDrawer(
-            selectedIndex: selectedIndex,
-          ),
-          // Main Body
-          Expanded(
-            child: body,
-          ),
+          CustomDrawer(selectedIndex: selectedIndex),
+          Expanded(child: body),
         ],
       ),
     );

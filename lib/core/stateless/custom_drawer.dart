@@ -45,7 +45,7 @@ class CustomDrawer extends StatelessWidget {
       },
     ];
     return Drawer(
-      width: context.width * 0.2,
+      width: context.width * 0.15,
       child: SizedBox(
         height: double.infinity,
         child: Column(

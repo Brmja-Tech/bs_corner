@@ -1,97 +1,109 @@
-import 'package:excel/excel.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
-import 'package:pscorner/core/stateless/gaps.dart';
-import 'package:pscorner/features/reports/data/repositories/tables.dart';
-import 'package:pscorner/features/reports/presentation/blocs/reports_cubit.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> gridItems = [
+      {
+        'title': 'Room "5"',
+        'subtitle': 'محجوز مسبقًا',
+        'icon': Icons.play_arrow,
+        'buttonLabel': 'ابدأ الآن'
+      },
+      {
+        'title': 'Room "4"',
+        'subtitle': 'PS4/Single',
+        'icon': Icons.timer,
+        'time': '02:56:12',
+        'buttonLabel': 'طلبات إضافية'
+      },
+      {
+        'title': 'Room "10"',
+        'subtitle': 'Available',
+        'icon': Icons.videogame_asset,
+        'buttonLabel': 'ابدأ الآن'
+      },
+      // Add more items as needed
+    ];
     return CustomScaffold(
-      selectedIndex: 0,
-      body: Center(
-          child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CustomButton(
-              text: 'استخراج بيانات الموظفين',
-              onPressed: () async {
-                await _exportFile(context, Tables.users);
-              }),
-          AppGaps.gap28Horizontal,
-          CustomButton(
-              text: 'توريد بيانات الموظفين',
-              onPressed: () async {
-                await _importFile(context, Tables.users, (row) {
-                  // Validate required fields
-                  if (row[0]?.value == null || row[1]?.value == null) {
-                    throw Exception('Invalid data in row');
-                  }
-
-                  // Convert all cell values to supported SQLite types
-                  return {
-                    "id": row[0]?.value is String || row[0]?.value is num
-                        ? row[0]?.value.toString()
-                        : null,
-                    // Ensure ID is always a String (or null if invalid)
-                    "username": row[1]?.value.toString(),
-                    // Convert to String
-                    "password":
-                        row[2]?.value != null ? row[2]?.value.toString() : '',
-                    // Default password to an empty string if null
-                  };
-                });
-              }),
-        ],
-      )),
-    );
+        selectedIndex: 0,
+        body: GridView.builder(
+          itemCount: gridItems.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4, // 4 items per row
+            mainAxisSpacing: 8.0, // Spacing between rows
+            crossAxisSpacing: 8.0, // Spacing between columns
+            childAspectRatio: 1, // Adjust aspect ratio for the grid items
+          ),
+          itemBuilder: (context, index) {
+            final item = gridItems[index];
+            return GridItemWidget(
+              title: item['title'],
+              subtitle: item['subtitle'],
+              icon: item['icon'],
+              buttonLabel: item['buttonLabel'],
+              time: item['time'],
+            );
+          },
+        ));
   }
+}
 
-  Future<void> _exportFile(BuildContext context, String table) async {
-    String? selectedPath = await FilePicker.platform.saveFile(
-      dialogTitle: 'Select Export File Location',
-      fileName: 'employees_data.xlsx', // Suggest a default file name
+class GridItemWidget extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String buttonLabel;
+  final String? time;
+
+  const GridItemWidget({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.buttonLabel,
+    this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 200,
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            Image.asset('assets/images/playstation.png'),
+            if (time != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                time!,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.black),
+              ),
+            ],
+            Spacer(),
+            CustomButton(text: 'تأكيد',onPressed: (){},width: double.infinity,),
+          ],
+        ),
+      ),
     );
-
-    if (selectedPath != null) {
-      context.read<ReportsBloc>().exportToFile(
-            filePath: selectedPath,
-            table: table,
-          );
-    } else {
-      // User canceled the file picker
-      logger('No path selected');
-    }
-  }
-
-  Future<void> _importFile(
-    BuildContext context,
-    String table,
-    Map<String, dynamic> Function(List<Data?> row) rowMapper,
-  ) async {
-    // Open file picker to select an Excel file
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx'], // Restrict to Excel files
-    );
-
-    if (result != null) {
-      // Get the selected file path
-      String filePath = result.files.single.path!;
-
-      // Use the ReportsBloc to import data with the provided mapper
-      await context.read<ReportsBloc>().importFromFile(
-            filePath: filePath,
-            table: table,
-            rowMapper: rowMapper, // Pass the mapper function
-          );
-    }
   }
 }
