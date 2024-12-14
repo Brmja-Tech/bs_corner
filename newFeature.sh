@@ -7,7 +7,7 @@ set -e
 BASE_DIR="lib/features/"
 
 # Define your list of features
-FEATURES=("home")  # Replace with your actual feature names
+FEATURES=("shifts" "employees" "accounts")  # Replace with your actual feature names
 
 # Define the directory structure for each feature
 DIR_STRUCTURE=(

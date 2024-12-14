@@ -60,7 +60,7 @@ class ResponsiveScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: appBar,
-      drawer:  drawer,
+      // drawer:  drawer,
       backgroundColor: color,
       body: body,
       bottomNavigationBar: bottomNavigationBar,

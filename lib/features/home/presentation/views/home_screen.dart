@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
+import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
-import 'package:pscorner/core/stateless/responsive_scaffold.dart';
 import 'package:pscorner/features/reports/data/repositories/tables.dart';
 import 'package:pscorner/features/reports/presentation/blocs/reports_cubit.dart';
 
@@ -14,10 +14,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScaffold(
-      desktopBody: Center(
+    return CustomScaffold(
+      selectedIndex: 0,
+      body: Center(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CustomButton(
               text: 'استخراج بيانات الموظفين',

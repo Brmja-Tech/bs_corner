@@ -147,13 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                 ),
                               ),
-                              TextButton(
-                                  onPressed: () =>
-                                      context.go(const RegisterScreen()),
-                                  child: const Label(
-                                    text: 'إنشاء حساب',
-                                    selectable: false,
-                                  ))
+                              // TextButton(
+                              //     onPressed: () =>
+                              //         context.go(const RegisterScreen()),
+                              //     child: const Label(
+                              //       text: 'إنشاء حساب',
+                              //       selectable: false,
+                              //     ))
                             ],
                           ),
                         ))),
