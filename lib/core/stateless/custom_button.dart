@@ -30,13 +30,13 @@ class CustomButton extends StatelessWidget {
           child: ElevatedButton(
             style: style ??
                 context.theme.elevatedButtonTheme.style!.copyWith(
-
-                  padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 150, vertical: 20)),
-                  backgroundColor: WidgetStateProperty.all(
-                      const Color.fromRGBO(44, 102, 153, 1)),
-                  minimumSize: width ==null|| height==null ? null:WidgetStateProperty.all(Size(width!, height!))
-                ),
+                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(
+                        horizontal: 150, vertical: 20)),
+                    backgroundColor: WidgetStateProperty.all(
+                        const Color.fromRGBO(44, 102, 153, 1)),
+                    minimumSize: width == null || height == null
+                        ? null
+                        : WidgetStateProperty.all(Size(width!, height!))),
             onPressed: onPressed,
             child: Label(
               text: text,
