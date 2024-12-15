@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 import 'package:excel/excel.dart';
 import 'package:path/path.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
-import 'package:pscorner/core/data/sql/sql.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -110,7 +107,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 4) {
+          if (oldVersion < 3) {
             logger('Upgrading database to version $newVersion');
 
             // Add the 'pre-booked' state to the rooms table
@@ -361,7 +358,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       return Left(UnknownFailure(message: 'Batch insert failed: $e'));
     }
   }
-}}
+}
 
 class BackupParams extends Equatable {
   final String table;
