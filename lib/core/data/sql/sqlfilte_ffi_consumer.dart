@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:excel/excel.dart';
 import 'package:path/path.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
+import 'package:pscorner/core/data/sql/sql.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -23,6 +24,9 @@ abstract interface class SQLFLiteFFIConsumer {
 
   Future<Either<Failure, int>> delete(String table,
       {String? where, List<dynamic>? whereArgs});
+
+//for multiple insertion
+  Future<Either<Failure, void>> batchInsert(BatchInsertParams params);
 
   Future<Either<Failure, String>> getDatabasePath(String databaseName);
 
@@ -47,80 +51,85 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 3, // Updated version
+        version: 4, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
+
           // Create the 'users' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            password TEXT NOT NULL,
-            isAdmin BOOLEAN NOT NULL DEFAULT 0 -- New isAdmin column
-          )
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT NOT NULL,
+          password TEXT NOT NULL,
+          isAdmin BOOLEAN NOT NULL DEFAULT 0
+        )
         ''');
 
           // Create the 'restaurants' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS restaurants (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            image TEXT,
-            price REAL NOT NULL,
-            type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
-          )
+        CREATE TABLE IF NOT EXISTS restaurants (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          image TEXT,
+          price REAL NOT NULL,
+          type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
+        )
         ''');
 
           // Create the 'rooms' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS rooms (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-            state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused')),
-            open_time BOOLEAN NOT NULL,
-            is_multiplayer BOOLEAN NOT NULL
-          )
+        CREATE TABLE IF NOT EXISTS rooms (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+          state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
+          open_time BOOLEAN NOT NULL,
+          is_multiplayer BOOLEAN NOT NULL
+        )
         ''');
 
           // Create the 'shifts' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS shifts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            total_collected_money REAL NOT NULL,
-            from_time TIMESTAMP NOT NULL,
-            to_time TIMESTAMP NOT NULL
-          )
+        CREATE TABLE IF NOT EXISTS shifts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          total_collected_money REAL NOT NULL,
+          from_time TIMESTAMP NOT NULL,
+          to_time TIMESTAMP NOT NULL
+        )
         ''');
 
-          // Insert default users (optional)
-          await db.insert(
-            'users',
-            {
-              'username': 'admin_user',
-              'password': _hashPassword('123456'), // Hashed password
-              'isAdmin': 1, // Admin role
-            },
-          );
-          await db.insert(
-            'users',
-            {
-              'username': 'test_user',
-              'password': _hashPassword('123456'), // Hashed password
-              'isAdmin': 0, // Regular user
-            },
-          );
-          logger('Default users added');
+          // Create the 'room_consumptions' table
+          await db.execute('''
+        CREATE TABLE IF NOT EXISTS room_consumptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          room_id INTEGER NOT NULL,
+          restaurant_id INTEGER NOT NULL,
+          quantity INTEGER NOT NULL DEFAULT 1,
+          FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+          FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+        )
+        ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 3) {
+          if (oldVersion < 4) {
             logger('Upgrading database to version $newVersion');
 
-            // Add isAdmin column to users table
+            // Add the 'pre-booked' state to the rooms table
             await db.execute('''
-            ALTER TABLE users ADD COLUMN isAdmin BOOLEAN NOT NULL DEFAULT 0
+          ALTER TABLE rooms ADD COLUMN state TEXT NOT NULL DEFAULT 'not running'
+          CHECK(state IN ('running', 'not running', 'paused', 'pre-booked'))
           ''');
 
-            // Any additional upgrades can be added here
+            // Create the 'room_consumptions' table if it doesn't already exist
+            await db.execute('''
+          CREATE TABLE IF NOT EXISTS room_consumptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room_id INTEGER NOT NULL,
+            restaurant_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+          )
+          ''');
           }
         },
       );
@@ -129,17 +138,14 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       return Right(null); // Success
     } catch (e) {
       loggerError('Database initialization failed: $e');
-      return Left(UnknownFailure(message: 'Database initialization failed: $e'));
+      return Left(
+          UnknownFailure(message: 'Database initialization failed: $e'));
     }
   }
-  String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final hash = sha256.convert(bytes);
-    return hash.toString();
-  }
+
   @override
-  Future<Either<Failure, int>> add(
-      String table, Map<String, dynamic> data) async {
+  Future<Either<Failure, int>> add(String table,
+      Map<String, dynamic> data) async {
     try {
       if (_database == null) throw Exception("Database not initialized");
       final id = await _database!.insert(table, data);
@@ -208,13 +214,13 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       final data = await get(params.table);
 
       return data.fold(
-        (failure) {
+            (failure) {
           // Handling failure case for fetching data
           return Left(UnknownFailure(
               message:
-                  'Failed to fetch data for export: ${failure.toString()}'));
+              'Failed to fetch data for export: ${failure.toString()}'));
         },
-        (result) async {
+            (result) async {
           // Create a new Excel document
           var excel = Excel.createExcel();
           Sheet sheet = excel['Sheet1']; // Create a sheet
@@ -301,11 +307,11 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             existingRecords
                 .fold((left) => UnknownFailure(message: 'No Existing Records'),
                     (right) async {
-              if (right.isEmpty) {
-                // Only add the new record if it doesn't exist
-                await add(params.table, data);
-              }
-            });
+                  if (right.isEmpty) {
+                    // Only add the new record if it doesn't exist
+                    await add(params.table, data);
+                  }
+                });
           }
         } catch (e) {
           return Left(
@@ -334,7 +340,28 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       return Left(UnknownFailure(message: 'Failed to get database path: $e'));
     }
   }
-}
+
+  @override
+  Future<Either<Failure, void>> batchInsert(BatchInsertParams params) async {
+    try {
+      final batch = _database!.batch();
+
+      for (final data in params.dataList) {
+        batch.insert(
+          params.table,
+          data,
+          conflictAlgorithm: params.conflictAlgorithm ??
+              ConflictAlgorithm.ignore,
+        );
+      }
+
+      await batch.commit(noResult: true);
+      return Right(null); // Indicate success
+    } catch (e) {
+      return Left(UnknownFailure(message: 'Batch insert failed: $e'));
+    }
+  }
+}}
 
 class BackupParams extends Equatable {
   final String table;
@@ -346,4 +373,19 @@ class BackupParams extends Equatable {
 
   @override
   List<Object?> get props => [table, filePath, rowMapper];
+}
+
+class BatchInsertParams extends Equatable {
+  final String table;
+  final List<Map<String, dynamic>> dataList;
+  final ConflictAlgorithm? conflictAlgorithm;
+
+  const BatchInsertParams({
+    required this.table,
+    required this.dataList,
+    this.conflictAlgorithm,
+  });
+
+  @override
+  List<Object?> get props => [table, dataList, conflictAlgorithm];
 }
