@@ -71,7 +71,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveScaffold(
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(canPop: true,),
       desktopBody: SingleChildScrollView(
         child: Align(
           alignment: Alignment.topCenter,
@@ -114,7 +114,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                           formatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(
-                                  r'^[\d\u0660-\u0669]+\.?[\d\u0660-\u0669]{0,3}'),
+                                  r'^[\d\u0660-\u0669]+\.?[\d\u0660-\u0669]{0,2}'),
                             ),
                           ],
                           validator: (String? value) {
@@ -153,17 +153,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height:18),
+                      const SizedBox(height: 18),
                       Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40.0),
                             child: ElevatedButton.icon(
                               onPressed: _pickImage,
                               style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 50),
                                   backgroundColor:
-                                      const Color.fromRGBO(44, 102, 153, 1),
+                                  const Color.fromRGBO(44, 102, 153, 1),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 150,
                                     vertical: 15,
@@ -194,14 +195,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                 return;
                               }
 
-                                context.read<RestaurantsBloc>().insertItem(
-                                      name: _nameController.text.trim(),
-                                      imagePath: _selectedImage!.path,
-                                      price:
-                                          _priceController.text.trim().numerate,
-                                      type: selectedType,
-                                    );
-
+                              context.read<RestaurantsBloc>().insertItem(
+                                name: _nameController.text.trim(),
+                                imagePath: _selectedImage!.path,
+                                price:
+                                _priceController.text
+                                    .trim()
+                                    .numerate,
+                                type: selectedType,
+                              );
                             },
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 20),
@@ -213,48 +215,48 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 ),
                 _selectedImage != null
                     ? Expanded(
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                Image.file(
-                                  _selectedImage!,
-                                  fit: BoxFit.cover,
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Image.file(
+                            _selectedImage!,
+                            fit: BoxFit.cover,
+                          ),
+                          IconButton(
+                              icon: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
                                 ),
-                                IconButton(
-                                    icon: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedImage = null;
-                                      });
-                                    })
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                    : const Expanded(
-                        child: Center(
-                          child: Text(
-                            'لم يتم اختيار صورة',
-                            style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
-                          ),
-                        ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _selectedImage = null;
+                                });
+                              })
+                        ],
                       ),
+                    ),
+                  ),
+                )
+                    : const Expanded(
+                  child: Center(
+                    child: Text(
+                      'لم يتم اختيار صورة',
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

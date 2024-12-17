@@ -60,10 +60,10 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
 
   Future<void> updateItem({
     required int id,
-    required String name,
-    required String imagePath,
-    required num price,
-    required String type,
+     String? name,
+     String? imagePath,
+     num? price,
+     String? type,
   }) async {
     emit(state.copyWith(status: RestaurantsStateStatus.loading));
     final result = await _updateRestaurantItemUseCase(UpdateItemParams(

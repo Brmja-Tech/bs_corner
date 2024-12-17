@@ -4,7 +4,9 @@ import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  final bool canPop;
+
+  const CustomAppBar({super.key,this.canPop = false});
 
   @override
   Size get preferredSize => const Size.fromHeight(60);
@@ -19,6 +21,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+
+            if(canPop)
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                context.pop();
+              },
+            ),
             // Logo on the left
             Image.asset(
               'assets/images/logo.png', // Replace with your logo asset
