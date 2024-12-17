@@ -10,6 +10,7 @@ class CustomButton extends StatelessWidget {
   final double? width;
   final double? height;
   final VoidCallback onPressed;
+  final EdgeInsets? padding;
   final AlignmentGeometry? alignment;
 
   const CustomButton(
@@ -18,6 +19,7 @@ class CustomButton extends StatelessWidget {
       required this.onPressed,
       this.style,
       this.width,
+      this.padding,
       this.height,
       this.alignment});
 
@@ -26,17 +28,18 @@ class CustomButton extends StatelessWidget {
     return Align(
         alignment: alignment ?? Alignment.center,
         child: Container(
+          width: width,
           margin: const EdgeInsets.only(left: 20),
           child: ElevatedButton(
             style: style ??
                 context.theme.elevatedButtonTheme.style!.copyWith(
-                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(
-                        horizontal: 150, vertical: 20)),
-                    backgroundColor: WidgetStateProperty.all(
-                        const Color.fromRGBO(44, 102, 153, 1)),
-                    minimumSize: width == null || height == null
-                        ? null
-                        : WidgetStateProperty.all(Size(width!, height!))),
+                  padding: WidgetStateProperty.all(padding ??
+                      EdgeInsets.symmetric(
+                          horizontal: width == null ? 0 : context.width * 0.09,
+                          vertical: 20)),
+                  backgroundColor: WidgetStateProperty.all(
+                      const Color.fromRGBO(44, 102, 153, 1)),
+                ),
             onPressed: onPressed,
             child: Label(
               text: text,

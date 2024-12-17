@@ -7,12 +7,14 @@ import 'package:pscorner/core/data/utils/either.dart';
 abstract interface class RestaurantDataSource {
   Future<Either<Failure, int>> insertItem(InsertItemParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(NoParams noParams);
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
+      NoParams noParams);
 
   Future<Either<Failure, int>> deleteItem(int id);
 
   Future<Either<Failure, int>> updateItem(UpdateItemParams params);
 }
+
 class RestaurantDataSourceImpl implements RestaurantDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
 
@@ -34,7 +36,8 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(NoParams noParams) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
+      NoParams noParams) async {
     try {
       return await _databaseConsumer.get('restaurants');
     } catch (e) {

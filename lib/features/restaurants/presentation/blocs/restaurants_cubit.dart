@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/delete_restaurant_item_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/fetch_all_restaurants_department_use_case.dart';
@@ -36,9 +37,11 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
     ));
 
     result.fold((failure) {
+      loggerError('failure ${failure.message}');
       emit(state.copyWith(
           status: RestaurantsStateStatus.error, errorMessage: failure.message));
     }, (id) {
+      logger('id $id');
       emit(state.copyWith(status: RestaurantsStateStatus.success));
     });
   }
