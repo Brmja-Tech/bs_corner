@@ -8,10 +8,13 @@ import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dar
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
 import 'rooms_state.dart';
 
-class RoomsCubit extends Cubit<RoomsState> {
-  RoomsCubit(this._insertRoomUseCase, this._deleteRoomUseCase,
+class RoomsBloc extends Cubit<RoomsState> {
+  RoomsBloc(this._insertRoomUseCase, this._deleteRoomUseCase,
       this._fetchAllRoomsUseCase, this._updateRoomUseCase)
-      : super(const RoomsState());
+      : super(const RoomsState()) {
+    _fetchAllItems();
+  }
+
   final InsertRoomUseCase _insertRoomUseCase;
   final DeleteRoomUseCase _deleteRoomUseCase;
   final FetchAllRoomsUseCase _fetchAllRoomsUseCase;
@@ -19,16 +22,13 @@ class RoomsCubit extends Cubit<RoomsState> {
 
   Future<void> insertItem({
     required String deviceType,
-    required String roomState,
-    required bool openTime,
-    required bool isMultiplayer,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _insertRoomUseCase(InsertRoomParams(
       deviceType: deviceType,
-      state: roomState,
-      openTime: openTime,
-      isMultiplayer: isMultiplayer,
+      state: 'not running',
+      openTime: false,
+      isMultiplayer: false,
     ));
 
     result.fold((failure) {
@@ -37,7 +37,15 @@ class RoomsCubit extends Cubit<RoomsState> {
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (id) {
       logger('id $id');
-      emit(state.copyWith(status: RoomsStateStatus.success));
+      final newRoom = {
+        'id': id,
+        'device_type': deviceType,
+        'state': 'not running',
+        'open_time': 0,
+        'is_multiplayer': false
+      };
+      emit(state.copyWith(
+          status: RoomsStateStatus.success, rooms: [newRoom, ...state.rooms]));
     });
   }
 
@@ -73,11 +81,23 @@ class RoomsCubit extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (id) {
-      emit(state.copyWith(status: RoomsStateStatus.success));
+      final updatedRooms = state.rooms.map((room) {
+        if (room['id'] == id) {
+          return {
+            ...room, // Copy existing data
+            if (deviceType != null) 'device_type': deviceType,
+            if (roomState != null) 'state': roomState,
+            if (openTime != null) 'open_time': openTime,
+            if (isMultiplayer != null) 'is_multiplayer': isMultiplayer,
+          };
+        }
+        return room;
+      }).toList();
+      emit(state.copyWith(status: RoomsStateStatus.success,rooms: updatedRooms));
     });
   }
 
-  Future<void> fetchAllItems() async {
+  Future<void> _fetchAllItems() async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _fetchAllRoomsUseCase(const NoParams());
     result.fold((failure) {

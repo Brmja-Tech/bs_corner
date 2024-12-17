@@ -84,7 +84,7 @@ class AppThemes {
               if (states.contains(WidgetState.disabled)) {
                 return colorScheme.primary.withOpacity(0.5);
               }
-              return colorScheme.secondary; // Gold
+              return const Color.fromRGBO(44, 102, 153, 1); // Gold
             },
           ),
           foregroundColor: WidgetStateProperty.all<Color>(
