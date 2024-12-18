@@ -100,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: GridView.builder(
                               itemCount: state.rooms.length,
+                              padding: const EdgeInsets.only(bottom: 30),
                               gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 mainAxisSpacing: 8.0,
@@ -270,6 +271,7 @@ class GridItemWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
+          padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
