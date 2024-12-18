@@ -34,7 +34,8 @@ class RoomsBloc extends Cubit<RoomsState> {
       deviceType: deviceType,
       state: 'not running',
       openTime: false,
-      isMultiplayer: false, price: calculatePrice(deviceType, false),
+      isMultiplayer: false,
+      price: calculatePrice(deviceType, false),
     ));
 
     result.fold((failure) {
@@ -68,24 +69,25 @@ class RoomsBloc extends Cubit<RoomsState> {
     });
   }
 
-  Future<void> updateItem({
-    required int id,
-    String? deviceType,
-    String? roomState,
-    bool? openTime,
-    bool? isMultiplayer,
-    num? price
-  }) async {
+  Future<void> updateItem(
+      {required int id,
+      String? deviceType,
+      String? roomState,
+      bool? openTime,
+      bool? isMultiplayer,
+      num? price}) async {
     // loggerWarn('message');
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _updateRoomUseCase(UpdateRoomParams(
-      id: id,price: price,
+      id: id,
+      price: price,
       deviceType: deviceType,
       isMultiplayer: isMultiplayer,
       openTime: openTime,
       state: roomState,
     ));
 
+    loggerWarn(roomState);
     result.fold((failure) {
       loggerError('failure ${failure.message}');
       emit(state.copyWith(
@@ -97,7 +99,8 @@ class RoomsBloc extends Cubit<RoomsState> {
           return {
             ...room, // Copy existing data
             if (deviceType != null) 'device_type': deviceType,
-            if (roomState != null) 'state': roomState,
+            if (roomState != null)
+              'state': roomState,
             if (openTime != null) 'open_time': openTime,
             if (isMultiplayer != null) 'is_multiplayer': isMultiplayer,
             if (price != null) 'price': price
@@ -131,6 +134,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(status: RoomsStateStatus.success, rooms: []));
     });
   }
+
   double calculatePrice(String deviceType, bool isMultiplayer) {
     if (deviceType == 'PS4') {
       return isMultiplayer ? 30.0 : 20.0;

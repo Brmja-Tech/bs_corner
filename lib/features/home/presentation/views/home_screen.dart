@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           right: 0,
                                           child: IconButton(
                                               onPressed: () {
-                                                context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
+                                                // context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
                                               },
                                               icon: const Icon(
                                                 Icons.info_outline,
@@ -314,7 +314,16 @@ class GridItemWidget extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const Spacer(),
-
+            if(state == 'pre-booked') ...[
+              const Text(
+                'غرفه محجوزه',
+                style:
+                TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'وقت مفتوح: ${openTime ? "Yes" : "No"}',)
+            ],
             // State-based display
             if (state == 'running') ...[
               const Text(
@@ -329,18 +338,37 @@ class GridItemWidget extends StatelessWidget {
               ),
             ] else
               if (state == 'not running') ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: ElevatedButton(
-                    onPressed: onStartNowPressed,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: ElevatedButton(
+                        onPressed: ()=> context.read<RoomsBloc>().updateItem(id: id,roomState: 'pre-booked'),
+                        style: ElevatedButton.styleFrom(
+
+                          backgroundColor: const Color.fromRGBO(241, 217, 138, 1),
+                        ),
+                        child: const Text(
+                          'حجز مسبقا',
+                          style: TextStyle(color: Colors.white,fontSize: 16),
+                        ),
+                      ),
                     ),
-                    child: const Text(
-                      'ابدأ الان',
-                      style: TextStyle(color: Colors.white),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: ElevatedButton(
+                        onPressed: onStartNowPressed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                        ),
+                        child: const Text(
+                          'ابدأ الان',
+                          style: TextStyle(color: Colors.white,fontSize: 16),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
 

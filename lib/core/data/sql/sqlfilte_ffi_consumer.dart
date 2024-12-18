@@ -38,7 +38,6 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
   Database? _database;
 
   @override
-  @override
   Future<Either<Failure, void>> initDatabase(String databaseName) async {
     try {
       logger('Initializing database');
@@ -52,7 +51,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 5, // Incremented database version
+        version:6, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -139,18 +138,41 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 6) {
+          if (oldVersion < 7) {
             logger('Upgrading database to version $newVersion');
 
-            // Add the 'price' column without a CASE expression
-            await db.execute('''
-            ALTER TABLE rooms ADD COLUMN price REAL NOT NULL DEFAULT 0
-          ''');
+            logger('Upgrading database to version $newVersion');
 
-            // Add the 'remaining_time' column
+            // Step 1: Create a new table with the updated CHECK constraint
             await db.execute('''
-            ALTER TABLE rooms ADD COLUMN remaining_time TIMESTAMP DEFAULT NULL
-          ''');
+      CREATE TABLE rooms_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+        state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
+        open_time BOOLEAN DEFAULT NULL,
+        is_multiplayer BOOLEAN NOT NULL,
+        price REAL NOT NULL DEFAULT 0,
+        remaining_time TIMESTAMP DEFAULT NULL
+      )
+    ''');
+
+            // Step 2: Copy the data from the old table to the new table
+            await db.execute('''
+      INSERT INTO rooms_new (id, device_type, state, open_time, is_multiplayer, price, remaining_time)
+      SELECT id, device_type, state, open_time, is_multiplayer, price, remaining_time FROM rooms
+    ''');
+
+            // Step 3: Drop the old table
+            await db.execute('DROP TABLE rooms');
+
+            // Step 4: Rename the new table to the original table name
+            await db.execute('ALTER TABLE rooms_new RENAME TO rooms');
+
+            logger('Database upgraded successfully to version $newVersion');
+
+
+
+
 
             // Update the 'price' column based on conditions
             await db.execute('''
