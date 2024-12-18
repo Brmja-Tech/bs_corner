@@ -9,6 +9,8 @@ abstract interface class RoomsRepository {
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(NoParams noParams);
 
   Future<Either<Failure, int>> deleteRoom(int id);
+  Future<Either<Failure, void>> clearTable(String tableName);
+
 
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
 }

@@ -29,4 +29,9 @@ class RoomsRepositoryImpl implements RoomsRepository {
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params) {
     return _roomDataSource.updateRoom(params);
   }
+
+  @override
+  Future<Either<Failure, void>> clearTable(String tableName) {
+    return _roomDataSource.clearTable(tableName);
+  }
 }

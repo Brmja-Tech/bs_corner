@@ -40,9 +40,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Align(
                       alignment: AlignmentDirectional.topStart,
-                      child: Label(
-                        text: 'الاجهزة المتاحة ',
-                        style: AppTextTheme.titleLarge,
+                      child: BlocBuilder<RoomsBloc, RoomsState>(
+                        builder: (context, state) {
+                          return GestureDetector(
+                            onTap: () {
+                              context.read<RoomsBloc>().clearRooms();
+                            },
+                            child: Label(
+                              text: 'الاجهزة المتاحة ',
+                              selectable: false,
+                              style: AppTextTheme.titleLarge,
+                            ),
+                          );
+                        },
                       )),
                   Expanded(child: Container()),
                   CustomButton(
@@ -76,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
+                    logger(state.rooms.toString());
                     return Column(
                       children: [
                         if (state.isLoading) const LinearProgressIndicator(),
@@ -90,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: GridView.builder(
                               itemCount: state.rooms.length,
                               gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                                 mainAxisSpacing: 8.0,
                                 crossAxisCount: 4,
                                 crossAxisSpacing: 8,
@@ -111,9 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       onStartNowPressed: () {
                                         logger(item['id']);
                                         context.read<RoomsBloc>().updateItem(
-                                              id: item['id'],
-                                              roomState: 'running',
-                                            );
+                                          id: item['id'],
+                                          roomState: 'running',
+                                        );
                                       },
                                     ),
                                     if (item['device_type'] != null)
@@ -307,28 +318,29 @@ class GridItemWidget extends StatelessWidget {
               const Text(
                 'يعمل الان ',
                 style:
-                    TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'وقت مفتوح: ${openTime ? "Yes" : "No"}',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
-            ] else if (state == 'not running') ...[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: ElevatedButton(
-                  onPressed: onStartNowPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
-                  ),
-                  child: const Text(
-                    'ابدأ الان',
-                    style: TextStyle(color: Colors.white),
+            ] else
+              if (state == 'not running') ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ElevatedButton(
+                    onPressed: onStartNowPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                    ),
+                    child: const Text(
+                      'ابدأ الان',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
 
             // Image at the bottom
           ],

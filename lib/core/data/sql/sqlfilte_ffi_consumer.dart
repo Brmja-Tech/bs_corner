@@ -30,11 +30,14 @@ abstract interface class SQLFLiteFFIConsumer {
   Future<Either<Failure, void>> exportToExcelFile(BackupParams params);
 
   Future<Either<Failure, void>> importToExcel(BackupParams params);
+
+  Future<Either<Failure, void>> clearTable(String tableName);
 }
 
 class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
   Database? _database;
 
+  @override
   @override
   Future<Either<Failure, void>> initDatabase(String databaseName) async {
     try {
@@ -43,81 +46,88 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       databaseFactory = databaseFactoryFfi;
 
       final dbPath = await getDatabasesPath();
+      logger(dbPath);
       final path = join(dbPath, databaseName);
 
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 4, // Incremented database version
+        version: 5, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
           // Create the 'users' table
           await db.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT NOT NULL,
-          password TEXT NOT NULL,
-          isAdmin BOOLEAN NOT NULL DEFAULT 0
-        )
+          CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            isAdmin BOOLEAN NOT NULL DEFAULT 0
+          )
         ''');
 
           // Create the 'restaurants' table
           await db.execute('''
-        CREATE TABLE IF NOT EXISTS restaurants (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          image TEXT,
-          price REAL NOT NULL,
-          type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
-        )
+          CREATE TABLE IF NOT EXISTS restaurants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            image TEXT,
+            price REAL NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
+          )
         ''');
 
           // Create the 'rooms' table
           await db.execute('''
-        CREATE TABLE IF NOT EXISTS rooms (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-          state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
-          open_time BOOLEAN NOT NULL,
-          is_multiplayer BOOLEAN NOT NULL
-        )
+          CREATE TABLE IF NOT EXISTS rooms (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+            state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
+            open_time BOOLEAN DEFAULT NULL,
+            is_multiplayer BOOLEAN NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            remaining_time TIMESTAMP DEFAULT NULL
+          )
         ''');
+
+          // Set default prices for existing rooms
+          await db.execute('''
+          UPDATE rooms
+          SET price = CASE
+            WHEN device_type = 'PS4' AND is_multiplayer = 0 THEN 20
+            WHEN device_type = 'PS4' AND is_multiplayer = 1 THEN 30
+            WHEN device_type = 'PS5' AND is_multiplayer = 0 THEN 30
+            WHEN device_type = 'PS5' AND is_multiplayer = 1 THEN 50
+            ELSE 0
+          END
+        ''');
+
+          // Create a trigger to ensure constraints between open_time and remaining_time
+          await db.execute('''
+  CREATE TRIGGER ensure_open_time_remaining_time_exclusive
+  BEFORE UPDATE ON rooms
+  FOR EACH ROW
+  BEGIN
+    -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
+    UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
+
+    -- Ensure that `open_time` is NULL when `remaining_time` has a value
+    UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
+  END;
+''');
 
           // Create the 'shifts' table
           await db.execute('''
-        CREATE TABLE IF NOT EXISTS shifts (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          total_collected_money REAL NOT NULL,
-          from_time TIMESTAMP NOT NULL,
-          to_time TIMESTAMP NOT NULL
-        )
+          CREATE TABLE IF NOT EXISTS shifts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            total_collected_money REAL NOT NULL,
+            from_time TIMESTAMP NOT NULL,
+            to_time TIMESTAMP NOT NULL
+          )
         ''');
 
           // Create the 'room_consumptions' table
           await db.execute('''
-        CREATE TABLE IF NOT EXISTS room_consumptions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          room_id INTEGER NOT NULL,
-          restaurant_id INTEGER NOT NULL,
-          quantity INTEGER NOT NULL DEFAULT 1,
-          FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
-          FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
-        )
-        ''');
-        },
-        onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 3) {
-            logger('Upgrading database to version $newVersion');
-
-            // Add the 'pre-booked' state to the rooms table
-            await db.execute('''
-          ALTER TABLE rooms ADD COLUMN state TEXT NOT NULL DEFAULT 'not running'
-          CHECK(state IN ('running', 'not running', 'paused', 'pre-booked'))
-          ''');
-
-            // Create the 'room_consumptions' table if it doesn't already exist
-            await db.execute('''
           CREATE TABLE IF NOT EXISTS room_consumptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             room_id INTEGER NOT NULL,
@@ -126,7 +136,47 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
             FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
           )
+        ''');
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          if (oldVersion < 6) {
+            logger('Upgrading database to version $newVersion');
+
+            // Add the 'price' column without a CASE expression
+            await db.execute('''
+            ALTER TABLE rooms ADD COLUMN price REAL NOT NULL DEFAULT 0
           ''');
+
+            // Add the 'remaining_time' column
+            await db.execute('''
+            ALTER TABLE rooms ADD COLUMN remaining_time TIMESTAMP DEFAULT NULL
+          ''');
+
+            // Update the 'price' column based on conditions
+            await db.execute('''
+            UPDATE rooms
+            SET price = CASE
+              WHEN device_type = 'PS4' AND is_multiplayer = 0 THEN 20
+              WHEN device_type = 'PS4' AND is_multiplayer = 1 THEN 30
+              WHEN device_type = 'PS5' AND is_multiplayer = 0 THEN 30
+              WHEN device_type = 'PS5' AND is_multiplayer = 1 THEN 50
+              ELSE 0
+            END
+          ''');
+
+            // Re-create the trigger
+            await db.execute('''
+  CREATE TRIGGER ensure_open_time_remaining_time_exclusive
+  BEFORE UPDATE ON rooms
+  FOR EACH ROW
+  BEGIN
+    -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
+    UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
+
+    -- Ensure that `open_time` is NULL when `remaining_time` has a value
+    UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
+  END;
+''');
           }
         },
       );
@@ -141,8 +191,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
   }
 
   @override
-  Future<Either<Failure, int>> add(String table,
-      Map<String, dynamic> data) async {
+  Future<Either<Failure, int>> add(
+      String table, Map<String, dynamic> data) async {
     try {
       if (_database == null) throw Exception("Database not initialized");
       final id = await _database!.insert(table, data);
@@ -211,13 +261,13 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       final data = await get(params.table);
 
       return data.fold(
-            (failure) {
+        (failure) {
           // Handling failure case for fetching data
           return Left(UnknownFailure(
               message:
-              'Failed to fetch data for export: ${failure.toString()}'));
+                  'Failed to fetch data for export: ${failure.toString()}'));
         },
-            (result) async {
+        (result) async {
           // Create a new Excel document
           var excel = Excel.createExcel();
           Sheet sheet = excel['Sheet1']; // Create a sheet
@@ -304,11 +354,11 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             existingRecords
                 .fold((left) => UnknownFailure(message: 'No Existing Records'),
                     (right) async {
-                  if (right.isEmpty) {
-                    // Only add the new record if it doesn't exist
-                    await add(params.table, data);
-                  }
-                });
+              if (right.isEmpty) {
+                // Only add the new record if it doesn't exist
+                await add(params.table, data);
+              }
+            });
           }
         } catch (e) {
           return Left(
@@ -347,8 +397,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         batch.insert(
           params.table,
           data,
-          conflictAlgorithm: params.conflictAlgorithm ??
-              ConflictAlgorithm.ignore,
+          conflictAlgorithm:
+              params.conflictAlgorithm ?? ConflictAlgorithm.ignore,
         );
       }
 
@@ -356,6 +406,27 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       return Right(null); // Indicate success
     } catch (e) {
       return Left(UnknownFailure(message: 'Batch insert failed: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> clearTable(String tableName) async {
+    try {
+      if (_database == null) {
+        return Left(DatabaseNotInitializedFailure('Not Initialized'));
+      }
+
+      logger('Clearing table: $tableName');
+
+      // Use a raw SQL command to delete all rows from the specified table
+      await _database!.execute('DELETE FROM $tableName');
+
+      logger('Table cleared successfully: $tableName');
+      return Right(null); // Success
+    } catch (e) {
+      loggerError('Failed to clear table $tableName: $e');
+      return Left(
+          UnknownFailure(message: 'Failed to clear table $tableName: $e'));
     }
   }
 }

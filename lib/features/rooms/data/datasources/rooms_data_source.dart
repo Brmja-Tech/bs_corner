@@ -7,12 +7,16 @@ import 'package:pscorner/core/data/utils/either.dart';
 abstract interface class RoomDataSource {
   Future<Either<Failure, int>> insertRoom(InsertRoomParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(NoParams noParams);
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
+      NoParams noParams);
 
   Future<Either<Failure, int>> deleteRoom(int id);
 
+  Future<Either<Failure, void>> clearTable(String tableName);
+
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
 }
+
 class RoomDataSourceImpl implements RoomDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
 
@@ -26,6 +30,7 @@ class RoomDataSourceImpl implements RoomDataSource {
         'state': params.state, // running, not running, paused, pre-booked
         'open_time': params.openTime ? 1 : 0, // BOOLEAN as INTEGER (0 or 1)
         'is_multiplayer': params.isMultiplayer ? 1 : 0, // BOOLEAN as INTEGER
+        'price':params.price,
       };
 
       return await _databaseConsumer.add('rooms', data);
@@ -35,7 +40,8 @@ class RoomDataSourceImpl implements RoomDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(NoParams noParams) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
+      NoParams noParams) async {
     try {
       return await _databaseConsumer.get('rooms');
     } catch (e) {
@@ -64,7 +70,8 @@ class RoomDataSourceImpl implements RoomDataSource {
       if (params.deviceType != null) data['device_type'] = params.deviceType;
       if (params.state != null) data['state'] = params.state;
       if (params.openTime != null) data['open_time'] = params.openTime! ? 1 : 0;
-      if (params.isMultiplayer != null) data['is_multiplayer'] = params.isMultiplayer! ? 1 : 0;
+      if (params.isMultiplayer != null)
+        data['is_multiplayer'] = params.isMultiplayer! ? 1 : 0;
 
       return await _databaseConsumer.update(
         'rooms',
@@ -76,23 +83,31 @@ class RoomDataSourceImpl implements RoomDataSource {
       return Left(UnknownFailure(message: 'Failed to update room: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> clearTable(String tableName) {
+    return _databaseConsumer.clearTable(tableName);
+  }
 }
+
 class InsertRoomParams extends Equatable {
   final String deviceType; // PS4 or PS5
   final String state; // running, not running, paused, pre-booked
   final bool openTime; // Boolean
   final bool isMultiplayer; // Boolean
-
+  final num price;
   const InsertRoomParams({
     required this.deviceType,
     required this.state,
     required this.openTime,
     required this.isMultiplayer,
+    required this.price,
   });
 
   @override
-  List<Object?> get props => [deviceType, state, openTime, isMultiplayer];
+  List<Object?> get props => [deviceType, state, openTime, isMultiplayer,price];
 }
+
 class UpdateRoomParams extends Equatable {
   final int id; // Room ID to update
   final String? deviceType; // Optional

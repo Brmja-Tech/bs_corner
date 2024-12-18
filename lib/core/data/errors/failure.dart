@@ -21,6 +21,10 @@ class AuthFailure extends Failure {
   AuthFailure(super.message);
 }
 
+class DatabaseNotInitializedFailure extends Failure {
+  DatabaseNotInitializedFailure(super.message);
+}
+
 class CreateFailure extends Failure {
   CreateFailure({required String message}) : super(message);
 }
