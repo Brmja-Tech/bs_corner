@@ -7,6 +7,7 @@ import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/core/theme/text_theme.dart';
+import 'package:pscorner/features/home/presentation/widgets/home_widget.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/views/add_item_screen.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
@@ -102,12 +103,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemCount: state.rooms.length,
                               padding: const EdgeInsets.only(bottom: 30),
                               gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 mainAxisSpacing: 8.0,
-                                crossAxisCount: 4,
+                                crossAxisCount: 3,
                                 crossAxisSpacing: 8,
                                 mainAxisExtent: 350,
-                                childAspectRatio: 16 / 16,
+                                childAspectRatio: 1 / 2,
                               ),
                               itemBuilder: (context, index) {
                                 final item = state.rooms[index];
@@ -123,25 +124,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                       onStartNowPressed: () {
                                         logger(item['id']);
                                         context.read<RoomsBloc>().updateItem(
-                                          id: item['id'],
-                                          roomState: 'running',
-                                        );
+                                              id: item['id'],
+                                              roomState: 'running',
+                                            );
                                       },
                                     ),
-
-                                      Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: IconButton(
-                                              onPressed: () {
-                                                // context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
-                                              },
-                                              icon: const Icon(
-                                                Icons.info_outline,
-                                                color: Color.fromRGBO(
-                                                    44, 102, 153, 1),
-                                                size: 30,
-                                              ))),
+                                    Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: IconButton(
+                                            onPressed: () {
+                                              // context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
+                                            },
+                                            icon: const Icon(
+                                              Icons.info_outline,
+                                              color: Color.fromRGBO(
+                                                  44, 102, 153, 1),
+                                              size: 30,
+                                            ))),
                                   ],
                                 );
                               },
@@ -271,7 +271,8 @@ class GridItemWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-          padding: const EdgeInsets.all(16),
+        width: context.width * 0.3,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
@@ -289,8 +290,7 @@ class GridItemWidget extends StatelessWidget {
           children: [
             // Device Type and Room ID
             Padding(
-              padding: const EdgeInsets.all(16.0).add(
-                  const EdgeInsets.symmetric(horizontal: 50, vertical: 10)),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   Text(
@@ -316,63 +316,90 @@ class GridItemWidget extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const Spacer(),
-            if(state == 'pre-booked') ...[
+            if (state == 'pre-booked') ...[
               const Text(
                 'غرفه محجوزه',
                 style:
-                TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'وقت مفتوح: ${openTime ? "Yes" : "No"}',)
-            ],
-            // State-based display
-            if (state == 'running') ...[
-              const Text(
-                'يعمل الان ',
-                style:
-                TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'وقت مفتوح: ${openTime ? "Yes" : "No"}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              )
+            ],
+            // State-based display
+            if (state == 'running') ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  RoomActionWidget(
+                    onTap: () {},
+                    icon: Icons.play_arrow,
+                    backgroundColor: const Color.fromRGBO(76, 106, 242, 1),
+                    text: 'استمرار',
+                  ),
+                  RoomActionWidget(
+                    onTap: () {},
+                    icon: Icons.pause,
+                    backgroundColor: const Color.fromRGBO(241, 213, 129, 1),
+                    text: 'ايقاف\n مؤقت',
+                  ),
+                  RoomActionWidget(
+                    onTap: () {},
+                    icon: Icons.stop_circle_outlined,
+                    backgroundColor: const Color.fromRGBO(224, 35, 41, 1),
+                    text: 'ايقاف',
+                  ),
+                  RoomActionWidget(
+                    onTap: () {},
+                    icon: Icons.loop,
+                    backgroundColor: const Color.fromRGBO(88, 166, 156, 1),
+                    text: 'تغير\n جهاز ',
+                  ),
+                  RoomActionWidget(
+                    onTap: () {},
+                    icon: Icons.swap_horiz,
+                    backgroundColor: const Color.fromRGBO(76, 106, 242, 1),
+                    text: 'سنجل الى\n مالتي',
+                  ),
+                ],
               ),
-            ] else
-              if (state == 'not running') ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: ElevatedButton(
-                        onPressed: ()=> context.read<RoomsBloc>().updateItem(id: id,roomState: 'pre-booked'),
-                        style: ElevatedButton.styleFrom(
-
-                          backgroundColor: const Color.fromRGBO(241, 217, 138, 1),
-                        ),
-                        child: const Text(
-                          'حجز مسبقا',
-                          style: TextStyle(color: Colors.white,fontSize: 16),
-                        ),
+            ] else if (state == 'not running') ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () => context
+                          .read<RoomsBloc>()
+                          .updateItem(id: id, roomState: 'pre-booked'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromRGBO(241, 217, 138, 1),
+                      ),
+                      child: const Text(
+                        'حجز مسبقا',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: ElevatedButton(
-                        onPressed: onStartNowPressed,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
-                        ),
-                        child: const Text(
-                          'ابدأ الان',
-                          style: TextStyle(color: Colors.white,fontSize: 16),
-                        ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: ElevatedButton(
+                      onPressed: onStartNowPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                      ),
+                      child: const Text(
+                        'ابدأ الان',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
+            ],
 
             // Image at the bottom
           ],
