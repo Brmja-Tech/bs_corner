@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
-                    // logger(state.rooms.toString());
+                    logger(state.rooms.toString());
                     return Column(
                       children: [
                         if (state.isLoading) const LinearProgressIndicator(),
@@ -115,6 +115,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return Stack(
                                   children: [
                                     GridItemWidget(
+                                      index: index,
+                                      isMultiplayer: item['is_multiplayer'] == 1
+                                          ? true
+                                          : false,
                                       id: item['id'],
                                       openTime: item['open_time'] as int == 1
                                           ? true
@@ -252,9 +256,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class GridItemWidget extends StatelessWidget {
   final int id;
+  final int index;
   final String deviceType;
   final String state;
   final bool openTime;
+  final bool isMultiplayer;
   final VoidCallback? onStartNowPressed;
 
   const GridItemWidget({
@@ -263,7 +269,8 @@ class GridItemWidget extends StatelessWidget {
     required this.deviceType,
     required this.state,
     required this.openTime,
-    this.onStartNowPressed,
+    required this.isMultiplayer,
+    this.onStartNowPressed, required this.index,
   });
 
   @override
@@ -309,12 +316,13 @@ class GridItemWidget extends StatelessWidget {
             ),
 
             const Spacer(),
-            Image.asset(
-              'assets/images/playstation.png',
-              width: 100,
-              height: 100,
-              fit: BoxFit.contain,
-            ),
+            if (state == 'not running')
+              Image.asset(
+                'assets/images/playstation.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.contain,
+              ),
             const Spacer(),
             if (state == 'pre-booked') ...[
               const Text(
@@ -323,30 +331,55 @@ class GridItemWidget extends StatelessWidget {
                     TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text(
-                'وقت مفتوح: ${openTime ? "Yes" : "No"}',
-              )
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ElevatedButton(
+                  onPressed: onStartNowPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                  ),
+                  child: const Text(
+                    'ابدأ الان',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
             ],
             // State-based display
-            if (state == 'running') ...[
+            if (state != 'pre-booked' && state != 'not running') ...[
               Row(
+                textDirection: TextDirection.ltr,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  if (state == 'paused')
+                    RoomActionWidget(
+                      onTap: () {
+                        context
+                            .read<RoomsBloc>()
+                            .updateItem(id: id, roomState: 'running');
+                      },
+                      icon: Icons.play_arrow,
+                      backgroundColor: const Color.fromRGBO(76, 106, 242, 1),
+                      text: 'استمرار',
+                    ),
+                  if (state == 'running')
+                    RoomActionWidget(
+                      onTap: () {
+                        context
+                            .read<RoomsBloc>()
+                            .updateItem(id: id, roomState: 'paused');
+                      },
+                      icon: Icons.pause,
+                      backgroundColor: const Color.fromRGBO(241, 213, 129, 1),
+                      text: 'ايقاف\n مؤقت',
+                    ),
                   RoomActionWidget(
-                    onTap: () {},
-                    icon: Icons.play_arrow,
-                    backgroundColor: const Color.fromRGBO(76, 106, 242, 1),
-                    text: 'استمرار',
-                  ),
-                  RoomActionWidget(
-                    onTap: () {},
-                    icon: Icons.pause,
-                    backgroundColor: const Color.fromRGBO(241, 213, 129, 1),
-                    text: 'ايقاف\n مؤقت',
-                  ),
-                  RoomActionWidget(
-                    onTap: () {},
+                    onTap: () {
+                      context
+                          .read<RoomsBloc>()
+                          .updateItem(id: id, roomState: 'not running');
+                    },
                     icon: Icons.stop_circle_outlined,
                     backgroundColor: const Color.fromRGBO(224, 35, 41, 1),
                     text: 'ايقاف',
@@ -357,17 +390,27 @@ class GridItemWidget extends StatelessWidget {
                     backgroundColor: const Color.fromRGBO(88, 166, 156, 1),
                     text: 'تغير\n جهاز ',
                   ),
-                  RoomActionWidget(
-                    onTap: () {},
-                    icon: Icons.swap_horiz,
-                    backgroundColor: const Color.fromRGBO(76, 106, 242, 1),
-                    text: 'سنجل الى\n مالتي',
+                  BlocBuilder<RoomsBloc, RoomsState>(
+                    builder: (context, state) {
+                      // loggerWarn('is multi ${state.rooms[index]['is_multiplayer']}');
+                      return RoomActionWidget(
+                        onTap: () {
+                          context.read<RoomsBloc>().updateItem(
+                              id: id, isMultiplayer: !isMultiplayer);
+                        },
+                        icon: Icons.swap_horiz,
+                        backgroundColor: const Color.fromRGBO(154, 147, 179, 1),
+                        text: state.rooms[index]['is_multiplayer']==0
+                            ? 'مالتي الى\n سنجل'
+                            : 'سنجل الى\n مالتي',
+                      );
+                    },
                   ),
                 ],
               ),
             ] else if (state == 'not running') ...[
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
@@ -384,6 +427,7 @@ class GridItemWidget extends StatelessWidget {
                       ),
                     ),
                   ),
+                  AppGaps.gap28Horizontal,
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ElevatedButton(
