@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context, state) {
                           return GestureDetector(
                             onTap: () {
-                              context.read<RoomsBloc>().clearRooms();
+                              // context.read<RoomsBloc>().clearRooms();
                             },
                             child: Label(
                               text: 'الاجهزة المتاحة ',
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
-                    logger(state.rooms.toString());
+                    // logger(state.rooms.toString());
                     return Column(
                       children: [
                         if (state.isLoading) const LinearProgressIndicator(),
@@ -127,12 +127,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         );
                                       },
                                     ),
-                                    if (item['device_type'] != null)
+
                                       Positioned(
                                           top: 0,
                                           right: 0,
                                           child: IconButton(
-                                              onPressed: () {},
+                                              onPressed: () {
+                                                context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
+                                              },
                                               icon: const Icon(
                                                 Icons.info_outline,
                                                 color: Color.fromRGBO(

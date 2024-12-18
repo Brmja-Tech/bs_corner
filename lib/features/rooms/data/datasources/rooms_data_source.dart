@@ -70,9 +70,10 @@ class RoomDataSourceImpl implements RoomDataSource {
       if (params.deviceType != null) data['device_type'] = params.deviceType;
       if (params.state != null) data['state'] = params.state;
       if (params.openTime != null) data['open_time'] = params.openTime! ? 1 : 0;
-      if (params.isMultiplayer != null)
+      if (params.isMultiplayer != null) {
         data['is_multiplayer'] = params.isMultiplayer! ? 1 : 0;
-
+      }
+      if(params.price != null) data['price'] = params.price;
       return await _databaseConsumer.update(
         'rooms',
         data,
@@ -110,10 +111,11 @@ class InsertRoomParams extends Equatable {
 
 class UpdateRoomParams extends Equatable {
   final int id; // Room ID to update
-  final String? deviceType; // Optional
-  final String? state; // Optional
-  final bool? openTime; // Optional
-  final bool? isMultiplayer; // Optional
+  final String? deviceType;
+  final String? state;
+  final bool? openTime;
+  final bool? isMultiplayer;
+  final num? price;
 
   const UpdateRoomParams({
     required this.id,
@@ -121,8 +123,9 @@ class UpdateRoomParams extends Equatable {
     this.state,
     this.openTime,
     this.isMultiplayer,
+    this.price,
   });
 
   @override
-  List<Object?> get props => [id, deviceType, state, openTime, isMultiplayer];
+  List<Object?> get props => [id, deviceType, state, openTime, isMultiplayer,price];
 }
