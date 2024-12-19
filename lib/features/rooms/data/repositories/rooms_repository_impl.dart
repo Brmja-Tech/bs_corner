@@ -34,4 +34,9 @@ class RoomsRepositoryImpl implements RoomsRepository {
   Future<Either<Failure, void>> clearTable(String tableName) {
     return _roomDataSource.clearTable(tableName);
   }
+
+  @override
+  Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params) {
+    return _roomDataSource.transferRoomData(params);
+  }
 }

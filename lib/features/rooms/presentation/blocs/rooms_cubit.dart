@@ -6,6 +6,7 @@ import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_cas
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/transfer_room_data_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
 import 'rooms_state.dart';
 
@@ -15,7 +16,8 @@ class RoomsBloc extends Cubit<RoomsState> {
       this._deleteRoomUseCase,
       this._fetchAllRoomsUseCase,
       this._updateRoomUseCase,
-      this._clearRoomTableUseCase)
+      this._clearRoomTableUseCase,
+      this._transferRoomDataUseCase)
       : super(const RoomsState()) {
     _fetchAllItems();
   }
@@ -25,6 +27,7 @@ class RoomsBloc extends Cubit<RoomsState> {
   final ClearRoomTableUseCase _clearRoomTableUseCase;
   final FetchAllRoomsUseCase _fetchAllRoomsUseCase;
   final UpdateRoomUseCase _updateRoomUseCase;
+  final TransferRoomDataUseCase _transferRoomDataUseCase;
 
   Future<void> insertItem({
     required String deviceType,
@@ -76,7 +79,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       bool? openTime,
       bool? isMultiplayer,
       num? price}) async {
-    loggerWarn(isMultiplayer);
+    loggerWarn(id);
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _updateRoomUseCase(UpdateRoomParams(
       id: id,
@@ -87,22 +90,20 @@ class RoomsBloc extends Cubit<RoomsState> {
       state: roomState,
     ));
 
-
     result.fold((failure) {
       loggerError('failure ${failure.message}');
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (updated) {
-      logger('result ${state.rooms[id]['is_multiplayer']}');
+      // logger('result ${state.rooms[id]['is_multiplayer']}');
       final updatedRooms = state.rooms.map((room) {
         if (room['id'] == id) {
           return {
             ...room, // Copy existing data
             if (deviceType != null) 'device_type': deviceType,
-            if (roomState != null)
-              'state': roomState,
-            if (openTime != null) 'open_time': openTime,
-            if (isMultiplayer != null) 'is_multiplayer': isMultiplayer?1:0,
+            if (roomState != null) 'state': roomState,
+            if (openTime != null) 'open_time': openTime?1:0,
+            if (isMultiplayer != null) 'is_multiplayer': isMultiplayer ? 1 : 0,
             if (price != null) 'price': price
           };
         }
@@ -143,4 +144,57 @@ class RoomsBloc extends Cubit<RoomsState> {
     }
     return 0.0; // Default price if unknown device
   }
+
+  Future<void> transferRoomData({
+    required int sourceId,
+    required int targetId,
+    required String targetState,
+    required bool targetIsMultiplayer,
+    required bool targetOpenTime,
+    required targetPrice,
+  }) async {
+    emit(state.copyWith(status: RoomsStateStatus.loading));
+
+    final result = await _transferRoomDataUseCase(
+      TransferRoomDataParams(sourceRoomId: sourceId, targetRoomId: targetId),
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+            status: RoomsStateStatus.error, errorMessage: failure.message));
+      },
+      (_) {
+        // Update the rooms in the state
+        final updatedRooms = state.rooms.map((room) {
+          if (room['id'] == sourceId) {
+            // Reset the source room to default values
+            return {
+              ...room,
+              'state': 'not running',
+              'is_multiplayer': 0,
+              'open_time': 0,
+              'price': 0
+            };
+          } else if (room['id'] == targetId) {
+            // Update the target room with provided inputs
+            return {
+              ...room,
+              'state': targetState,
+              'is_multiplayer': targetIsMultiplayer ? 1 : 0,
+              'open_time': targetOpenTime ? 1 : 0,
+              'price': targetPrice
+            };
+          }
+          return room;
+        }).toList();
+        loggerWarn(updatedRooms.toString());
+        emit(state.copyWith(
+            status: RoomsStateStatus.success, rooms: updatedRooms));
+      },
+    );
+  }
+
+  List<Map<String, dynamic>> get availableRooms =>
+      state.rooms.where((room) => room['state'] == 'not running').toList();
 }

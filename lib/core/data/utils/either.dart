@@ -28,3 +28,6 @@ class Right<L, R> extends Either<L, R> {
     return rightFn(value);
   }
 }
+
+// Specialization for void results
+typedef VoidEither<L> = Either<L, void>;

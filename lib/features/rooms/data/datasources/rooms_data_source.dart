@@ -15,6 +15,8 @@ abstract interface class RoomDataSource {
   Future<Either<Failure, void>> clearTable(String tableName);
 
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
+
+  Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params);
 }
 
 class RoomDataSourceImpl implements RoomDataSource {
@@ -30,7 +32,7 @@ class RoomDataSourceImpl implements RoomDataSource {
         'state': params.state, // running, not running, paused, pre-booked
         'open_time': params.openTime ? 1 : 0, // BOOLEAN as INTEGER (0 or 1)
         'is_multiplayer': params.isMultiplayer ? 1 : 0, // BOOLEAN as INTEGER
-        'price':params.price,
+        'price': params.price,
       };
 
       return await _databaseConsumer.add('rooms', data);
@@ -73,7 +75,7 @@ class RoomDataSourceImpl implements RoomDataSource {
       if (params.isMultiplayer != null) {
         data['is_multiplayer'] = params.isMultiplayer! ? 1 : 0;
       }
-      if(params.price != null) data['price'] = params.price;
+      if (params.price != null) data['price'] = params.price;
       return await _databaseConsumer.update(
         'rooms',
         data,
@@ -89,6 +91,50 @@ class RoomDataSourceImpl implements RoomDataSource {
   Future<Either<Failure, void>> clearTable(String tableName) {
     return _databaseConsumer.clearTable(tableName);
   }
+
+  @override
+  Future<VoidEither<Failure>> transferRoomData(
+      TransferRoomDataParams params) async {
+    try {
+      // Step 1: Retrieve data from the source room
+      final sourceRoom = await _databaseConsumer.get(
+        'rooms',
+        where: 'id = ?',
+        whereArgs: [params.sourceRoomId],
+      );
+      return sourceRoom.fold(
+          (l) => Left(UnknownFailure(message: 'error retrieving source room')),
+          (right) async {
+        if (right.isEmpty) {
+          return Left(UnknownFailure(message: 'Source room not found'));
+        }
+
+        final roomData = right.first;
+
+        // Step 2: Update target room
+        Map<String, dynamic> mutableRoomData = Map.from(roomData);
+        mutableRoomData.remove('id'); // Now remove the ID from the copied map
+        await _databaseConsumer.update(
+          'rooms',
+          mutableRoomData,
+          where: 'id = ?',
+          whereArgs: [params.targetRoomId],
+        );
+
+        // Step 3: Optional - Reset source room
+        await _databaseConsumer.update(
+          'rooms',
+          {'state': 'not running'}, // Reset state of source room
+          where: 'id = ?',
+          whereArgs: [params.sourceRoomId],
+        );
+
+        return Right(null); // Void result on success
+      });
+    } catch (e) {
+      return Left(UnknownFailure(message: 'Failed to transfer room data: $e'));
+    }
+  }
 }
 
 class InsertRoomParams extends Equatable {
@@ -97,6 +143,7 @@ class InsertRoomParams extends Equatable {
   final bool openTime; // Boolean
   final bool isMultiplayer; // Boolean
   final num price;
+
   const InsertRoomParams({
     required this.deviceType,
     required this.state,
@@ -106,7 +153,8 @@ class InsertRoomParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [deviceType, state, openTime, isMultiplayer,price];
+  List<Object?> get props =>
+      [deviceType, state, openTime, isMultiplayer, price];
 }
 
 class UpdateRoomParams extends Equatable {
@@ -127,5 +175,17 @@ class UpdateRoomParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, deviceType, state, openTime, isMultiplayer,price];
+  List<Object?> get props =>
+      [id, deviceType, state, openTime, isMultiplayer, price];
+}
+
+class TransferRoomDataParams extends Equatable {
+  final int sourceRoomId;
+  final int targetRoomId;
+
+  const TransferRoomDataParams(
+      {required this.sourceRoomId, required this.targetRoomId});
+
+  @override
+  List<Object?> get props => [sourceRoomId, targetRoomId];
 }

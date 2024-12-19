@@ -6,11 +6,14 @@ import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart'
 abstract interface class RoomsRepository {
   Future<Either<Failure, int>> insertRoom(InsertRoomParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(NoParams noParams);
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
+      NoParams noParams);
 
   Future<Either<Failure, int>> deleteRoom(int id);
+
   Future<Either<Failure, void>> clearTable(String tableName);
 
+  Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params);
 
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
 }
