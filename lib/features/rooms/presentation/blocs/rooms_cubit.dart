@@ -102,7 +102,7 @@ class RoomsBloc extends Cubit<RoomsState> {
             ...room, // Copy existing data
             if (deviceType != null) 'device_type': deviceType,
             if (roomState != null) 'state': roomState,
-            if (openTime != null) 'open_time': openTime?1:0,
+            if (openTime != null) 'open_time': openTime ? 1 : 0,
             if (isMultiplayer != null) 'is_multiplayer': isMultiplayer ? 1 : 0,
             if (price != null) 'price': price
           };
@@ -152,6 +152,7 @@ class RoomsBloc extends Cubit<RoomsState> {
     required bool targetIsMultiplayer,
     required bool targetOpenTime,
     required targetPrice,
+    required String targetElapsedTime,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
 
@@ -183,7 +184,8 @@ class RoomsBloc extends Cubit<RoomsState> {
               'state': targetState,
               'is_multiplayer': targetIsMultiplayer ? 1 : 0,
               'open_time': targetOpenTime ? 1 : 0,
-              'price': targetPrice
+              'price': targetPrice,
+              'time': targetElapsedTime,
             };
           }
           return room;

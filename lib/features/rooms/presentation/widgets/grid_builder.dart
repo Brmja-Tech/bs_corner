@@ -31,6 +31,7 @@ class GridBuilder extends StatelessWidget {
                 openTime: item['open_time'] as int == 1 ? true : false,
                 state: item['state'],
                 deviceType: item['device_type'],
+                initialTime: item['time'],
               ),
               Positioned(
                   top: 0,

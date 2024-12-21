@@ -51,7 +51,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version:6, // Incremented database version
+        version: 8, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -85,7 +85,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             open_time BOOLEAN DEFAULT NULL,
             is_multiplayer BOOLEAN NOT NULL,
             price REAL NOT NULL DEFAULT 0,
-            remaining_time TIMESTAMP DEFAULT NULL
+            time TEXT NOT NULL DEFAULT '00:00:00'
           )
         ''');
 
@@ -102,18 +102,18 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         ''');
 
           // Create a trigger to ensure constraints between open_time and remaining_time
-          await db.execute('''
-  CREATE TRIGGER ensure_open_time_remaining_time_exclusive
-  BEFORE UPDATE ON rooms
-  FOR EACH ROW
-  BEGIN
-    -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
-    UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
-
-    -- Ensure that `open_time` is NULL when `remaining_time` has a value
-    UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
-  END;
-''');
+//           await db.execute('''
+//   CREATE TRIGGER ensure_open_time_remaining_time_exclusive
+//   BEFORE UPDATE ON rooms
+//   FOR EACH ROW
+//   BEGIN
+//     -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
+//     UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
+//
+//     -- Ensure that `open_time` is NULL when `remaining_time` has a value
+//     UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
+//   END;
+// ''');
 
           // Create the 'shifts' table
           await db.execute('''
@@ -138,7 +138,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 7) {
+          if (oldVersion < 9) {
             logger('Upgrading database to version $newVersion');
 
             logger('Upgrading database to version $newVersion');
@@ -152,14 +152,14 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         open_time BOOLEAN DEFAULT NULL,
         is_multiplayer BOOLEAN NOT NULL,
         price REAL NOT NULL DEFAULT 0,
-        remaining_time TIMESTAMP DEFAULT NULL
+        time TEXT NOT NULL DEFAULT '00:00:00'
       )
     ''');
 
             // Step 2: Copy the data from the old table to the new table
             await db.execute('''
-      INSERT INTO rooms_new (id, device_type, state, open_time, is_multiplayer, price, remaining_time)
-      SELECT id, device_type, state, open_time, is_multiplayer, price, remaining_time FROM rooms
+      INSERT INTO rooms_new (id, device_type, state, open_time, is_multiplayer, price)
+      SELECT id, device_type, state, open_time, is_multiplayer, price FROM rooms
     ''');
 
             // Step 3: Drop the old table
@@ -169,10 +169,6 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             await db.execute('ALTER TABLE rooms_new RENAME TO rooms');
 
             logger('Database upgraded successfully to version $newVersion');
-
-
-
-
 
             // Update the 'price' column based on conditions
             await db.execute('''
@@ -186,19 +182,19 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             END
           ''');
 
-            // Re-create the trigger
-            await db.execute('''
-  CREATE TRIGGER ensure_open_time_remaining_time_exclusive
-  BEFORE UPDATE ON rooms
-  FOR EACH ROW
-  BEGIN
-    -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
-    UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
-
-    -- Ensure that `open_time` is NULL when `remaining_time` has a value
-    UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
-  END;
-''');
+//             // Re-create the trigger
+//             await db.execute('''
+//   CREATE TRIGGER ensure_open_time_remaining_time_exclusive
+//   BEFORE UPDATE ON rooms
+//   FOR EACH ROW
+//   BEGIN
+//     -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
+//     UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
+//
+//     -- Ensure that `open_time` is NULL when `remaining_time` has a value
+//     UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
+//   END;
+// ''');
           }
         },
       );
