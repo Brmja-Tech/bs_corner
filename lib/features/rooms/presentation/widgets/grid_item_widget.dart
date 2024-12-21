@@ -4,8 +4,10 @@ import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/features/home/presentation/widgets/home_widget.dart';
+import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
+import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/add_extra_food_items_dialogue.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/counter_widget.dart';
 import 'package:pscorner/service_locator/service_locator.dart';
 
@@ -34,7 +36,14 @@ class GridItemWidget extends StatefulWidget {
 }
 
 class _GridItemWidgetState extends State<GridItemWidget> {
-  String elapsedTime = "00:00:00";
+  late String _elapsedTime;
+
+  @override
+  void initState() {
+    _elapsedTime = widget.initialTime;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -117,11 +126,34 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                 widget.state != 'not running') ...[
               Column(
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // logger(context.read<RestaurantsBloc>().state.restaurants);
+                        showExtraRequestsDialog(
+                          context,
+                          deviceType: widget.deviceType,
+                          roomId: widget.id,
+                          restaurantItems:
+                              context.read<RestaurantsBloc>().state.restaurants,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromRGBO(241, 217, 138, 1),
+                      ),
+                      child: const Text(
+                        'طلبات إضافيه',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  AppGaps.gap16Vertical,
                   CounterWidget(
-                    initialTime: widget.initialTime,
-                    onElapsedTimeUpdate:(duration){
+                    initialTime: _elapsedTime,
+                    onElapsedTimeUpdate: (duration) {
                       setState(() {
-                        elapsedTime = duration;
+                        _elapsedTime = duration;
                       });
                     },
                   ),
@@ -156,6 +188,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                         ),
                       RoomActionWidget(
                         onTap: () {
+                          setState(() {
+                            _elapsedTime = '00:00:00';
+                          });
                           context.read<RoomsBloc>().updateItem(
                               id: widget.id, roomState: 'not running');
                         },
@@ -173,7 +208,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             id: widget.id,
                             state: widget.state,
                             price: widget.price,
-                            elapsedTime: elapsedTime,
+                            elapsedTime: _elapsedTime,
                           );
                         },
                         icon: Icons.loop,
@@ -220,6 +255,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ElevatedButton(
                       onPressed: () {
+                        setState(() {
+                          _elapsedTime = '00:00:00';
+                        });
                         context.read<RoomsBloc>().updateItem(
                               id: widget.id,
                               roomState: 'running',
@@ -307,19 +345,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                                   targetOpenTime: openTime,
                                   targetPrice: price,
                                   targetElapsedTime: elapsedTime);
-                              // context.read<RoomsBloc>().updateItem(
-                              //     id: id,
-                              //     openTime: false,
-                              //     isMultiplayer: false,
-                              //     roomState: 'not running');
-                              // context.read<RoomsBloc>().updateItem(
-                              //     id: value!,
-                              //     openTime:
-                              //         room['open_time'] == 1 ? true : false,
-                              //     isMultiplayer: room['is_multiplayer'] == 1
-                              //         ? true
-                              //         : false,
-                              //     roomState: room['state']);
                             },
                           ),
                         );
@@ -344,6 +369,10 @@ class _GridItemWidgetState extends State<GridItemWidget> {
           ),
         );
       },
-    );
+    ).whenComplete(() {
+      setState(() {
+        selectedRoomId = null;
+      });
+    });
   }
 }

@@ -42,7 +42,16 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
           status: RestaurantsStateStatus.error, errorMessage: failure.message));
     }, (id) {
       logger('id $id');
-      emit(state.copyWith(status: RestaurantsStateStatus.success));
+      emit(state.copyWith(status: RestaurantsStateStatus.success, restaurants: [
+        ...state.restaurants,
+        {
+          'id': id,
+          'name': name,
+          'image': imagePath,
+          'price': price,
+          'type': type
+        }
+      ]));
     });
   }
 
@@ -60,10 +69,10 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
 
   Future<void> updateItem({
     required int id,
-     String? name,
-     String? imagePath,
-     num? price,
-     String? type,
+    String? name,
+    String? imagePath,
+    num? price,
+    String? type,
   }) async {
     emit(state.copyWith(status: RestaurantsStateStatus.loading));
     final result = await _updateRestaurantItemUseCase(UpdateItemParams(
@@ -93,5 +102,21 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       emit(state.copyWith(
           status: RestaurantsStateStatus.success, restaurants: items));
     });
+  }
+
+  void selectItem(Map<String, dynamic> item) {
+    final List<Map<String, dynamic>> selectedItems = [...state.selectedItems];
+
+    // Check if the item is already in the selected items list based on the 'id'
+    final isAlreadySelected =
+        selectedItems.any((selectedItem) => selectedItem['id'] == item['id']);
+
+    if (!isAlreadySelected) {
+      selectedItems.add(item); // Add the item if not already selected
+      emit(state.copyWith(selectedItems: selectedItems));
+      loggerWarn('Item added: $item');
+    } else {
+      loggerWarn('Item already selected: $item');
+    }
   }
 }

@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: sl<RoomsBloc>()),
-        BlocProvider.value(value: sl<RestaurantsBloc>()),
+        BlocProvider.value(value: sl<RestaurantsBloc>()..fetchAllItems()),
       ],
       child: CustomScaffold(
           selectedIndex: 0,
@@ -87,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
-                    logger(state.rooms.toString());
                     return Column(
                       children: [
                         if (state.isLoading) const LinearProgressIndicator(),

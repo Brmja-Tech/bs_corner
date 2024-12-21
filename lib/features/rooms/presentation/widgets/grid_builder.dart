@@ -17,8 +17,7 @@ class GridBuilder extends StatelessWidget {
           mainAxisSpacing: 8.0,
           crossAxisCount: 3,
           crossAxisSpacing: 8,
-          mainAxisExtent: 350,
-          childAspectRatio: 1 / 2,
+          mainAxisExtent: 400,
         ),
         itemBuilder: (context, index) {
           final item = state.rooms[index];

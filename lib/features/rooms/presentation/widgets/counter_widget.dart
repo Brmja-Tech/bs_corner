@@ -40,9 +40,7 @@ class _CounterWidgetState extends State<CounterWidget>
     _timer?.cancel(); // Cancel the existing timer
     _duration = _parseTime(widget.initialTime);
 
-
-      _startTimer();
-
+    _startTimer();
   }
 
   @override
