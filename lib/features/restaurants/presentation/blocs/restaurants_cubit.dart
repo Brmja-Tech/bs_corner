@@ -119,4 +119,52 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       loggerWarn('Item already selected: $item');
     }
   }
+
+  void setQuantity(
+      {required int id, required int quantity, required num price}) {
+    final List<ItemQuantity> quantityList = [...state.quantity];
+    final List<Map<String, dynamic>> selectedItems = [...state.selectedItems];
+
+    // Check if the item already exists in the quantity list
+    final existingItemIndex = quantityList.indexWhere((item) => item.id == id);
+
+    if (existingItemIndex != -1) {
+      if (quantity == 0) {
+        // Remove the item from both quantity list and selected items if quantity is 0
+        quantityList.removeAt(existingItemIndex);
+        selectedItems.removeWhere((selectedItem) => selectedItem['id'] == id);
+        loggerWarn('Item removed: $id');
+      } else {
+        // Update the quantity of the existing item
+        quantityList[existingItemIndex] = ItemQuantity(
+          id: id,
+          quantity: quantity,
+          price: price,
+        );
+        loggerWarn('Item quantity updated: $id to $quantity');
+      }
+    } else {
+      if (quantity > 0) {
+        // Add a new item with the specified quantity
+        quantityList
+            .add(ItemQuantity(id: id, quantity: quantity, price: price));
+        if (!selectedItems.any((selectedItem) => selectedItem['id'] == id)) {
+          selectedItems.add({
+            'id': id,
+            'price': price
+          }); // Adjust selected item format as needed
+        }
+        loggerWarn('Item added: $id with quantity: $quantity');
+      }
+    }
+
+    emit(state.copyWith(quantity: quantityList, selectedItems: selectedItems));
+  }
+
+  double calculateTotalPrice() {
+    return state.quantity.fold(0.0, (sum, item) {
+      final itemPrice = item.price * item.quantity;
+      return sum + itemPrice;
+    });
+  }
 }

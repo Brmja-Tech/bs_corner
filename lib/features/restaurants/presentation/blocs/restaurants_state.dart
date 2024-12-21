@@ -17,18 +17,21 @@ class RestaurantsState extends Equatable {
   final String? errorMessage;
   final List<Map<String, dynamic>> restaurants;
   final List<Map<String, dynamic>> selectedItems;
+  final List<ItemQuantity> quantity;
 
   const RestaurantsState({
     this.status = RestaurantsStateStatus.initial,
     this.errorMessage,
     this.restaurants = const [],
     this.selectedItems = const [],
+    this.quantity = const [],
   });
 
   RestaurantsState copyWith({
     RestaurantsStateStatus? status,
     List<Map<String, dynamic>>? restaurants,
     List<Map<String, dynamic>>? selectedItems,
+    List<ItemQuantity>? quantity,
     String? errorMessage,
   }) {
     return RestaurantsState(
@@ -36,9 +39,28 @@ class RestaurantsState extends Equatable {
       restaurants: restaurants ?? this.restaurants,
       errorMessage: errorMessage ?? this.errorMessage,
       selectedItems: selectedItems ?? this.selectedItems,
+      quantity: quantity ?? this.quantity,
     );
   }
 
   @override
-  List<Object?> get props => [status, errorMessage, restaurants, selectedItems];
+  List<Object?> get props => [
+        status,
+        errorMessage,
+        restaurants,
+        selectedItems,
+        quantity,
+      ];
+}
+
+class ItemQuantity extends Equatable {
+  final int id;
+  final num price;
+  final int quantity;
+
+  const ItemQuantity(
+      {required this.id, required this.price, required this.quantity});
+
+  @override
+  List<Object?> get props => [id, price, quantity];
 }

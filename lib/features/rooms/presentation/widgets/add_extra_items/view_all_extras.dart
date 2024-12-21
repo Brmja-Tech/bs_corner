@@ -6,7 +6,6 @@ import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/gri
 // import 'package:pscorner/service_locator/service_locator.dart';
 
 class ViewAllExtras extends StatelessWidget {
-
   const ViewAllExtras({super.key});
 
   @override
