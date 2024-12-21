@@ -113,7 +113,10 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
 
     if (!isAlreadySelected) {
       selectedItems.add(item); // Add the item if not already selected
-      emit(state.copyWith(selectedItems: selectedItems));
+      emit(state.copyWith(selectedItems: selectedItems, quantity: [
+        ...state.quantity,
+        ItemQuantity(id: item['id'], quantity: 1, price: item['price'])
+      ]));
       loggerWarn('Item added: $item');
     } else {
       loggerWarn('Item already selected: $item');
