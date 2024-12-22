@@ -1,10 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
+import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
 import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/fetch_room_consmption_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/insert_room_consmption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/transfer_room_data_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
@@ -17,7 +22,9 @@ class RoomsBloc extends Cubit<RoomsState> {
       this._fetchAllRoomsUseCase,
       this._updateRoomUseCase,
       this._clearRoomTableUseCase,
-      this._transferRoomDataUseCase)
+      this._transferRoomDataUseCase,
+      this._insertRoomConsumptionUseCase,
+      this._fetchRoomConsumptionUseCase)
       : super(const RoomsState()) {
     _fetchAllItems();
   }
@@ -28,6 +35,8 @@ class RoomsBloc extends Cubit<RoomsState> {
   final FetchAllRoomsUseCase _fetchAllRoomsUseCase;
   final UpdateRoomUseCase _updateRoomUseCase;
   final TransferRoomDataUseCase _transferRoomDataUseCase;
+  final InsertRoomConsumptionUseCase _insertRoomConsumptionUseCase;
+  final FetchRoomConsumptionUseCase _fetchRoomConsumptionUseCase;
 
   Future<void> insertItem({
     required String deviceType,
@@ -195,6 +204,43 @@ class RoomsBloc extends Cubit<RoomsState> {
             status: RoomsStateStatus.success, rooms: updatedRooms));
       },
     );
+  }
+
+  Future<void> fetchRoomConsumptions(int roomId) async {
+    emit(state.copyWith(status: RoomsStateStatus.loading));
+    final result = await _fetchRoomConsumptionUseCase(roomId);
+    result.fold((failure) {
+      emit(state.copyWith(
+          status: RoomsStateStatus.error, errorMessage: failure.message));
+    }, (items) {
+      emit(state.copyWith(
+          status: RoomsStateStatus.success, roomConsumptions: items));
+    });
+  }
+
+  Future<void> insertRoomConsumption({
+    required BuildContext context,
+    required List<ItemQuantity> quantity,
+    required int roomId,
+  }) async {
+    emit(state.copyWith(status: RoomsStateStatus.loading));
+    final result =
+        await _insertRoomConsumptionUseCase(BatchInsertConsumptionParams(
+      roomId: roomId,
+      dataList: quantity,
+    ));
+    result.fold((failure) {
+      loggerError('failure ${failure.message}');
+      emit(state.copyWith(
+          status: RoomsStateStatus.error, errorMessage: failure.message));
+      context.pop();
+    }, (consumptionId) {
+      logger('Successfully inserted consumption with id:');
+      emit(state.copyWith(status: RoomsStateStatus.success, roomConsumptions: [
+        ...state.roomConsumptions,
+      ]));
+      context.pop();
+    });
   }
 
   List<Map<String, dynamic>> get availableRooms =>

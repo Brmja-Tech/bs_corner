@@ -8,6 +8,8 @@ import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
+import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
+import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
 
 class AddExtraQuantity extends StatelessWidget {
   final int roomId;
@@ -59,157 +61,187 @@ class AddExtraQuantity extends StatelessWidget {
               ],
             ),
             const Divider(),
-            BlocBuilder<RestaurantsBloc, RestaurantsState>(
-              builder: (context, state) {
-                return Expanded(
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      ListView.separated(
-                        itemCount: state.selectedItems.length,
-                        padding: const EdgeInsets.only(bottom: 150),
-                        separatorBuilder: (context, index) => const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10)),
-                        itemBuilder: (context, index) {
-                          final item = state.selectedItems[index];
-                          return Row(
-                            // textDirection: TextDirection.ltr,
-                            children: [
-                              Label(
-                                text: item['price'].toString(),
-                                color: Colors.black,
-                              ),
-                              AppGaps.gap28Horizontal,
-                              Row(
+            BlocBuilder<RoomsBloc, RoomsState>(
+              builder: (room, state) {
+                return BlocBuilder<RestaurantsBloc, RestaurantsState>(
+                  builder: (context, state) {
+                    return Expanded(
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          ListView.separated(
+                            itemCount: state.selectedItems.length,
+                            padding: const EdgeInsets.only(bottom: 150),
+                            separatorBuilder: (context, index) => const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10)),
+                            itemBuilder: (context, index) {
+                              final item = state.selectedItems[index];
+                              return Row(
+                                // textDirection: TextDirection.ltr,
                                 children: [
-                                  Column(
+                                  Label(
+                                    text: item['price'].toString(),
+                                    color: Colors.black,
+                                  ),
+                                  AppGaps.gap28Horizontal,
+                                  Row(
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.add),
-                                        onPressed: () {
-                                          final currentQuantity = state.quantity
-                                              .firstWhere(
-                                                  (e) => e.id == item['id'],
-                                                  orElse: () => ItemQuantity(
-                                                      id: item['id'],
-                                                      quantity: 0,
-                                                      price: item['price']))
-                                              .quantity;
+                                      Column(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.add),
+                                            onPressed: () {
+                                              final currentQuantity = state
+                                                  .quantity
+                                                  .firstWhere(
+                                                      (e) => e.id == item['id'],
+                                                      orElse: () =>
+                                                          ItemQuantity(
+                                                              id: item['id'],
+                                                              quantity: 0,
+                                                              price: item[
+                                                                  'price']))
+                                                  .quantity;
 
-                                          context
-                                              .read<RestaurantsBloc>()
-                                              .setQuantity(
-                                                id: item['id'],
-                                                quantity: currentQuantity + 1,
-                                                price: item['price'],
-                                              );
-                                        },
+                                              context
+                                                  .read<RestaurantsBloc>()
+                                                  .setQuantity(
+                                                    id: item['id'],
+                                                    quantity:
+                                                        currentQuantity + 1,
+                                                    price: item['price'],
+                                                  );
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.remove),
+                                            onPressed: () {
+                                              final currentQuantity = state
+                                                  .quantity
+                                                  .firstWhere(
+                                                      (e) => e.id == item['id'],
+                                                      orElse: () =>
+                                                          ItemQuantity(
+                                                              id: item['id'],
+                                                              quantity: 0,
+                                                              price: item[
+                                                                  'price']))
+                                                  .quantity;
+
+                                              if (currentQuantity > 0) {
+                                                context
+                                                    .read<RestaurantsBloc>()
+                                                    .setQuantity(
+                                                      id: item['id'],
+                                                      quantity:
+                                                          currentQuantity - 1,
+                                                      price: item['price'],
+                                                    );
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.remove),
-                                        onPressed: () {
-                                          final currentQuantity = state.quantity
-                                              .firstWhere(
-                                                  (e) => e.id == item['id'],
-                                                  orElse: () => ItemQuantity(
-                                                      id: item['id'],
-                                                      quantity: 0,
-                                                      price: item['price']))
-                                              .quantity;
-
-                                          if (currentQuantity > 0) {
-                                            context
-                                                .read<RestaurantsBloc>()
-                                                .setQuantity(
-                                                  id: item['id'],
-                                                  quantity: currentQuantity - 1,
-                                                  price: item['price'],
-                                                );
-                                          }
-                                        },
+                                      Label(
+                                        text: state.quantity
+                                            .firstWhere(
+                                                (e) => e.id == item['id'],
+                                                orElse: () => ItemQuantity(
+                                                    id: item['id'],
+                                                    quantity: 0,
+                                                    price: item['price']))
+                                            .quantity
+                                            .toString(),
+                                        color: Colors.black,
                                       ),
                                     ],
                                   ),
+                                  const Spacer(),
                                   Label(
-                                    text: state.quantity
-                                        .firstWhere((e) => e.id == item['id'],
-                                            orElse: () => ItemQuantity(
-                                                id: item['id'],
-                                                quantity: 0,
-                                                price: item['price']))
-                                        .quantity
-                                        .toString(),
-                                    color: Colors.black,
+                                    text: item['name'],
+                                    fontWeight: FontWeight.bold,
+                                    // fontSize: 20,
+                                    maxLines: 5,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    selectable: false,
                                   ),
+                                  AppGaps.gap8Horizontal,
+                                  if (context.width > 1200)
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage:
+                                          FileImage(File(item['image'])),
+                                    )
                                 ],
-                              ),
-                              const Spacer(),
-                              Label(
-                                text: item['name'],
-                                fontWeight: FontWeight.bold,
-                                // fontSize: 20,
-                                maxLines: 5,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                selectable: false,
-                              ),
-                              AppGaps.gap8Horizontal,
-                              if (context.width > 1200)
-                                CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage:
-                                      FileImage(File(item['image'])),
-                                )
-                            ],
-                          );
-                        },
-                      ),
-                      Container(
-                        height: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.9),
-                              blurRadius: 3,
-                              spreadRadius: 5,
-                              offset: const Offset(1, 1),
-                            ),
-                          ],
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(10)),
-                        ),
-                        child: Column(
-                          children: [
-                            AppGaps.gap8Vertical,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Label(
-                                  text: 'الاجمالي',
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                AppGaps.gap28Horizontal,
-                                Label(
-                                  text:
-                                      '${context.read<RestaurantsBloc>().calculateTotalPrice().toString()} جنيه',
-                                  color: Colors.black,
+                              );
+                            },
+                          ),
+                          Container(
+                            height: 150,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.9),
+                                  blurRadius: 3,
+                                  spreadRadius: 5,
+                                  offset: const Offset(1, 1),
                                 ),
                               ],
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(10)),
                             ),
-                            const Spacer(),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 15),
-                              child: CustomButton(
-                                alignment: Alignment.center,
-                                  text: 'إضافه الي الروم',width: double.infinity/2,padding: const EdgeInsets.symmetric(vertical: 20), onPressed: () {}),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
+                            child: Column(
+                              children: [
+                                AppGaps.gap8Vertical,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    const Label(
+                                      text: 'الاجمالي',
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    AppGaps.gap28Horizontal,
+                                    Label(
+                                      text:
+                                          '${context.read<RestaurantsBloc>().calculateTotalPrice().toString()} جنيه',
+                                      color: Colors.black,
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 15),
+                                  child: CustomButton(
+                                      alignment: Alignment.center,
+                                      text: 'إضافه الي الروم',
+                                      width: double.infinity / 2,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 20),
+                                      onPressed: () {
+                                        context
+                                            .read<RoomsBloc>()
+                                            .insertRoomConsumption(
+                                          context: context,
+                                              quantity: context
+                                                  .read<RestaurantsBloc>()
+                                                  .state
+                                                  .quantity,
+                                              roomId: roomId,
+                                            );
+                                      }),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             ),

@@ -3,6 +3,7 @@ import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 
 abstract interface class RoomDataSource {
   Future<Either<Failure, int>> insertRoom(InsertRoomParams params);
@@ -17,6 +18,20 @@ abstract interface class RoomDataSource {
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
 
   Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params);
+
+  Future<Either<Failure, void>> insertRoomConsumption(
+      BatchInsertConsumptionParams params);
+
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRoomConsumptionsByRoom(int roomId);
+
+  Future<Either<Failure, int>> updateRoomConsumption(
+      InsertRoomConsumptionParams params);
+
+  Future<Either<Failure, int>> deleteRoomConsumption(int id);
+
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRoomConsumptionsWithDetails(int roomId);
 }
 
 class RoomDataSourceImpl implements RoomDataSource {
@@ -33,6 +48,7 @@ class RoomDataSourceImpl implements RoomDataSource {
         'open_time': params.openTime ? 1 : 0, // BOOLEAN as INTEGER (0 or 1)
         'is_multiplayer': params.isMultiplayer ? 1 : 0, // BOOLEAN as INTEGER
         'price': params.price,
+        'time': '00:00:00'
       };
 
       return await _databaseConsumer.add('rooms', data);
@@ -135,6 +151,132 @@ class RoomDataSourceImpl implements RoomDataSource {
       return Left(UnknownFailure(message: 'Failed to transfer room data: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> insertRoomConsumption(
+      BatchInsertConsumptionParams params) async {
+    try {
+      // Prepare the data list for batch insert
+      final dataList = params.dataList.map((data) {
+        return {
+          'room_id': params.roomId,
+          'restaurant_id': data.id,
+          'quantity': data.quantity,
+          'price': data.price,
+        };
+      }).toList();
+
+      // Call batchInsert to insert all records
+      return await _databaseConsumer.batchInsert(BatchInsertParams(
+        table: 'room_consumptions',
+        dataList: dataList,
+      ));
+    } catch (e) {
+      return Left(
+          UnknownFailure(message: 'Failed to insert room consumptions: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRoomConsumptionsByRoom(int roomId) async {
+    try {
+      return await _databaseConsumer.get(
+        'room_consumptions',
+        where: 'room_id = ?',
+        whereArgs: [roomId],
+      );
+    } catch (e) {
+      return Left(
+          UnknownFailure(message: 'Failed to fetch room consumptions: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> updateRoomConsumption(
+      InsertRoomConsumptionParams params) async {
+    try {
+      final data = {
+        'quantity': params.quantity,
+        'price': params.price,
+      };
+
+      // Update the room consumption record
+      return await _databaseConsumer.update(
+        'room_consumptions',
+        data,
+        where: 'id = ?',
+        whereArgs: [params.roomId],
+      );
+    } catch (e) {
+      return Left(
+          UnknownFailure(message: 'Failed to update room consumption: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> deleteRoomConsumption(int id) async {
+    try {
+      // Delete the room consumption record
+      return await _databaseConsumer.delete(
+        'room_consumptions',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      return Left(
+          UnknownFailure(message: 'Failed to delete room consumption: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRoomConsumptionsWithDetails(int roomId) async {
+    try {
+      // Fetch room consumptions
+      final consumptionsResult = await _databaseConsumer.get(
+        'room_consumptions',
+        where: 'room_id = ?',
+        whereArgs: [roomId],
+      );
+      return consumptionsResult.fold((left) {
+        return Left(left);
+      }, (right) async {
+        final List<Map<String, dynamic>> results = [];
+        for (var consumption in right) {
+          final restaurantId = consumption['restaurant_id'];
+          final restaurantResult = await _databaseConsumer.get(
+            'restaurants',
+            where: 'id = ?',
+            whereArgs: [restaurantId],
+          );
+          return restaurantResult.fold(
+            (left) {
+              return Left(left);
+            },
+            (restaurant) {
+              if (restaurant.isNotEmpty) {
+                final consumptionWithRestaurant = {
+                  ...consumption,
+                  'restaurant': restaurant[0],
+                  // Add the related restaurant data
+                };
+                results.add(consumptionWithRestaurant);
+              }
+
+              return Right(results); // Return the results wrapped in a Right
+            },
+          );
+        }
+        return Right(right);
+      });
+      // For each consumption, fetch the related restaurant
+    } catch (e) {
+      return Left(UnknownFailure(
+          message:
+              'Failed to fetch room consumptions with details: $e')); // Return the failure wrapped in a Left
+    }
+  }
 }
 
 class InsertRoomParams extends Equatable {
@@ -188,4 +330,34 @@ class TransferRoomDataParams extends Equatable {
 
   @override
   List<Object?> get props => [sourceRoomId, targetRoomId];
+}
+
+class InsertRoomConsumptionParams extends Equatable {
+  final int? roomId;
+  final int? restaurantId;
+  final int? quantity;
+  final num? price;
+
+  const InsertRoomConsumptionParams({
+    this.roomId,
+    this.restaurantId,
+    this.quantity,
+    this.price,
+  });
+
+  @override
+  List<Object?> get props => [roomId, restaurantId, quantity, price];
+}
+
+class BatchInsertConsumptionParams extends Equatable {
+  final List<ItemQuantity> dataList;
+  final int roomId;
+
+  const BatchInsertConsumptionParams({
+    required this.dataList,
+    required this.roomId,
+  });
+
+  @override
+  List<Object?> get props => [dataList, roomId];
 }

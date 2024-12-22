@@ -117,9 +117,9 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
         ...state.quantity,
         ItemQuantity(id: item['id'], quantity: 1, price: item['price'])
       ]));
-      loggerWarn('Item added: $item');
+      // loggerWarn('Item added: $item');
     } else {
-      loggerWarn('Item already selected: $item');
+      // loggerWarn('Item already selected: $item');
     }
   }
 
@@ -144,7 +144,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
           quantity: quantity,
           price: price,
         );
-        loggerWarn('Item quantity updated: $id to $quantity');
+        // loggerWarn('Item quantity updated: $id to $quantity');
       }
     } else {
       if (quantity > 0) {
@@ -157,7 +157,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
             'price': price
           }); // Adjust selected item format as needed
         }
-        loggerWarn('Item added: $id with quantity: $quantity');
+        // loggerWarn('Item added: $id with quantity: $quantity');
       }
     }
 
@@ -169,5 +169,9 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       final itemPrice = item.price * item.quantity;
       return sum + itemPrice;
     });
+  }
+
+  void clearSelectedItems() {
+    emit(state.copyWith(selectedItems: [], quantity: []));
   }
 }

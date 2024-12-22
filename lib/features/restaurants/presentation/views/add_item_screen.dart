@@ -177,38 +177,52 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         ],
                       ),
                       AppGaps.gap28Vertical,
-                      BlocBuilder<RestaurantsBloc, RestaurantsState>(
-                        builder: (context, state) {
-                          if (state.isLoading) {
-                            return const CircularProgressIndicator();
+                      BlocListener<RestaurantsBloc, RestaurantsState>(
+                        listener: (context, state) {
+                          if(state.isSuccess){
+                            setState(() {
+                              _nameController.clear();
+                              _priceController.clear();
+                              _nameController.clear();
+                              _selectedImage = null;
+                              type = '';
+                            });
+                            context.showSuccessMessage('تم الاضافه بنجاح');
                           }
-                          return CustomButton(
-                            text: 'إضافه',
-                            width: context.width * 0.2,
-                            onPressed: () {
-                              logger(_selectedImage?.path);
-                              logger(_nameController.text);
-                              logger(_priceController.text);
-                              logger(selectedType);
-                              if (_selectedImage == null) {
-                                context.showErrorMessage('ادخل صورة المنتج');
-                                return;
-                              }
-
-                              context.read<RestaurantsBloc>().insertItem(
-                                name: _nameController.text.trim(),
-                                imagePath: _selectedImage!.path,
-                                price:
-                                _priceController.text
-                                    .trim()
-                                    .numerate,
-                                type: selectedType,
-                              );
-                            },
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 20),
-                          );
                         },
+                        child: BlocBuilder<RestaurantsBloc, RestaurantsState>(
+                          builder: (context, state) {
+                            if (state.isLoading) {
+                              return const CircularProgressIndicator();
+                            }
+                            return CustomButton(
+                              text: 'إضافه',
+                              width: context.width * 0.2,
+                              onPressed: () {
+                                logger(_selectedImage?.path);
+                                logger(_nameController.text);
+                                logger(_priceController.text);
+                                logger(selectedType);
+                                if (_selectedImage == null) {
+                                  context.showErrorMessage('ادخل صورة المنتج');
+                                  return;
+                                }
+
+                                context.read<RestaurantsBloc>().insertItem(
+                                  name: _nameController.text.trim(),
+                                  imagePath: _selectedImage!.path,
+                                  price:
+                                  _priceController.text
+                                      .trim()
+                                      .numerate,
+                                  type: selectedType,
+                                );
+                              },
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 20),
+                            );
+                          },
+                        ),
                       )
                     ],
                   ),

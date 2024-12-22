@@ -51,7 +51,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 8, // Incremented database version
+        version: 10, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -101,20 +101,6 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
           END
         ''');
 
-          // Create a trigger to ensure constraints between open_time and remaining_time
-//           await db.execute('''
-//   CREATE TRIGGER ensure_open_time_remaining_time_exclusive
-//   BEFORE UPDATE ON rooms
-//   FOR EACH ROW
-//   BEGIN
-//     -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
-//     UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
-//
-//     -- Ensure that `open_time` is NULL when `remaining_time` has a value
-//     UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
-//   END;
-// ''');
-
           // Create the 'shifts' table
           await db.execute('''
           CREATE TABLE IF NOT EXISTS shifts (
@@ -132,13 +118,14 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             room_id INTEGER NOT NULL,
             restaurant_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL DEFAULT 1,
+            price REAL NOT NULL DEFAULT 0.0,
             FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
             FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
           )
         ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 9) {
+          if (oldVersion < 10) {
             logger('Upgrading database to version $newVersion');
 
             logger('Upgrading database to version $newVersion');
@@ -155,6 +142,17 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         time TEXT NOT NULL DEFAULT '00:00:00'
       )
     ''');
+            await db.execute('''
+CREATE TABLE IF NOT EXISTS room_consumptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  room_id INTEGER NOT NULL,
+  restaurant_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  price REAL NOT NULL DEFAULT 0.0,
+  FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+)
+''');
 
             // Step 2: Copy the data from the old table to the new table
             await db.execute('''

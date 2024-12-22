@@ -9,7 +9,6 @@ import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/add_extra_food_items_dialogue.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/counter_widget.dart';
-import 'package:pscorner/service_locator/service_locator.dart';
 
 class GridItemWidget extends StatefulWidget {
   final num price;
@@ -298,75 +297,72 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     showDialog(
       context: context,
       builder: (context) {
-        return BlocProvider.value(
-          value: sl<RoomsBloc>(),
-          child: AlertDialog(
-            contentPadding: const EdgeInsets.all(20),
-            actionsPadding: const EdgeInsets.all(20),
-            title: const Text('اختر جهاز'),
-            content: BlocListener<RoomsBloc, RoomsState>(
-              listener: (context, state) {
-                if (state.isSuccess) {
-                  context.showSuccessMessage('تمت عمليه التغير');
-                  context.pop();
+        return AlertDialog(
+          contentPadding: const EdgeInsets.all(20),
+          actionsPadding: const EdgeInsets.all(20),
+          title: const Text('اختر جهاز'),
+          content: BlocListener<RoomsBloc, RoomsState>(
+            listener: (context, state) {
+              if (state.isSuccess) {
+                context.showSuccessMessage('تمت عمليه التغير');
+                context.pop();
+              }
+            },
+            child: BlocBuilder<RoomsBloc, RoomsState>(
+              builder: (context, rooms) {
+                final availableRooms =
+                    context.read<RoomsBloc>().availableRooms;
+                if (availableRooms.isEmpty) {
+                  return const Center(
+                      child: Text(
+                          'لا توجد غرف متاحة')); // No available rooms message
+                }
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: availableRooms.map((room) {
+                      return ListTile(
+                        title: Text('${room['device_type']}  ${room['id']}'),
+                        leading: Radio<int>(
+                          value: room['id'],
+                          // Use room ID as the value
+                          groupValue: selectedRoomId,
+                          // Track the selected room ID
+                          onChanged: (int? value) {
+                            setState(() {
+                              selectedRoomId = value!;
+                              loggerWarn(id);
+                              loggerError(value);
+                            });
+                            context.read<RoomsBloc>().transferRoomData(
+                                sourceId: id,
+                                targetId: value!,
+                                targetState: state,
+                                targetIsMultiplayer: isMultiplayer,
+                                targetOpenTime: openTime,
+                                targetPrice: price,
+                                targetElapsedTime: elapsedTime);
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+                if (selectedRoomId != null) {
+                  // Handle the selected room ID if needed
+                  // print('Selected Room ID: $selectedRoomId');
                 }
               },
-              child: BlocBuilder<RoomsBloc, RoomsState>(
-                builder: (context, rooms) {
-                  final availableRooms =
-                      context.read<RoomsBloc>().availableRooms;
-                  if (availableRooms.isEmpty) {
-                    return const Center(
-                        child: Text(
-                            'لا توجد غرف متاحة')); // No available rooms message
-                  }
-                  return SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: availableRooms.map((room) {
-                        return ListTile(
-                          title: Text('${room['device_type']}  ${room['id']}'),
-                          leading: Radio<int>(
-                            value: room['id'],
-                            // Use room ID as the value
-                            groupValue: selectedRoomId,
-                            // Track the selected room ID
-                            onChanged: (int? value) {
-                              setState(() {
-                                selectedRoomId = value!;
-                                loggerWarn(id);
-                                loggerError(value);
-                              });
-                              context.read<RoomsBloc>().transferRoomData(
-                                  sourceId: id,
-                                  targetId: value!,
-                                  targetState: state,
-                                  targetIsMultiplayer: isMultiplayer,
-                                  targetOpenTime: openTime,
-                                  targetPrice: price,
-                                  targetElapsedTime: elapsedTime);
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  );
-                },
-              ),
+              child: const Text('إغلاق'),
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close the dialog
-                  if (selectedRoomId != null) {
-                    // Handle the selected room ID if needed
-                    // print('Selected Room ID: $selectedRoomId');
-                  }
-                },
-                child: const Text('إغلاق'),
-              ),
-            ],
-          ),
+          ],
         );
       },
     ).whenComplete(() {

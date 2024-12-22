@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/theme/colors.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/grid_view_tab.dart';
@@ -10,6 +11,7 @@ class ViewAllExtras extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger(context.read<RestaurantsBloc>().state.restaurants);
     return DefaultTabController(
       length: 2,
       child: Scaffold(

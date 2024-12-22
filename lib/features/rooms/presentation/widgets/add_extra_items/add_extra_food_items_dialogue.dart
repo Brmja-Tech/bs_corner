@@ -4,10 +4,8 @@ import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/add_extra_quantity.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/view_all_extras.dart';
-import 'package:pscorner/service_locator/service_locator.dart';
 
-void showExtraRequestsDialog(
-  BuildContext context, {
+void showExtraRequestsDialog(BuildContext context, {
   required int roomId,
   required String deviceType,
   required List<Map<String, dynamic>> restaurantItems,
@@ -15,23 +13,23 @@ void showExtraRequestsDialog(
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return BlocProvider.value(
-        value: sl<RestaurantsBloc>(),
-        child: AlertDialog(
-          backgroundColor: Colors.transparent,
-          content: SizedBox(
-            width: context.width * 0.9,
-            child: Row(
-              children: [
-                Expanded(
-                    flex: 2,
-                    child: AddExtraQuantity(roomId: roomId, deviceType: deviceType)),
-                const Expanded(flex: 5, child: ViewAllExtras()),
-              ],
-            ),
+      return AlertDialog(
+        backgroundColor: Colors.transparent,
+        content: SizedBox(
+          width: context.width * 0.9,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: AddExtraQuantity(
+                      roomId: roomId, deviceType: deviceType)),
+              const Expanded(flex: 5, child: ViewAllExtras()),
+            ],
           ),
         ),
       );
     },
-  );
+  ).whenComplete((){
+    context.read<RestaurantsBloc>().clearSelectedItems();
+  });
 }

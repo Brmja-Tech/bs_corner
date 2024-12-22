@@ -39,4 +39,14 @@ class RoomsRepositoryImpl implements RoomsRepository {
   Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params) {
     return _roomDataSource.transferRoomData(params);
   }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchRoomConsumptionsWithDetails(int roomId) {
+    return _roomDataSource.fetchRoomConsumptionsByRoom(roomId);
+  }
+
+  @override
+  Future<Either<Failure, void>> insertRoomConsumption(BatchInsertConsumptionParams params) {
+    return _roomDataSource.insertRoomConsumption(params);
+  }
 }

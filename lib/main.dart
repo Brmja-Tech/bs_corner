@@ -4,6 +4,8 @@ import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/theme/app_theme.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 import 'package:pscorner/features/auth/presentation/views/login_screen.dart';
+import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
+import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'service_locator/service_locator.dart';
@@ -20,9 +22,9 @@ Future<void> main() async {
   });
   await DI.init();
   runApp(MultiBlocProvider(providers: [
-    BlocProvider<AuthBloc>(
-      create: (context) => sl<AuthBloc>(),
-    ),
+    BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
+    BlocProvider<RoomsBloc>(create: (context) => sl<RoomsBloc>()),
+    BlocProvider<RestaurantsBloc>(create: (context) => sl<RestaurantsBloc>()),
   ], child: const MyApp()));
 }
 

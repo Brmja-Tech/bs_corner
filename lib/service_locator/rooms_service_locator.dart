@@ -5,6 +5,8 @@ import 'package:pscorner/features/rooms/domain/repositories/rooms_repository.dar
 import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/fetch_room_consmption_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/insert_room_consmption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/transfer_room_data_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
@@ -20,6 +22,8 @@ class RoomsServiceLocator {
     sl.registerFactory(()=> InsertRoomUseCase(sl()));
     sl.registerFactory(()=> ClearRoomTableUseCase(sl()));
     sl.registerFactory(()=> TransferRoomDataUseCase(sl()));
-    sl.registerLazySingleton(()=> RoomsBloc(sl(),sl(),sl(),sl(),sl(),sl()));
+    sl.registerFactory(()=> InsertRoomConsumptionUseCase(sl()));
+    sl.registerFactory(()=> FetchRoomConsumptionUseCase(sl()));
+    sl.registerLazySingleton(()=> RoomsBloc(sl(),sl(),sl(),sl(),sl(),sl(),sl(),sl()));
   }
 }
