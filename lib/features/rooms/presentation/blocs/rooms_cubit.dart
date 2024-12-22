@@ -210,9 +210,11 @@ class RoomsBloc extends Cubit<RoomsState> {
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _fetchRoomConsumptionUseCase(roomId);
     result.fold((failure) {
+      loggerError('failure ${failure.message}');
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (items) {
+      logger('items $items');
       emit(state.copyWith(
           status: RoomsStateStatus.success, roomConsumptions: items));
     });

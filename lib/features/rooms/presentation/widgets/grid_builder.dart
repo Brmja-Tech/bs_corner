@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/grid_item_widget.dart';
+import 'package:pscorner/features/rooms/presentation/widgets/info/info.dart';
+import 'package:pscorner/features/rooms/presentation/widgets/info/info_list.dart';
 
 class GridBuilder extends StatelessWidget {
   final RoomsState state;
@@ -30,14 +33,14 @@ class GridBuilder extends StatelessWidget {
                 openTime: item['open_time'] as int == 1 ? true : false,
                 state: item['state'],
                 deviceType: item['device_type'],
-                initialTime: item['time']??'00:00:00',
+                initialTime: item['time'] ?? '00:00:00',
               ),
               Positioned(
                   top: 0,
                   right: 0,
                   child: IconButton(
                       onPressed: () {
-                        // context.read<RoomsBloc>().updateItem(id: item['id'],roomState: 'not running');
+                        _showInfoDialogue(context,item['id']);
                       },
                       icon: const Icon(
                         Icons.info_outline,
@@ -48,6 +51,32 @@ class GridBuilder extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  _showInfoDialogue(BuildContext context,int roomId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: SizedBox(
+            width: context.width * 0.9,
+            child:  Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InfoList(id: roomId,),
+                ),
+                const Expanded(
+                  flex: 4,
+                  child: Info(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

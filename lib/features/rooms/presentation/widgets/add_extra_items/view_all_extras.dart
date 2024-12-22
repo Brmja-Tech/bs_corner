@@ -16,6 +16,18 @@ class ViewAllExtras extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          // elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.close,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: const Text(
