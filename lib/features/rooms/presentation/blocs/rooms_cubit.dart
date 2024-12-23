@@ -6,6 +6,7 @@ import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
 import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/delete_room_consumption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_room_consmption_use_case.dart';
@@ -24,7 +25,8 @@ class RoomsBloc extends Cubit<RoomsState> {
       this._clearRoomTableUseCase,
       this._transferRoomDataUseCase,
       this._insertRoomConsumptionUseCase,
-      this._fetchRoomConsumptionUseCase)
+      this._fetchRoomConsumptionUseCase,
+      this._deleteRoomConsumptionUseCase)
       : super(const RoomsState()) {
     _fetchAllItems();
   }
@@ -37,6 +39,7 @@ class RoomsBloc extends Cubit<RoomsState> {
   final TransferRoomDataUseCase _transferRoomDataUseCase;
   final InsertRoomConsumptionUseCase _insertRoomConsumptionUseCase;
   final FetchRoomConsumptionUseCase _fetchRoomConsumptionUseCase;
+  final DeleteRoomConsumptionUseCase _deleteRoomConsumptionUseCase;
 
   Future<void> insertItem({
     required String deviceType,
@@ -242,6 +245,22 @@ class RoomsBloc extends Cubit<RoomsState> {
         ...state.roomConsumptions,
       ]));
       context.pop();
+    });
+  }
+
+  Future<void> deleteRoomConsumption({
+    required int id,
+  }) async {
+    emit(state.copyWith(status: RoomsStateStatus.loading));
+    final result = await _deleteRoomConsumptionUseCase(id);
+    result.fold((failure) {
+      loggerError('failure ${failure.message}');
+      emit(state.copyWith(
+          status: RoomsStateStatus.error, errorMessage: failure.message));
+    }, (consumptionId) {
+
+      logger('Successfully deleted consumption with id: $consumptionId');
+      emit(state.copyWith(status: RoomsStateStatus.success));
     });
   }
 

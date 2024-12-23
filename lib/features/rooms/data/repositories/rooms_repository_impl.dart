@@ -49,4 +49,9 @@ class RoomsRepositoryImpl implements RoomsRepository {
   Future<Either<Failure, void>> insertRoomConsumption(BatchInsertConsumptionParams params) {
     return _roomDataSource.insertRoomConsumption(params);
   }
+
+  @override
+  Future<Either<Failure, int>> deleteRoomConsumption(int id) {
+    return _roomDataSource.deleteRoomConsumption(id);
+  }
 }

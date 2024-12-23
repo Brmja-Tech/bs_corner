@@ -18,4 +18,6 @@ abstract interface class RoomsRepository {
   Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
   Future<Either<Failure, void>> insertRoomConsumption(BatchInsertConsumptionParams params);
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchRoomConsumptionsWithDetails(int roomId);
+  Future<Either<Failure, int>> deleteRoomConsumption(int id);
+
 }

@@ -10,7 +10,7 @@ import 'package:pscorner/core/theme/text_theme.dart';
 import 'package:pscorner/features/restaurants/presentation/views/add_item_screen.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
-import 'package:pscorner/features/rooms/presentation/widgets/grid_builder.dart';
+import 'package:pscorner/features/rooms/presentation/widgets/room_grid_builder.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )
                       else
-                         GridBuilder(state: state,),
+                         RoomGridBuilder(state: state,),
                     ],
                   );
                 },

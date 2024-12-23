@@ -14,7 +14,9 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       this._deleteRestaurantItemUseCase,
       this._updateRestaurantItemUseCase,
       this._fetchAllRestaurantsDepartmentUseCase)
-      : super(const RestaurantsState());
+      : super(const RestaurantsState()){
+    fetchAllItems();
+  }
 
   final InsertRestaurantItemUseCase _insertRestaurantItemUseCase;
   final DeleteRestaurantItemUseCase _deleteRestaurantItemUseCase;

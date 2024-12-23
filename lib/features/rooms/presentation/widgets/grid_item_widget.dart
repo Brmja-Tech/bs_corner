@@ -190,8 +190,26 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                           setState(() {
                             _elapsedTime = '00:00:00';
                           });
-                          context.read<RoomsBloc>().updateItem(
-                              id: widget.id, roomState: 'not running');
+                          context
+                              .read<RoomsBloc>()
+                              .updateItem(
+                                  id: widget.id, roomState: 'not running')
+                              .then((value) {
+                            final roomConsumptions = context
+                                .read<RoomsBloc>()
+                                .state
+                                .roomConsumptions
+                                .where((consumption) =>
+                                    consumption['room_id'] == widget.id)
+                                .toList();
+
+                            // Loop through and delete each consumption
+                            roomConsumptions.forEach((consumption) {
+                              context
+                                  .read<RoomsBloc>()
+                                  .deleteRoomConsumption(id: consumption['id']);
+                            });
+                          });
                         },
                         icon: Icons.stop_circle_outlined,
                         backgroundColor: const Color.fromRGBO(224, 35, 41, 1),
@@ -310,8 +328,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
             },
             child: BlocBuilder<RoomsBloc, RoomsState>(
               builder: (context, rooms) {
-                final availableRooms =
-                    context.read<RoomsBloc>().availableRooms;
+                final availableRooms = context.read<RoomsBloc>().availableRooms;
                 if (availableRooms.isEmpty) {
                   return const Center(
                       child: Text(

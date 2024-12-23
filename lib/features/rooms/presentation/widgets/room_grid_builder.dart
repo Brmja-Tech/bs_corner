@@ -5,10 +5,10 @@ import 'package:pscorner/features/rooms/presentation/widgets/grid_item_widget.da
 import 'package:pscorner/features/rooms/presentation/widgets/info/info.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/info/info_list.dart';
 
-class GridBuilder extends StatelessWidget {
+class RoomGridBuilder extends StatelessWidget {
   final RoomsState state;
 
-  const GridBuilder({super.key, required this.state});
+  const RoomGridBuilder({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {

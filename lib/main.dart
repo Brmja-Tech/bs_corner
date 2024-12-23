@@ -24,7 +24,7 @@ Future<void> main() async {
   runApp(MultiBlocProvider(providers: [
     BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
     BlocProvider<RoomsBloc>(create: (context) => sl<RoomsBloc>()),
-    BlocProvider<RestaurantsBloc>(create: (context) => sl<RestaurantsBloc>()..fetchAllItems()),
+    BlocProvider<RestaurantsBloc>(create: (context) => sl<RestaurantsBloc>()),
   ], child: const MyApp()));
 }
 
