@@ -40,6 +40,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
   @override
   void initState() {
     _elapsedTime = widget.initialTime;
+
     super.initState();
   }
 
@@ -150,7 +151,15 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                   AppGaps.gap16Vertical,
                   CounterWidget(
                     initialTime: _elapsedTime,
+                    onDatabaseUpdate: (duration) {
+                      loggerWarn('updating time $duration');
+
+                      context
+                          .read<RoomsBloc>()
+                          .updateItem(id: widget.id, time: duration);
+                    },
                     onElapsedTimeUpdate: (duration) {
+                      // loggerWarn('Elapsed time: $duration');
                       setState(() {
                         _elapsedTime = duration;
                       });

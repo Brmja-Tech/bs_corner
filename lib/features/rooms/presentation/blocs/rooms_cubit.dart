@@ -88,6 +88,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       {required int id,
       String? deviceType,
       String? roomState,
+      String? time,
       bool? openTime,
       bool? isMultiplayer,
       num? price}) async {
@@ -100,8 +101,9 @@ class RoomsBloc extends Cubit<RoomsState> {
       isMultiplayer: isMultiplayer,
       openTime: openTime,
       state: roomState,
+      time: time,
     ));
-
+    loggerWarn('updating time $time');
     result.fold((failure) {
       loggerError('failure ${failure.message}');
       emit(state.copyWith(
@@ -116,7 +118,8 @@ class RoomsBloc extends Cubit<RoomsState> {
             if (roomState != null) 'state': roomState,
             if (openTime != null) 'open_time': openTime ? 1 : 0,
             if (isMultiplayer != null) 'is_multiplayer': isMultiplayer ? 1 : 0,
-            if (price != null) 'price': price
+            if (price != null) 'price': price,
+            if (time != null) 'time': time,
           };
         }
         return room;
@@ -258,7 +261,6 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (consumptionId) {
-
       logger('Successfully deleted consumption with id: $consumptionId');
       emit(state.copyWith(status: RoomsStateStatus.success));
     });

@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 class CounterWidget extends StatefulWidget {
   final String initialTime;
   final Function(String) onElapsedTimeUpdate;
+  final Function(String) onDatabaseUpdate;
 
   const CounterWidget({
-    super.key,
+    Key? key,
     required this.initialTime,
     required this.onElapsedTimeUpdate,
-  });
+    required this.onDatabaseUpdate,
+  }) : super(key: key);
 
   @override
   State<CounterWidget> createState() => _CounterWidgetState();
@@ -19,6 +21,7 @@ class _CounterWidgetState extends State<CounterWidget>
     with AutomaticKeepAliveClientMixin {
   late Duration _duration;
   Timer? _timer;
+  // int _secondsElapsed = 0; // Initialize seconds elapsed
 
   @override
   void initState() {
@@ -39,7 +42,7 @@ class _CounterWidgetState extends State<CounterWidget>
   void _initializeTimer() {
     _timer?.cancel(); // Cancel the existing timer
     _duration = _parseTime(widget.initialTime);
-
+    // _secondsElapsed = 0; // Reset elapsed seconds
     _startTimer();
   }
 
@@ -52,8 +55,22 @@ class _CounterWidgetState extends State<CounterWidget>
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        _duration = _duration + const Duration(seconds: 1);
+        // Increment the duration and elapsed seconds
+        _duration += const Duration(seconds: 1);
+        // _secondsElapsed++;
+
+        // Debugging logs
+        // print('Elapsed seconds: $_secondsElapsed');
+        // print('Current duration: ${_formatDuration(_duration)}');
+
+        // Notify parent of elapsed time
         widget.onElapsedTimeUpdate(_formatDuration(_duration));
+
+        // Trigger database update every 5 seconds
+        if (_duration.inSeconds % 300 == 0) {
+          // print('Database update triggered at ${_formatDuration(_duration)}');
+          widget.onDatabaseUpdate(_formatDuration(_duration));
+        }
       });
     });
   }
