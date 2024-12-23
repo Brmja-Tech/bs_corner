@@ -360,6 +360,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                               loggerWarn(id);
                               loggerError(value);
                             });
+                            loggerWarn('selectedRoomId $_elapsedTime');
                             context.read<RoomsBloc>().transferRoomData(
                                 sourceId: id,
                                 targetId: value!,
@@ -367,7 +368,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                                 targetIsMultiplayer: isMultiplayer,
                                 targetOpenTime: openTime,
                                 targetPrice: price,
-                                targetElapsedTime: elapsedTime);
+                                targetElapsedTime: _elapsedTime);
                           },
                         ),
                       );

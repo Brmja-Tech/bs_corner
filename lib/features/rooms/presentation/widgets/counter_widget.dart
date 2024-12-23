@@ -7,11 +7,11 @@ class CounterWidget extends StatefulWidget {
   final Function(String) onDatabaseUpdate;
 
   const CounterWidget({
-    Key? key,
+    super.key,
     required this.initialTime,
     required this.onElapsedTimeUpdate,
     required this.onDatabaseUpdate,
-  }) : super(key: key);
+  });
 
   @override
   State<CounterWidget> createState() => _CounterWidgetState();
@@ -21,7 +21,6 @@ class _CounterWidgetState extends State<CounterWidget>
     with AutomaticKeepAliveClientMixin {
   late Duration _duration;
   Timer? _timer;
-  // int _secondsElapsed = 0; // Initialize seconds elapsed
 
   @override
   void initState() {
@@ -35,20 +34,19 @@ class _CounterWidgetState extends State<CounterWidget>
 
     // Restart the timer only if the initialTime changes
     if (oldWidget.initialTime != widget.initialTime) {
-      _initializeTimer();
+      // _initializeTimer();
     }
   }
 
   void _initializeTimer() {
     _timer?.cancel(); // Cancel the existing timer
     _duration = _parseTime(widget.initialTime);
-    // _secondsElapsed = 0; // Reset elapsed seconds
     _startTimer();
   }
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _timer?.cancel();
     super.dispose();
   }
 
