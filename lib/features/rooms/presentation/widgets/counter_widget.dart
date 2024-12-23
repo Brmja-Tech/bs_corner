@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pscorner/core/stateless/label.dart';
 
 class CounterWidget extends StatefulWidget {
   final String initialTime;
@@ -88,8 +89,8 @@ class _CounterWidgetState extends State<CounterWidget>
   Widget build(BuildContext context) {
     super.build(context);
     return Center(
-      child: Text(
-        _formatDuration(_duration),
+      child: Label(
+        text:_formatDuration(_duration),
         style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
       ),
     );

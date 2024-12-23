@@ -47,7 +47,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     isPaused = widget.state == 'paused';
     super.initState();
   }
+
   late bool isPaused;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -70,6 +72,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -77,13 +80,13 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                   Text(
                     'Room ${widget.id}',
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                        fontWeight: FontWeight.bold, fontSize: 25),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Device: ${widget.deviceType}',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    style: const TextStyle(fontSize: 20, color: Colors.black87),
                   ),
                 ],
               ),
@@ -109,9 +112,10 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                 child: ElevatedButton(
                   onPressed: () {
                     context.read<RoomsBloc>().updateItem(
-                          id: widget.id,
-                          roomState: 'running',
-                        );
+                        id: widget.id,
+                        roomState: 'running',
+                        multTime: "00:00:00",
+                        time: '00:00:00');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
@@ -157,12 +161,12 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     onDatabaseUpdate: (duration) {
                       // loggerWarn('Multi player ${widget.isMultiplayer}');
                       if (widget.isMultiplayer) {
-                      // loggerWarn('updating regular time $duration');
+                        loggerWarn('updating regular time $duration');
                         context
                             .read<RoomsBloc>()
                             .updateItem(id: widget.id, multTime: duration);
                       } else {
-                        // loggerWarn('updating Multi time $duration');
+                        loggerWarn('updating Multi time $duration');
 
                         context
                             .read<RoomsBloc>()
@@ -173,14 +177,14 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       // logger(isPaused);
                       if (isPaused) return;
                       setState(() {
-                        if(!widget.isMultiplayer){
-                        _elapsedTime = duration;
-                        }else{
-                        _elapsedMultiTime = duration;
+                        if (!widget.isMultiplayer) {
+                          _elapsedTime = duration;
+                        } else {
+                          _elapsedMultiTime = duration;
                         }
                       });
                     },
-                    isPaused : isPaused,
+                    isPaused: isPaused,
                   ),
                   AppGaps.gap16Vertical,
                   Row(
@@ -220,12 +224,16 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       RoomActionWidget(
                         onTap: () {
                           setState(() {
+                            _elapsedMultiTime = '00:00:00';
                             _elapsedTime = '00:00:00';
                           });
                           context
                               .read<RoomsBloc>()
                               .updateItem(
-                                  id: widget.id, roomState: 'not running')
+                                  id: widget.id,
+                                  roomState: 'not running',
+                                  time: '00:00:00',
+                                  multTime: '00:00:00')
                               .then((value) {
                             final roomConsumptions = context
                                 .read<RoomsBloc>()
@@ -258,6 +266,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             state: widget.state,
                             price: widget.price,
                             elapsedTime: _elapsedTime,
+                            elapsedMultiTime: _elapsedMultiTime,
                           );
                         },
                         icon: Icons.loop,
@@ -306,9 +315,14 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ElevatedButton(
                       onPressed: () {
+                        setState(() {
+
+                        });
                         context.read<RoomsBloc>().updateItem(
                               id: widget.id,
                               roomState: 'running',
+                              time: '00:00:00',
+                              multTime: '00:00:00',
                             );
                       },
                       style: ElevatedButton.styleFrom(
@@ -342,6 +356,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     required bool isMultiplayer,
     required num price,
     required String elapsedTime,
+    required String elapsedMultiTime,
   }) {
     showDialog(
       context: context,
@@ -379,8 +394,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                           onChanged: (int? value) {
                             setState(() {
                               selectedRoomId = value!;
-                              loggerWarn(id);
-                              loggerError(value);
+                              // loggerWarn(id);
+                              // loggerError(value);
                             });
                             // loggerWarn('selectedRoomId $_elapsedTime');
                             context.read<RoomsBloc>().transferRoomData(
@@ -390,8 +405,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                                 targetIsMultiplayer: isMultiplayer,
                                 targetOpenTime: openTime,
                                 targetPrice: price,
-                                targetElapsedTime: _elapsedTime,
-                                targetElapsedMultiTime: '');
+                                targetElapsedTime: elapsedTime,
+                                targetElapsedMultiTime: elapsedMultiTime);
                           },
                         ),
                       );

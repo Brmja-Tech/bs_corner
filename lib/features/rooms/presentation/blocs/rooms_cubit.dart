@@ -129,6 +129,7 @@ class RoomsBloc extends Cubit<RoomsState> {
         }
         return room;
       }).toList();
+      // loggerWarn(updatedRooms..map((room)=> room['id']==id));
       emit(state.copyWith(
           status: RoomsStateStatus.success, rooms: updatedRooms));
     });
@@ -172,9 +173,9 @@ class RoomsBloc extends Cubit<RoomsState> {
     required String targetState,
     required bool targetIsMultiplayer,
     required bool targetOpenTime,
-    required targetPrice,
-    required String targetElapsedTime,
-    required String targetElapsedMultiTime,
+    required num targetPrice,
+    required String? targetElapsedTime,
+    required String? targetElapsedMultiTime,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
 
@@ -203,14 +204,16 @@ class RoomsBloc extends Cubit<RoomsState> {
             };
           } else if (room['id'] == targetId) {
             // Update the target room with provided inputs
+            loggerWarn('targetElapsedTime $targetElapsedTime');
+            loggerWarn('targetElapsedMultiTime $targetElapsedMultiTime');
             return {
               ...room,
               'state': targetState,
               'is_multiplayer': targetIsMultiplayer ? 1 : 0,
               'open_time': targetOpenTime ? 1 : 0,
               'price': targetPrice,
-              'time': targetElapsedTime,
-              'multi_time': targetElapsedTime,
+              'time': targetElapsedTime??'00:00:00',
+              'multi_time': targetElapsedMultiTime??'00:00:00',
             };
           }
           return room;

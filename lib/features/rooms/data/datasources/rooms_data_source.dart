@@ -3,6 +3,7 @@ import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 
 abstract interface class RoomDataSource {
@@ -131,6 +132,7 @@ class RoomDataSourceImpl implements RoomDataSource {
 
         // Step 2: Update target room
         Map<String, dynamic> mutableRoomData = Map.from(roomData);
+        loggerWarn(mutableRoomData);
         mutableRoomData.remove('id'); // Now remove the ID from the copied map
         await _databaseConsumer.update(
           'rooms',
@@ -142,7 +144,11 @@ class RoomDataSourceImpl implements RoomDataSource {
         // Step 3: Optional - Reset source room
         await _databaseConsumer.update(
           'rooms',
-          {'state': 'not running'}, // Reset state of source room
+          {
+            'state': 'not running',
+            'time': '00:00:00',
+            "multi_time": '00:00:00',
+          }, // Reset state of source room
           where: 'id = ?',
           whereArgs: [params.sourceRoomId],
         );
@@ -324,7 +330,7 @@ class UpdateRoomParams extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, deviceType, state, openTime, isMultiplayer, price,time,multTime];
+      [id, deviceType, state, openTime, isMultiplayer, price, time, multTime];
 }
 
 class TransferRoomDataParams extends Equatable {
