@@ -35,18 +35,19 @@ class RoomGridBuilder extends StatelessWidget {
                 deviceType: item['device_type'],
                 initialTime: item['time'] ?? '00:00:00',
               ),
-              Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                      onPressed: () {
-                        _showInfoDialogue(context,item['id']);
-                      },
-                      icon: const Icon(
-                        Icons.info_outline,
-                        color: Color.fromRGBO(44, 102, 153, 1),
-                        size: 30,
-                      ))),
+              if (item['state'] != 'not running')
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                        onPressed: () {
+                          _showInfoDialogue(context, item['id']);
+                        },
+                        icon: const Icon(
+                          Icons.info_outline,
+                          color: Color.fromRGBO(44, 102, 153, 1),
+                          size: 30,
+                        ))),
             ],
           );
         },
@@ -54,7 +55,7 @@ class RoomGridBuilder extends StatelessWidget {
     );
   }
 
-  _showInfoDialogue(BuildContext context,int roomId) {
+  _showInfoDialogue(BuildContext context, int roomId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -62,11 +63,13 @@ class RoomGridBuilder extends StatelessWidget {
           backgroundColor: Colors.transparent,
           content: SizedBox(
             width: context.width * 0.9,
-            child:  Row(
+            child: Row(
               children: [
                 Expanded(
                   flex: 1,
-                  child: InfoList(id: roomId,),
+                  child: InfoList(
+                    id: roomId,
+                  ),
                 ),
                 const Expanded(
                   flex: 4,

@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/theme/colors.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
+import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/grid_view_tab.dart';
 // import 'package:pscorner/service_locator/service_locator.dart';
 
-class ViewAllExtras extends StatelessWidget {
+class ViewAllExtras extends StatefulWidget {
   const ViewAllExtras({super.key});
 
   @override
+  State<ViewAllExtras> createState() => _ViewAllExtrasState();
+}
+
+class _ViewAllExtrasState extends State<ViewAllExtras> {
+  @override
+  Future<void> didChangeDependencies() async {
+    await context.read<RestaurantsBloc>().fetchAllItems();
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    logger(context.read<RestaurantsBloc>().state.restaurants);
+    // logger(context.read<RestaurantsBloc>().state.restaurants);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -49,23 +60,25 @@ class ViewAllExtras extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            GridViewTab(
-                data: context
-                    .read<RestaurantsBloc>()
-                    .state
-                    .restaurants
-                    .where((restaurant) => restaurant['type'] == 'dish')
-                    .toList()),
-            GridViewTab(
-                data: context
-                    .read<RestaurantsBloc>()
-                    .state
-                    .restaurants
-                    .where((restaurant) => restaurant['type'] == 'drink')
-                    .toList()),
-          ],
+        body: BlocBuilder<RestaurantsBloc, RestaurantsState>(
+          builder: (context, state) {
+           if(state.isLoading) return const Center(child: CircularProgressIndicator(),);
+
+            return TabBarView(
+              children: [
+                GridViewTab(
+                    data:state
+                        .restaurants
+                        .where((restaurant) => restaurant['type'] == 'dish')
+                        .toList()),
+                GridViewTab(
+                    data:state
+                        .restaurants
+                        .where((restaurant) => restaurant['type'] == 'drink')
+                        .toList()),
+              ],
+            );
+          },
         ),
       ),
     );
