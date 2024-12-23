@@ -16,7 +16,7 @@ class ViewAllExtras extends StatefulWidget {
 class _ViewAllExtrasState extends State<ViewAllExtras> {
   @override
   Future<void> didChangeDependencies() async {
-    await context.read<RestaurantsBloc>().fetchAllItems();
+    // await context.read<RestaurantsBloc>().fetchAllItems();
     super.didChangeDependencies();
   }
 
