@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class CounterWidget extends StatefulWidget {
   final String initialTime;
+  final bool isPaused;
   final Function(String) onElapsedTimeUpdate;
   final Function(String) onDatabaseUpdate;
 
@@ -11,6 +12,7 @@ class CounterWidget extends StatefulWidget {
     required this.initialTime,
     required this.onElapsedTimeUpdate,
     required this.onDatabaseUpdate,
+    required this.isPaused,
   });
 
   @override
@@ -52,21 +54,12 @@ class _CounterWidgetState extends State<CounterWidget>
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // logger('Periodic timer Paused: ${widget.isPaused}');
+      if (widget.isPaused) return;
       setState(() {
-        // Increment the duration and elapsed seconds
         _duration += const Duration(seconds: 1);
-        // _secondsElapsed++;
-
-        // Debugging logs
-        // print('Elapsed seconds: $_secondsElapsed');
-        // print('Current duration: ${_formatDuration(_duration)}');
-
-        // Notify parent of elapsed time
         widget.onElapsedTimeUpdate(_formatDuration(_duration));
-
-        // Trigger database update every 5 seconds
         if (_duration.inSeconds % 300 == 0) {
-          // print('Database update triggered at ${_formatDuration(_duration)}');
           widget.onDatabaseUpdate(_formatDuration(_duration));
         }
       });

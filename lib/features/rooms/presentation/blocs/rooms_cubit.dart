@@ -89,10 +89,11 @@ class RoomsBloc extends Cubit<RoomsState> {
       String? deviceType,
       String? roomState,
       String? time,
+      String? multTime,
       bool? openTime,
       bool? isMultiplayer,
       num? price}) async {
-    loggerWarn(id);
+    // loggerWarn(id);
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _updateRoomUseCase(UpdateRoomParams(
       id: id,
@@ -102,15 +103,18 @@ class RoomsBloc extends Cubit<RoomsState> {
       openTime: openTime,
       state: roomState,
       time: time,
+      multTime: multTime,
     ));
-    loggerWarn('updating time $time');
+
     result.fold((failure) {
       loggerError('failure ${failure.message}');
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (updated) {
-      // logger('result ${state.rooms[id]['is_multiplayer']}');
+      // logger('result ${state.rooms[id]}');
       final updatedRooms = state.rooms.map((room) {
+        // loggerWarn(multTime);
+        // loggerWarn(time);
         if (room['id'] == id) {
           return {
             ...room, // Copy existing data
@@ -120,6 +124,7 @@ class RoomsBloc extends Cubit<RoomsState> {
             if (isMultiplayer != null) 'is_multiplayer': isMultiplayer ? 1 : 0,
             if (price != null) 'price': price,
             if (time != null) 'time': time,
+            if (multTime != null) 'multi_time': multTime,
           };
         }
         return room;
@@ -136,6 +141,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (items) {
+      logger(items);
       emit(state.copyWith(status: RoomsStateStatus.success, rooms: items));
     });
   }
@@ -168,6 +174,7 @@ class RoomsBloc extends Cubit<RoomsState> {
     required bool targetOpenTime,
     required targetPrice,
     required String targetElapsedTime,
+    required String targetElapsedMultiTime,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
 
@@ -190,7 +197,9 @@ class RoomsBloc extends Cubit<RoomsState> {
               'state': 'not running',
               'is_multiplayer': 0,
               'open_time': 0,
-              'price': 0
+              'price': 0,
+              'time': "00:00:00",
+              'multi_time': "00:00:00",
             };
           } else if (room['id'] == targetId) {
             // Update the target room with provided inputs
@@ -201,6 +210,7 @@ class RoomsBloc extends Cubit<RoomsState> {
               'open_time': targetOpenTime ? 1 : 0,
               'price': targetPrice,
               'time': targetElapsedTime,
+              'multi_time': targetElapsedTime,
             };
           }
           return room;

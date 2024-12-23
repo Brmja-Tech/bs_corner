@@ -33,7 +33,7 @@ class RoomGridBuilder extends StatelessWidget {
                 openTime: item['open_time'] as int == 1 ? true : false,
                 state: item['state'],
                 deviceType: item['device_type'],
-                initialTime: item['time'] ?? '00:00:00',
+                initialTime: item['time'] ?? '00:00:00', initialMultiTime: item['multi_time'] ?? '00:00:00',
               ),
               if (item['state'] != 'not running')
                 Positioned(

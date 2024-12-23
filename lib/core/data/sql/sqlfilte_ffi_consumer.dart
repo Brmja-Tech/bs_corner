@@ -51,7 +51,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 10, // Incremented database version
+        version: 11, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -85,7 +85,9 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             open_time BOOLEAN DEFAULT NULL,
             is_multiplayer BOOLEAN NOT NULL,
             price REAL NOT NULL DEFAULT 0,
-            time TEXT NOT NULL DEFAULT '00:00:00'
+            time TEXT NOT NULL DEFAULT '00:00:00',
+            multi_time TEXT NOT NULL DEFAULT '00:00:00'
+            
           )
         ''');
 
@@ -125,7 +127,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 10) {
+          if (oldVersion < 12) {
             logger('Upgrading database to version $newVersion');
 
             logger('Upgrading database to version $newVersion');
@@ -139,7 +141,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         open_time BOOLEAN DEFAULT NULL,
         is_multiplayer BOOLEAN NOT NULL,
         price REAL NOT NULL DEFAULT 0,
-        time TEXT NOT NULL DEFAULT '00:00:00'
+        time TEXT NOT NULL DEFAULT '00:00:00',
+        multi_time TEXT NOT NULL DEFAULT '00:00:00'
       )
     ''');
             await db.execute('''
@@ -179,21 +182,7 @@ CREATE TABLE IF NOT EXISTS room_consumptions (
               ELSE 0
             END
           ''');
-
-//             // Re-create the trigger
-//             await db.execute('''
-//   CREATE TRIGGER ensure_open_time_remaining_time_exclusive
-//   BEFORE UPDATE ON rooms
-//   FOR EACH ROW
-//   BEGIN
-//     -- Ensure that `remaining_time` is NULL when `open_time` is TRUE
-//     UPDATE rooms SET remaining_time = NULL WHERE NEW.open_time = 1;
-//
-//     -- Ensure that `open_time` is NULL when `remaining_time` has a value
-//     UPDATE rooms SET open_time = NULL WHERE NEW.remaining_time IS NOT NULL;
-//   END;
-// ''');
-          }
+           }
         },
       );
 

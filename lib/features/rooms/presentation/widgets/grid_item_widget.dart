@@ -18,6 +18,7 @@ class GridItemWidget extends StatefulWidget {
   final bool openTime;
   final bool isMultiplayer;
   final String initialTime;
+  final String initialMultiTime;
 
   const GridItemWidget({
     super.key,
@@ -28,6 +29,7 @@ class GridItemWidget extends StatefulWidget {
     required this.isMultiplayer,
     required this.price,
     required this.initialTime,
+    required this.initialMultiTime,
   });
 
   @override
@@ -36,14 +38,16 @@ class GridItemWidget extends StatefulWidget {
 
 class _GridItemWidgetState extends State<GridItemWidget> {
   late String _elapsedTime;
+  late String _elapsedMultiTime;
 
   @override
   void initState() {
     _elapsedTime = widget.initialTime;
-
+    _elapsedMultiTime = widget.initialMultiTime;
+    isPaused = widget.state == 'paused';
     super.initState();
   }
-
+  late bool isPaused;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -66,7 +70,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Device Type and Room ID
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -85,7 +88,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                 ],
               ),
             ),
-
             const Spacer(),
             if (widget.state == 'not running')
               Image.asset(
@@ -150,20 +152,35 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                   ),
                   AppGaps.gap16Vertical,
                   CounterWidget(
-                    initialTime: _elapsedTime,
+                    initialTime:
+                        widget.isMultiplayer ? _elapsedMultiTime : _elapsedTime,
                     onDatabaseUpdate: (duration) {
-                      loggerWarn('updating time $duration');
+                      // loggerWarn('Multi player ${widget.isMultiplayer}');
+                      if (widget.isMultiplayer) {
+                      // loggerWarn('updating regular time $duration');
+                        context
+                            .read<RoomsBloc>()
+                            .updateItem(id: widget.id, multTime: duration);
+                      } else {
+                        // loggerWarn('updating Multi time $duration');
 
-                      context
-                          .read<RoomsBloc>()
-                          .updateItem(id: widget.id, time: duration);
+                        context
+                            .read<RoomsBloc>()
+                            .updateItem(id: widget.id, time: duration);
+                      }
                     },
                     onElapsedTimeUpdate: (duration) {
-                      // loggerWarn('Elapsed time: $duration');
+                      // logger(isPaused);
+                      if (isPaused) return;
                       setState(() {
+                        if(!widget.isMultiplayer){
                         _elapsedTime = duration;
+                        }else{
+                        _elapsedMultiTime = duration;
+                        }
                       });
                     },
+                    isPaused : isPaused,
                   ),
                   AppGaps.gap16Vertical,
                   Row(
@@ -174,6 +191,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       if (widget.state == 'paused')
                         RoomActionWidget(
                           onTap: () {
+                            setState(() {
+                              isPaused = false;
+                            });
                             context.read<RoomsBloc>().updateItem(
                                 id: widget.id, roomState: 'running');
                           },
@@ -185,6 +205,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       if (widget.state == 'running')
                         RoomActionWidget(
                           onTap: () {
+                            setState(() {
+                              isPaused = true;
+                            });
                             context
                                 .read<RoomsBloc>()
                                 .updateItem(id: widget.id, roomState: 'paused');
@@ -245,6 +268,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                         onTap: () {
                           context.read<RoomsBloc>().updateItem(
                               id: widget.id,
+                              multTime: _elapsedMultiTime,
+                              time: _elapsedTime,
                               isMultiplayer: !widget.isMultiplayer);
                         },
                         icon: Icons.swap_horiz,
@@ -281,9 +306,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          _elapsedTime = '00:00:00';
-                        });
                         context.read<RoomsBloc>().updateItem(
                               id: widget.id,
                               roomState: 'running',
@@ -368,7 +390,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                                 targetIsMultiplayer: isMultiplayer,
                                 targetOpenTime: openTime,
                                 targetPrice: price,
-                                targetElapsedTime: _elapsedTime);
+                                targetElapsedTime: _elapsedTime,
+                                targetElapsedMultiTime: '');
                           },
                         ),
                       );

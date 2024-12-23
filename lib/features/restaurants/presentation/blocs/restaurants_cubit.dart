@@ -138,7 +138,6 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
         // Remove the item from both quantity list and selected items if quantity is 0
         quantityList.removeAt(existingItemIndex);
         selectedItems.removeWhere((selectedItem) => selectedItem['id'] == id);
-        loggerWarn('Item removed: $id');
       } else {
         // Update the quantity of the existing item
         quantityList[existingItemIndex] = ItemQuantity(
