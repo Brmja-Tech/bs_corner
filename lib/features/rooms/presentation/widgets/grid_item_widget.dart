@@ -360,7 +360,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                               loggerWarn(id);
                               loggerError(value);
                             });
-                            loggerWarn('selectedRoomId $_elapsedTime');
+                            // loggerWarn('selectedRoomId $_elapsedTime');
                             context.read<RoomsBloc>().transferRoomData(
                                 sourceId: id,
                                 targetId: value!,
