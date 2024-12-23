@@ -37,7 +37,7 @@ class _CounterWidgetState extends State<CounterWidget>
 
     // Restart the timer only if the initialTime changes
     if (oldWidget.initialTime != widget.initialTime) {
-      // _initializeTimer();
+      _initializeTimer();
     }
   }
 

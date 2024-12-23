@@ -16,11 +16,11 @@ class GridItemWidget extends StatefulWidget {
   final String deviceType;
   final String state;
   final bool openTime;
-  final bool isMultiplayer;
+  bool isMultiplayer;
   final String initialTime;
   final String initialMultiTime;
 
-  const GridItemWidget({
+  GridItemWidget({
     super.key,
     required this.id,
     required this.deviceType,
@@ -38,12 +38,11 @@ class GridItemWidget extends StatefulWidget {
 
 class _GridItemWidgetState extends State<GridItemWidget> {
   late String _elapsedTime;
-  late String _elapsedMultiTime;
 
   @override
   void initState() {
     _elapsedTime = widget.initialTime;
-    _elapsedMultiTime = widget.initialMultiTime;
+
     isPaused = widget.state == 'paused';
     super.initState();
   }
@@ -72,7 +71,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -156,9 +154,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                   ),
                   AppGaps.gap16Vertical,
                   CounterWidget(
-                    initialTime:
-                        widget.isMultiplayer ? _elapsedMultiTime : _elapsedTime,
+                    initialTime: _elapsedTime,
                     onDatabaseUpdate: (duration) {
+                      if (isPaused) return;
                       // loggerWarn('Multi player ${widget.isMultiplayer}');
                       if (widget.isMultiplayer) {
                         loggerWarn('updating regular time $duration');
@@ -177,11 +175,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       // logger(isPaused);
                       if (isPaused) return;
                       setState(() {
-                        if (!widget.isMultiplayer) {
-                          _elapsedTime = duration;
-                        } else {
-                          _elapsedMultiTime = duration;
-                        }
+                        _elapsedTime = duration;
                       });
                     },
                     isPaused: isPaused,
@@ -224,7 +218,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       RoomActionWidget(
                         onTap: () {
                           setState(() {
-                            _elapsedMultiTime = '00:00:00';
                             _elapsedTime = '00:00:00';
                           });
                           context
@@ -265,27 +258,53 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             id: widget.id,
                             state: widget.state,
                             price: widget.price,
-                            elapsedTime: _elapsedTime,
-                            elapsedMultiTime: _elapsedMultiTime,
+                            elapsedTime:
+                                !widget.isMultiplayer ? _elapsedTime : null,
+                            elapsedMultiTime:
+                                widget.isMultiplayer ? _elapsedTime : null,
                           );
                         },
                         icon: Icons.loop,
                         backgroundColor: const Color.fromRGBO(88, 166, 156, 1),
                         text: 'تغير\n جهاز ',
                       ),
-                      RoomActionWidget(
-                        onTap: () {
-                          context.read<RoomsBloc>().updateItem(
-                              id: widget.id,
-                              multTime: _elapsedMultiTime,
-                              time: _elapsedTime,
-                              isMultiplayer: !widget.isMultiplayer);
+                      BlocListener<RoomsBloc, RoomsState>(
+                        listener: (context, state) {
+                          if (state.isSuccess) {
+                            // Find the room that matches the current widget.id
+                            final currentRoom = state.rooms.firstWhere(
+                              (room) => room['id'] == widget.id,
+                            );
+
+                            setState(() {
+                              // Update _elapsedTime based on is_multiplayer
+                              // loggerWarn(currentRoom['is_multiplayer'] ==1);
+                              _elapsedTime = currentRoom['is_multiplayer'] == 1
+                                  ? currentRoom['multi_time']
+                                  : currentRoom['time'];
+                            });
+                          }
                         },
-                        icon: Icons.swap_horiz,
-                        backgroundColor: const Color.fromRGBO(154, 147, 179, 1),
-                        text: widget.isMultiplayer
-                            ? 'مالتي الى\n سنجل'
-                            : 'سنجل الى\n مالتي',
+                        child: RoomActionWidget(
+                          onTap: () {
+                            context.read<RoomsBloc>().updateItem(
+                                id: widget.id,
+                                multTime:
+                                    widget.isMultiplayer ? _elapsedTime : null,
+                                time:
+                                    !widget.isMultiplayer ? _elapsedTime : null,
+                                isMultiplayer: !widget.isMultiplayer);
+                            setState(() {
+                              widget.isMultiplayer = !widget.isMultiplayer;
+                            });
+                          },
+                          icon: Icons.swap_horiz,
+                          backgroundColor:
+                              const Color.fromRGBO(154, 147, 179, 1),
+                          text: widget.isMultiplayer
+                              ? 'مالتي الى\n سنجل'
+                              : 'سنجل الى\n مالتي',
+                        ),
                       )
                     ],
                   ),
@@ -315,9 +334,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-
-                        });
+                        setState(() {});
                         context.read<RoomsBloc>().updateItem(
                               id: widget.id,
                               roomState: 'running',
@@ -355,8 +372,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     required bool openTime,
     required bool isMultiplayer,
     required num price,
-    required String elapsedTime,
-    required String elapsedMultiTime,
+    required String? elapsedTime,
+    required String? elapsedMultiTime,
   }) {
     showDialog(
       context: context,
@@ -390,14 +407,10 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                           value: room['id'],
                           // Use room ID as the value
                           groupValue: selectedRoomId,
-                          // Track the selected room ID
                           onChanged: (int? value) {
                             setState(() {
                               selectedRoomId = value!;
-                              // loggerWarn(id);
-                              // loggerError(value);
                             });
-                            // loggerWarn('selectedRoomId $_elapsedTime');
                             context.read<RoomsBloc>().transferRoomData(
                                 sourceId: id,
                                 targetId: value!,
