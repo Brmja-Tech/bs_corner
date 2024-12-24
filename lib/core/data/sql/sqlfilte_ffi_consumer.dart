@@ -176,9 +176,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
           logger('Upgrading database to version $newVersion');
 
           if (oldVersion < 17) {
-            await db.execute('''
-          ALTER TABLE shifts ADD COLUMN user_id INTEGER;
-        ''');
+           
           }
         },
       );

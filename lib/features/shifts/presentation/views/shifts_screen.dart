@@ -5,6 +5,7 @@ import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
+import 'package:pscorner/core/stateless/table_widget.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_state.dart';
 import 'package:pscorner/features/shifts/presentation/widgets/add_shift_dialogue.dart';
@@ -17,18 +18,25 @@ class ShiftsScreen extends StatelessWidget {
     return CustomScaffold(
       selectedIndex: 2,
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AppGaps.gap16Vertical,
-          Label(
-            text: 'جدول الشيفتات',
-            style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: Label(
+              text: 'جدول الشيفتات',
+              style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+            ),
           ),
+          AppGaps.gap48Vertical,
           BlocBuilder<ShiftsBloc, ShiftsState>(
             builder: (context, state) {
-              if(state.isLoading) return const Center(child: CircularProgressIndicator(),);
+              if (state.isLoading)
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
               return Expanded(
-                child: DataTable(
+                child: TableWidget(
                   columns: [
                     DataColumn(
                       label: Text(
@@ -77,14 +85,18 @@ class ShiftsScreen extends StatelessWidget {
               );
             },
           ),
-          CustomButton(
-              text: 'إضافه شيفت',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const AddShiftDialog(),
-                );
-              }),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 30),
+            child: CustomButton(
+                width: double.infinity,
+                text: 'إضافه شيفت',
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const AddShiftDialog(),
+                  );
+                }),
+          ),
         ],
       ),
     );
