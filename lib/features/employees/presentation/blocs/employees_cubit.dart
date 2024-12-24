@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/helper/functions.dart';
@@ -16,15 +19,20 @@ class EmployeesBloc extends Cubit<EmployeesState> {
   final UpdateEmployeeUseCase _updateEmployeeUseCase;
   final DeleteEmployeeUseCase _deleteEmployeeUseCase;
   final FetchEmployeeUseCase _getAllEmployeesUseCase;
-
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
+  }
   Future<void> insertEmployee(
       {required String username,
       required String password,
       required bool isAdmin}) async {
+
     emit(state.copyWith(status: EmployeesStateStatus.loading));
     final result = await _insertEmployeeUseCase(InsertEmployeeParams(
       username: username,
-      password: password,
+      password: _hashPassword(password),
       isAdmin: isAdmin,
     ));
     result.fold((left) {
@@ -34,6 +42,15 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     }, (right) {
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
+        employees: [
+          ...state.employees,
+          {
+            'id': right,
+            'username': username,
+            'password': _hashPassword(password),
+            'isAdmin': isAdmin
+          }
+        ],
       ));
     });
   }
