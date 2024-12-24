@@ -5,6 +5,7 @@ import 'package:pscorner/service_locator/empolyee_service_locator.dart';
 import 'package:pscorner/service_locator/report_service_locator.dart';
 import 'package:pscorner/service_locator/restraurants_service_locator.dart';
 import 'package:pscorner/service_locator/rooms_service_locator.dart';
+import 'package:pscorner/service_locator/shift_service_locator.dart';
 
 final sl = GetIt.instance;
 
@@ -16,5 +17,6 @@ abstract interface class DI {
     await RestaurantsServiceLocator.execute(sl: sl);
     await RoomsServiceLocator.execute(sl: sl);
     await EmployeeServiceLocator.execute(sl: sl);
+    await ShiftServiceLocator.execute(sl: sl);
   }
 }

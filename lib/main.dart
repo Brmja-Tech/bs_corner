@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/theme/app_theme.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
@@ -7,6 +8,7 @@ import 'package:pscorner/features/auth/presentation/views/login_screen.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
+import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'service_locator/service_locator.dart';
@@ -14,6 +16,8 @@ import 'service_locator/service_locator.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  await initializeDateFormatting('ar', null);
+
   WindowOptions windowOptions = const WindowOptions(
     minimumSize: Size(1024, 600),
   );
@@ -26,7 +30,10 @@ Future<void> main() async {
     BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
     BlocProvider<RoomsBloc>(create: (context) => sl<RoomsBloc>()),
     BlocProvider<RestaurantsBloc>(create: (context) => sl<RestaurantsBloc>()),
-    BlocProvider<EmployeesBloc>(create: (context) => sl<EmployeesBloc>()..fetchAllEmployees()),
+    BlocProvider<EmployeesBloc>(
+        create: (context) => sl<EmployeesBloc>()..fetchAllEmployees()),
+    BlocProvider<ShiftsBloc>(
+        create: (context) => sl<ShiftsBloc>()..fetchAllShifts()),
   ], child: const MyApp()));
 }
 

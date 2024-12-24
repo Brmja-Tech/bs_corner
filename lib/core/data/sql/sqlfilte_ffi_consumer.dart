@@ -50,7 +50,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
 
       _database = await openDatabase(
         path,
-        version: 14, // Incremented database version
+        version: 15, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -175,9 +175,10 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         onUpgrade: (db, oldVersion, newVersion) async {
           logger('Upgrading database to version $newVersion');
 
-          if (oldVersion < 15) {
-            // Drop the old 'employee' table (if it exists)
-            await db.execute('DROP TABLE IF EXISTS employees');
+          if (oldVersion < 17) {
+            await db.execute('''
+          ALTER TABLE shifts ADD COLUMN user_id INTEGER;
+        ''');
           }
         },
       );
