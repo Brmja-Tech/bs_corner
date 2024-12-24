@@ -48,20 +48,19 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       logger(dbPath);
       final path = join(dbPath, databaseName);
 
-      // Open the database with the version incremented for migrations
       _database = await openDatabase(
         path,
-        version: 11, // Incremented database version
+        version: 14, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
-          // Create the 'users' table
+          // Create the 'users' table with the 'isAdmin' column
           await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
-            isAdmin BOOLEAN NOT NULL DEFAULT 0
+            isAdmin BOOLEAN NOT NULL DEFAULT 0  -- False for regular users, True for admins
           )
         ''');
 
@@ -87,33 +86,33 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             price REAL NOT NULL DEFAULT 0,
             time TEXT NOT NULL DEFAULT '00:00:00',
             multi_time TEXT NOT NULL DEFAULT '00:00:00'
-            
           )
         ''');
 
-          // Set default prices for existing rooms
+          // Create the 'controllers' table
           await db.execute('''
-          UPDATE rooms
-          SET price = CASE
-            WHEN device_type = 'PS4' AND is_multiplayer = 0 THEN 20
-            WHEN device_type = 'PS4' AND is_multiplayer = 1 THEN 30
-            WHEN device_type = 'PS5' AND is_multiplayer = 0 THEN 30
-            WHEN device_type = 'PS5' AND is_multiplayer = 1 THEN 50
-            ELSE 0
-          END
+          CREATE TABLE IF NOT EXISTS controllers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+            state TEXT NOT NULL CHECK(state IN ('running', 'not running')),
+            room_id INTEGER NOT NULL,
+            FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+          )
         ''');
 
-          // Create the 'shifts' table
+          // Create the 'shifts' table with a foreign key reference to 'users'
           await db.execute('''
           CREATE TABLE IF NOT EXISTS shifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             total_collected_money REAL NOT NULL,
             from_time TIMESTAMP NOT NULL,
-            to_time TIMESTAMP NOT NULL
+            to_time TIMESTAMP NOT NULL,
+            user_id INTEGER,  -- Reference to 'users' table
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
           )
         ''');
 
-          // Create the 'room_consumptions' table
+          // Create the 'room_consumptions' table with a 'paid' column
           await db.execute('''
           CREATE TABLE IF NOT EXISTS room_consumptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,68 +120,65 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             restaurant_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL DEFAULT 1,
             price REAL NOT NULL DEFAULT 0.0,
+            total_price REAL AS (quantity * price) STORED,
+            paid BOOLEAN NOT NULL DEFAULT 0,  -- New 'paid' column with default value false
             FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
             FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
           )
         ''');
+
+          // Create the 'gradients' table
+          await db.execute('''
+          CREATE TABLE IF NOT EXISTS gradients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            quantity REAL DEFAULT 0,
+            weight REAL DEFAULT 0
+          )
+        ''');
+
+          // Create the 'recipes' table
+          await db.execute('''
+          CREATE TABLE IF NOT EXISTS recipes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            gradient_id INTEGER NOT NULL,
+            quantity REAL,
+            weight REAL,
+            CHECK (quantity IS NOT NULL OR weight IS NOT NULL),
+            FOREIGN KEY (gradient_id) REFERENCES gradients (id) ON DELETE CASCADE
+          )
+        ''');
+
+          // Create the 'restaurant_gradients' table
+          await db.execute('''
+          CREATE TABLE IF NOT EXISTS restaurant_gradients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            restaurant_id INTEGER NOT NULL,
+            gradient_id INTEGER NOT NULL,
+            required_quantity REAL DEFAULT 0,
+            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE,
+            FOREIGN KEY (gradient_id) REFERENCES gradients (id) ON DELETE CASCADE
+          )
+        ''');
+
+          // Create the 'reports' table
+          await db.execute('''
+          CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_name TEXT NOT NULL,
+            data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          if (oldVersion < 12) {
-            logger('Upgrading database to version $newVersion');
+          logger('Upgrading database to version $newVersion');
 
-            logger('Upgrading database to version $newVersion');
-
-            // Step 1: Create a new table with the updated CHECK constraint
-            await db.execute('''
-      CREATE TABLE rooms_new (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-        state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
-        open_time BOOLEAN DEFAULT NULL,
-        is_multiplayer BOOLEAN NOT NULL,
-        price REAL NOT NULL DEFAULT 0,
-        time TEXT NOT NULL DEFAULT '00:00:00',
-        multi_time TEXT NOT NULL DEFAULT '00:00:00'
-      )
-    ''');
-            await db.execute('''
-CREATE TABLE IF NOT EXISTS room_consumptions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  room_id INTEGER NOT NULL,
-  restaurant_id INTEGER NOT NULL,
-  quantity INTEGER NOT NULL DEFAULT 1,
-  price REAL NOT NULL DEFAULT 0.0,
-  FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
-  FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
-)
-''');
-
-            // Step 2: Copy the data from the old table to the new table
-            await db.execute('''
-      INSERT INTO rooms_new (id, device_type, state, open_time, is_multiplayer, price)
-      SELECT id, device_type, state, open_time, is_multiplayer, price FROM rooms
-    ''');
-
-            // Step 3: Drop the old table
-            await db.execute('DROP TABLE rooms');
-
-            // Step 4: Rename the new table to the original table name
-            await db.execute('ALTER TABLE rooms_new RENAME TO rooms');
-
-            logger('Database upgraded successfully to version $newVersion');
-
-            // Update the 'price' column based on conditions
-            await db.execute('''
-            UPDATE rooms
-            SET price = CASE
-              WHEN device_type = 'PS4' AND is_multiplayer = 0 THEN 20
-              WHEN device_type = 'PS4' AND is_multiplayer = 1 THEN 30
-              WHEN device_type = 'PS5' AND is_multiplayer = 0 THEN 30
-              WHEN device_type = 'PS5' AND is_multiplayer = 1 THEN 50
-              ELSE 0
-            END
-          ''');
-           }
+          if (oldVersion < 15) {
+            // Drop the old 'employee' table (if it exists)
+            await db.execute('DROP TABLE IF EXISTS employees');
+          }
         },
       );
 
@@ -190,8 +186,7 @@ CREATE TABLE IF NOT EXISTS room_consumptions (
       return Right(null); // Success
     } catch (e) {
       loggerError('Database initialization failed: $e');
-      return Left(
-          UnknownFailure(message: 'Database initialization failed: $e'));
+      return Left(UnknownFailure(message: 'Database initialization failed: $e'));
     }
   }
 

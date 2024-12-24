@@ -60,7 +60,7 @@ class _CounterWidgetState extends State<CounterWidget>
       setState(() {
         _duration += const Duration(seconds: 1);
         widget.onElapsedTimeUpdate(_formatDuration(_duration));
-        if (_duration.inSeconds % 300 == 0) {
+        if (_duration.inSeconds % 10 == 0) {
           widget.onDatabaseUpdate(_formatDuration(_duration));
         }
       });
