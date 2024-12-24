@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/stateless/custom_text_field.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
 
@@ -26,34 +27,41 @@ class _AddEmployeeDialogState extends State<AddEmployeeDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('إضافة موظف'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CustomTextFormField(
+      content: SizedBox(
+        width: 600,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomTextFormField(
               hintText: 'اسم الموظف',
               prefixIcon: Icons.person,
-              controller: _usernameController),
-          const SizedBox(height: 10),
-          CustomTextFormField(
-            hintText: 'كلمه المرور',
-            prefixIcon: Icons.lock,
-            controller: _passwordController,
-            isPassword: true,
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Text('هل هو مدير؟'),
-              const Spacer(),
-              Switch(
-                value: isAdmin,
-                onChanged: (value) {
-                  isAdmin = value;
-                },
-              ),
-            ],
-          ),
-        ],
+              controller: _usernameController,
+            ),
+            const SizedBox(height: 10),
+            CustomTextFormField(
+              hintText: 'كلمه المرور',
+              prefixIcon: Icons.lock,
+              controller: _passwordController,
+              isPassword: true,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Text('هل هو مدير؟'),
+                const Spacer(),
+                Switch(
+                  activeColor: context.theme.primaryColor,
+                  value: isAdmin,
+                  onChanged: (value) {
+                    setState(() {
+                      isAdmin = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

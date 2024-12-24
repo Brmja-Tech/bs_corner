@@ -45,7 +45,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       databaseFactory = databaseFactoryFfi;
 
       final dbPath = await getDatabasesPath();
-      logger(dbPath);
+      logger('dbPath: $dbPath');
       final path = join(dbPath, databaseName);
 
       _database = await openDatabase(

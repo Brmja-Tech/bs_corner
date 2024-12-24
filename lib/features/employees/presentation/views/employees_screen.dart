@@ -5,6 +5,7 @@ import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
+import 'package:pscorner/core/stateless/table_widget.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_state.dart';
 import 'package:pscorner/features/employees/presentation/widgets/add_employee_dialog.dart';
@@ -14,59 +15,96 @@ class EmployeesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    List<DataColumn> columns = [
+      DataColumn(
+        label: Centered(
+          child: Label(
+            text: 'اسم الموظف',
+            style: context.appTextTheme.headlineSmall,
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Centered(
+          child: Label(
+            text: 'الوظيفه',
+            style: context.appTextTheme.headlineSmall,
+          ),
+        ),
+      ),
+    ];
+
     return CustomScaffold(
       selectedIndex: 3,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppGaps.gap16Vertical,
-          Label(
-            text: 'جدول الموظفين',
-            style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
-          ),
-          BlocBuilder<EmployeesBloc, EmployeesState>(
-            builder: (context, state) {
-              return Expanded(
-                child: DataTable(
-                  columns: [
-                    DataColumn(
-                      label: Text(
-                        'اسم الموظف',
-                        style: context.appTextTheme.headlineSmall,
-                      ),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppGaps.gap16Vertical,
+            Label(
+              text: 'جدول الموظفين',
+              style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+            ),
+            AppGaps.gap48Vertical,
+            BlocBuilder<EmployeesBloc, EmployeesState>(
+              builder: (context, state) {
+                return Expanded(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxHeight: mediaQuery.size.height * .4,
+                      minWidth: mediaQuery.size.width * .7,
                     ),
-                    DataColumn(
-                      label: Text(
-                        'الوظيفه',
-                        style: context.appTextTheme.headlineSmall,
-                      ),
+                    child: TableWidget(
+                      columns: columns,
+                      rows: state.employees.map((item) {
+                        return DataRow(cells: [
+                          DataCell(Center(
+                            child: Label(
+                              text: item['username'] ??
+                                  '', // Access 'name' from the map
+                              style: context.appTextTheme.headlineMedium,
+                            ),
+                          )),
+                          DataCell(Center(
+                            child: Label(
+                              text: item['isAdmin'] == 1
+                                  ? 'مدير'
+                                  : 'موظف', // Access 'job' from the map
+                              style: context.appTextTheme.headlineMedium,
+                            ),
+                          )),
+                        ]);
+                      }).toList(),
                     ),
-                  ],
-                  rows: state.employees.map((item) {
-                    return DataRow(cells: [
-                      DataCell(Text(
-                        item['username'] ?? '', // Access 'name' from the map
-                        style: context.appTextTheme.headlineMedium,
-                      )),
-                      DataCell(Text(
-                        item['isAdmin']==1 ? 'مدير' : 'موظف', // Access 'job' from the map
-                        style: context.appTextTheme.headlineMedium,
-                      )),
-                    ]);
-                  }).toList(),
-                ),
-              );
-            },
-          ),
-          CustomButton(
-              text: 'إضافه موظف',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const AddEmployeeDialog(),
+                  ),
                 );
-              }),
-        ],
+              },
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    
+                    child: CustomButton(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 8),
+                        text: 'إضافه موظف',
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const AddEmployeeDialog(),
+                          );
+                        }),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

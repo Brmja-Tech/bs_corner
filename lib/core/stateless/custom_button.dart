@@ -31,6 +31,7 @@ class CustomButton extends StatelessWidget {
           width: width,
           margin: const EdgeInsets.only(left: 20),
           child: ElevatedButton(
+            
             style: style ??
                 context.theme.elevatedButtonTheme.style!.copyWith(
                   padding: WidgetStateProperty.all(padding ??

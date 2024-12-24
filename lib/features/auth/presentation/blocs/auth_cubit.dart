@@ -35,6 +35,7 @@ class AuthBloc extends Cubit<AuthState> {
     }, (right) {
       emit(state.copyWith(
         status: AuthStateStatus.success,
+        user: {'username': username, 'password': password, 'isAdmin': 0},
       ));
     });
   }
