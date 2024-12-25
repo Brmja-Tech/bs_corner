@@ -19,7 +19,7 @@ class TableWidget extends StatelessWidget {
           .textTheme
           .bodyMedium!
           .copyWith(fontWeight: FontWeight.bold, color: Colors.black),
-      headingRowColor: const WidgetStatePropertyAll(Color(0xff5D7285)),
+      headingRowColor: const WidgetStatePropertyAll(Color(0xff5D7285)),dataRowMinHeight: 50,dataRowMaxHeight: 100,
       border: const TableBorder(
         top: borderSide,
         bottom: borderSide,

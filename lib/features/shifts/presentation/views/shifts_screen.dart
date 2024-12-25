@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
@@ -31,16 +33,18 @@ class ShiftsScreen extends StatelessWidget {
           AppGaps.gap48Vertical,
           BlocBuilder<ShiftsBloc, ShiftsState>(
             builder: (context, state) {
-              if (state.isLoading)
+              if (state.isLoading) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
+              }
               return Expanded(
                 child: TableWidget(
                   columns: [
                     DataColumn(
                       label: Text(
                         'اسم الموظف',
+                        overflow: TextOverflow.ellipsis,
                         style: context.appTextTheme.headlineSmall,
                       ),
                     ),
@@ -64,19 +68,20 @@ class ShiftsScreen extends StatelessWidget {
                     ),
                   ],
                   rows: state.shifts.map((item) {
+                    logger('item: $item');
                     return DataRow(cells: [
                       DataCell(Text(
                         item['shift_user_name'] ?? '',
                         // Access 'name' from the map
-                        style: context.appTextTheme.headlineMedium,
+                        style: context.appTextTheme.headlineSmall,
                       )),
                       DataCell(Text(
-                        item['from_time'],
-                        style: context.appTextTheme.headlineMedium,
+                        formatDateTime(item['from_time']),
+                        style: context.appTextTheme.headlineSmall,
                       )),
                       DataCell(Text(
-                        item['to_time'] ?? '',
-                        style: context.appTextTheme.headlineMedium,
+                        formatDateTime(item['to_time']),
+                        style: context.appTextTheme.headlineSmall,
                       )),
                       DataCell(CustomButton(text: 'عرض', onPressed: () {})),
                     ]);
@@ -100,5 +105,17 @@ class ShiftsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+  String formatDateTime(String dateTime) {
+    final date = DateTime.parse(dateTime);
+    // Format the date
+    String formattedDate = DateFormat('yyyy/MM/dd').format(date);
+
+    // Format the time
+    int hour = date.hour % 12 == 0 ? 12 : date.hour % 12; // Convert to 12-hour format
+    String minute = date.minute.toString().padLeft(2, '0');
+    String period = date.hour < 12 ? 'صباحا' : 'مساء';
+
+    return 'الساعة $hour:$minute $period  $formattedDate';
   }
 }
