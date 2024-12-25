@@ -16,7 +16,8 @@ abstract interface class SQLFLiteFFIConsumer {
   Future<Either<Failure, List<Map<String, dynamic>>>> get(String table,
       {String? where, List<dynamic>? whereArgs});
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> rawGet(String query, {List<dynamic>? whereArgs});
+  Future<Either<Failure, List<Map<String, dynamic>>>> rawGet(String query,
+      {List<dynamic>? whereArgs});
 
   Future<Either<Failure, int>> update(String table, Map<String, dynamic> data,
       {String? where, List<dynamic>? whereArgs});
@@ -55,7 +56,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
 
       _database = await openDatabase(
         path,
-        version: 17, // Incremented database version
+        version: 20, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -136,7 +137,6 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
           await db.execute('''
               CREATE TABLE IF NOT EXISTS recipes (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    restaurant_id INTEGER NOT NULL,
                     name TEXT NOT NULL, -- Added column for recipe name
                     ingredient_name TEXT NOT NULL,
                     quantity REAL DEFAULT 0,
@@ -155,37 +155,53 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             )
           ''');
         },
-        onUpgrade: (db, oldVersion, newVersion) async {
-          logger('Upgrading database from version $oldVersion to $newVersion');
+          onUpgrade: (db, oldVersion, newVersion) async {
+            logger('Upgrading database from version $oldVersion to $newVersion');
 
-          if (oldVersion < 18) {
-            // Drop the 'gradients' table if it exists
-            await db.execute('DROP TABLE IF EXISTS gradients');
+            if (oldVersion < 21) {
+              // Create a new table without the `restaurant_id` column
+              await db.execute('''
+      CREATE TABLE IF NOT EXISTS recipes_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        ingredient_name TEXT NOT NULL,
+        quantity REAL DEFAULT 0,
+        weight REAL DEFAULT 0,
+        CHECK (quantity IS NOT NULL OR weight IS NOT NULL)
+      );
+    ''');
 
-            // Drop the 'restaurant_gradients' table if it exists
-            await db.execute('DROP TABLE IF EXISTS restaurant_gradients');
+              // Migrate data from the old `recipes` table to the new one
+              try {
+                await db.execute('''
+        INSERT INTO recipes_new (id, name, ingredient_name, quantity, weight)
+        SELECT id, name, ingredient_name, quantity, weight
+        FROM recipes;
+      ''');
+              } catch (e) {
+                loggerError('Error migrating data from "recipes" to "recipes_new": $e');
+              }
 
-            // Add a new column to the 'restaurants' table
-            try {
-              await db.execute(
-                  'ALTER TABLE restaurants ADD COLUMN default_recipe_id INTEGER DEFAULT NULL');
-              await db.execute(
-                  'ALTER TABLE recipes ADD COLUMN ingredient_name TEXT DEFAULT NOT NULL');
+              // Drop the old `recipes` table
+              try {
+                await db.execute('DROP TABLE IF EXISTS recipes;');
+              } catch (e) {
+                loggerError('Error dropping old "recipes" table: $e');
+              }
 
-              logger('Added new column to the restaurants table');
-            } catch (e) {
-              loggerError(
-                  'Error adding new column to the restaurants table: $e');
+              // Rename the new table to `recipes`
+              try {
+                await db.execute('ALTER TABLE recipes_new RENAME TO recipes;');
+              } catch (e) {
+                loggerError('Error renaming "recipes_new" to "recipes": $e');
+              }
+
+              logger('Removed "restaurant_id" column from "recipes" table successfully.');
             }
+
+            logger('Database upgrade to version $newVersion completed');
           }
 
-          // Add more upgrade logic for future versions if needed
-          if (oldVersion < 18) {
-            // Future upgrade logic can go here
-          }
-
-          logger('Database upgrade to version $newVersion completed');
-        },
       );
 
       logger('Database initialized');

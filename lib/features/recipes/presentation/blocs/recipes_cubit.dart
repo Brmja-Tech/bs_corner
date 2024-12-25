@@ -16,9 +16,10 @@ class RecipesBloc extends Cubit<RecipesState> {
       this._deleteRecipesUseCase,
       this._searchForRecipesUseCase,
       this._insertRecipesUseCase)
-      : super(const RecipesState()){
-    fetchAllRecipes();
+      : super(const RecipesState()) {
+    // fetchAllRecipes();
   }
+
   final FetchAllRecipesUseCase _fetchAllRecipesUseCase;
   final UpdateRecipesUseCase _updateRecipesUseCase;
   final DeleteRecipesUseCase _deleteRecipesUseCase;
@@ -30,7 +31,10 @@ class RecipesBloc extends Cubit<RecipesState> {
 
     final result = await _fetchAllRecipesUseCase(const NoParams());
     result
-        .fold((failure) => emit(state.copyWith(errorMessage: failure.message)),
+        .fold((failure) {
+          loggerError(failure.message);
+          emit(state.copyWith(errorMessage: failure.message));
+        },
             (recipes) {
       logger(recipes);
       emit(
@@ -38,12 +42,19 @@ class RecipesBloc extends Cubit<RecipesState> {
     });
   }
 
-  Future<void> insertRecipe(
-      {required double quantity,
-      required String name,
-      required double weight,
-      required String ingredientName,
-      required int restaurantId}) async {
+  @override
+  void onChange(Change<RecipesState> change) {
+    super.onChange(change);
+    logger(change.nextState.status);
+    logger(change.currentState.status);
+  }
+
+  Future<void> insertRecipe({
+     double? quantity,
+    required String name,
+     double? weight,
+    required String ingredientName,
+  }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
 
     final result = await _insertRecipesUseCase(InsertRecipeParams(
@@ -51,10 +62,12 @@ class RecipesBloc extends Cubit<RecipesState> {
       name: name,
       weight: weight,
       ingredientName: ingredientName,
-      restaurantId: restaurantId,
     ));
     result
-        .fold((failure) => emit(state.copyWith(errorMessage: failure.message)),
+        .fold((failure) {
+          loggerError(failure.message);
+          emit(state.copyWith(errorMessage: failure.message));
+        },
             (success) {
       logger(success);
       emit(state.copyWith(status: RecipesStateStatus.success));

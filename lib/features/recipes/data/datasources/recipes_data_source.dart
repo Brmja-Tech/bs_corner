@@ -6,13 +6,15 @@ import 'package:pscorner/core/data/utils/either.dart';
 abstract interface class RecipeDataSource {
   Future<Either<Failure, int>> insertRecipe(InsertRecipeParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(NoParams noParams);
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
+      NoParams noParams);
 
   Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params);
 
   Future<Either<Failure, int>> deleteRecipe(int id);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> searchRecipeByName(String name);
+  Future<Either<Failure, List<Map<String, dynamic>>>> searchRecipeByName(
+      String name);
 }
 
 class RecipeDataSourceImpl implements RecipeDataSource {
@@ -28,7 +30,8 @@ class RecipeDataSourceImpl implements RecipeDataSource {
         'ingredient_name': params.ingredientName,
         'quantity': params.quantity,
         'weight': params.weight,
-        'restaurant_id': params.restaurantId,  // Assuming restaurant ID is passed
+
+        // Assuming restaurant ID is passed
       };
 
       // Insert data into the 'recipes' table
@@ -39,7 +42,8 @@ class RecipeDataSourceImpl implements RecipeDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(NoParams noParams) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
+      NoParams noParams) async {
     try {
       // Fetch all recipes from the 'recipes' table
       return await _databaseConsumer.get('recipes');
@@ -54,10 +58,12 @@ class RecipeDataSourceImpl implements RecipeDataSource {
       final data = <String, dynamic>{};
 
       if (params.name != null) data['name'] = params.name;
-      if (params.ingredientName != null) data['ingredient_name'] = params.ingredientName;
+      if (params.ingredientName != null)
+        data['ingredient_name'] = params.ingredientName;
       if (params.quantity != null) data['quantity'] = params.quantity;
       if (params.weight != null) data['weight'] = params.weight;
-      if (params.restaurantId != null) data['restaurant_id'] = params.restaurantId;
+      if (params.restaurantId != null)
+        data['restaurant_id'] = params.restaurantId;
 
       // Update recipe data in the 'recipes' table based on the recipe ID
       return await _databaseConsumer.update(
@@ -75,10 +81,12 @@ class RecipeDataSourceImpl implements RecipeDataSource {
   Future<Either<Failure, int>> deleteRecipe(int id) async {
     try {
       // Delete recipe data from the 'recipes' table based on the recipe ID
-      final result = await _databaseConsumer.delete('recipes', where: 'id = ?', whereArgs: [id]);
+      final result = await _databaseConsumer
+          .delete('recipes', where: 'id = ?', whereArgs: [id]);
       return result.fold(
-            (l) => Left(UnknownFailure(message: 'Failed to delete recipe: ${l.message}')),
-            (r) => Right(r),
+        (l) => Left(
+            UnknownFailure(message: 'Failed to delete recipe: ${l.message}')),
+        (r) => Right(r),
       );
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to delete recipe: $e'));
@@ -86,7 +94,8 @@ class RecipeDataSourceImpl implements RecipeDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> searchRecipeByName(String name) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> searchRecipeByName(
+      String name) async {
     try {
       // Search for recipes by name in the 'recipes' table
       return await _databaseConsumer.get(
@@ -99,20 +108,21 @@ class RecipeDataSourceImpl implements RecipeDataSource {
     }
   }
 }
+
 class InsertRecipeParams {
   final String name;
   final String ingredientName;
-  final double quantity;
-  final double weight;
-  final int restaurantId;
+  final double? quantity;
+  final double? weight;
 
   InsertRecipeParams({
     required this.name,
     required this.ingredientName,
-    required this.quantity,
-    required this.weight,
-    required this.restaurantId,
-  });
+    this.quantity,
+    this.weight,
+  }) {
+    assert(quantity != null || weight != null);
+  }
 }
 
 class UpdateRecipeParams {
@@ -132,5 +142,3 @@ class UpdateRecipeParams {
     this.restaurantId,
   });
 }
-
-
