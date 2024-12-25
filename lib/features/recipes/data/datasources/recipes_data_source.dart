@@ -120,9 +120,7 @@ class InsertRecipeParams {
     required this.ingredientName,
     this.quantity,
     this.weight,
-  }) {
-    assert(quantity != null || weight != null);
-  }
+  }) ;
 }
 
 class UpdateRecipeParams {

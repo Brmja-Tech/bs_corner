@@ -74,8 +74,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   AppGaps.gap16Vertical,
                   BlocConsumer<RecipesBloc, RecipesState>(
                     listener: (context, state) {
+
                       if (state.isSuccess) {
                         context.showSuccessMessage('تمت الاضافة بنجاح');
+
+                        _quantityController.clear();
+                        _weightController.clear();
+                        _nameController.clear();
+                        _gradientNameController.clear();
                       }
                       if (state.isError) {
                         context.showErrorMessage(state.errorMessage);

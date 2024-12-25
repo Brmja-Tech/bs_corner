@@ -56,7 +56,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
 
       _database = await openDatabase(
         path,
-        version: 20, // Incremented database version
+        version: 22, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
@@ -141,10 +141,10 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
                     ingredient_name TEXT NOT NULL,
                     quantity REAL DEFAULT 0,
                     weight REAL DEFAULT 0,
-                    CHECK (quantity IS NOT NULL OR weight IS NOT NULL),
-                    FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+                    CHECK (quantity IS NOT NULL OR weight IS NOT NULL)
                 );
             ''');
+
 
           await db.execute('''
             CREATE TABLE IF NOT EXISTS reports (
@@ -158,7 +158,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
           onUpgrade: (db, oldVersion, newVersion) async {
             logger('Upgrading database from version $oldVersion to $newVersion');
 
-            if (oldVersion < 21) {
+            if (oldVersion < 22) {
               // Create a new table without the `restaurant_id` column
               await db.execute('''
       CREATE TABLE IF NOT EXISTS recipes_new (
