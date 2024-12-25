@@ -55,16 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.go(const AddItemScreen());
                   },
                   width: context.width * 0.1,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 ),
                 BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
                     return CustomButton(
                       text: 'اضافه غرفه',
                       onPressed: () {
-                        _showAddRoomDialog(
-                            context, context.read<RoomsBloc>());
+                        _showAddRoomDialog(context, context.read<RoomsBloc>());
                       },
                       width: context.width * 0.1,
                       padding: const EdgeInsets.symmetric(
@@ -88,7 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )
                       else
-                         RoomGridBuilder(state: state,),
+                        RoomGridBuilder(
+                          state: state,
+                        ),
                     ],
                   );
                 },
@@ -187,4 +188,3 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
-
