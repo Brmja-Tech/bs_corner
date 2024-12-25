@@ -187,25 +187,33 @@ class RoomDataSourceImpl implements RoomDataSource {
 
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>>
-      fetchRoomConsumptionsByRoom(int roomId) async {
+  fetchRoomConsumptionsByRoom(int roomId) async {
     try {
       const query = '''
-  SELECT room_consumptions.*, restaurants.* 
-  FROM room_consumptions
-  LEFT JOIN restaurants
-  ON room_consumptions.restaurant_id = restaurants.id
-  WHERE room_consumptions.room_id = ?;
-''';
+    SELECT 
+      room_consumptions.*, 
+      restaurants.* 
+    FROM 
+      room_consumptions
+    LEFT JOIN 
+      restaurants
+    ON 
+      room_consumptions.restaurant_id = restaurants.id
+    WHERE 
+      room_consumptions.room_id = ?;
+    ''';
+
+      // Execute the raw query
       return await _databaseConsumer.rawGet(
-          // 'room_consumptions',
-          // where: 'room_id = ?',
-          whereArgs: [roomId],
-          query);
+         query,
+        whereArgs: [roomId],
+      );
     } catch (e) {
       return Left(
           UnknownFailure(message: 'Failed to fetch room consumptions: $e'));
     }
   }
+
 
   @override
   Future<Either<Failure, int>> updateRoomConsumption(

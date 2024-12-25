@@ -129,7 +129,7 @@ class RoomsBloc extends Cubit<RoomsState> {
         }
         return room;
       }).toList();
-      loggerWarn(updatedRooms.where((room)=> room['id']==id));
+      // loggerWarn(updatedRooms.where((room)=> room['id']==id));
       emit(state.copyWith(
           status: RoomsStateStatus.success, rooms: updatedRooms));
     });
@@ -233,6 +233,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (items) {
+      logger('Successfully fetched consumptions $items');
       emit(state.copyWith(
           status: RoomsStateStatus.success, roomConsumptions: items));
     });

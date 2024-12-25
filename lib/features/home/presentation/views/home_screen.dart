@@ -58,6 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 20),
                 ),
+                CustomButton(
+                  text: 'اضافه اصناف',
+                  onPressed: () {
+                    context.go(const AddItemScreen());
+                  },
+                  width: context.width * 0.1,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 20),
+                ),
                 BlocBuilder<RoomsBloc, RoomsState>(
                   builder: (context, state) {
                     return CustomButton(
