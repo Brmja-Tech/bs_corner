@@ -189,14 +189,17 @@ class RoomDataSourceImpl implements RoomDataSource {
   Future<Either<Failure, List<Map<String, dynamic>>>>
       fetchRoomConsumptionsByRoom(int roomId) async {
     try {
-      const query = '''SELECT * FROM room_consumptions 
-          WHERE room_id = ?
-           LEFT JOIN restaurants 
-           ON room_consumptions.restaurant_id = restaurants.id;''';
+      const query = '''
+  SELECT room_consumptions.*, restaurants.* 
+  FROM room_consumptions
+  LEFT JOIN restaurants
+  ON room_consumptions.restaurant_id = restaurants.id
+  WHERE room_consumptions.room_id = ?;
+''';
       return await _databaseConsumer.rawGet(
           // 'room_consumptions',
           // where: 'room_id = ?',
-          // whereArgs: [roomId],
+          whereArgs: [roomId],
           query);
     } catch (e) {
       return Left(
