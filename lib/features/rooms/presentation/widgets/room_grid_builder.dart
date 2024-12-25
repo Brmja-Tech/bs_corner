@@ -33,7 +33,8 @@ class RoomGridBuilder extends StatelessWidget {
                 openTime: item['open_time'] as int == 1 ? true : false,
                 state: item['state'],
                 deviceType: item['device_type'],
-                initialTime: item['time'] ?? '00:00:00', initialMultiTime: item['multi_time'] ?? '00:00:00',
+                initialTime: item['time'] ?? '00:00:00',
+                initialMultiTime: item['multi_time'] ?? '00:00:00',
               ),
               if (item['state'] != 'not running')
                 Positioned(
@@ -62,19 +63,18 @@ class RoomGridBuilder extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.transparent,
           content: SizedBox(
-            width: context.width * 0.9,
+            width: context.width * 0.3,
             child: Row(
               children: [
                 Expanded(
-                  flex: 1,
                   child: InfoList(
                     id: roomId,
                   ),
                 ),
-                const Expanded(
-                  flex: 4,
-                  child: Info(),
-                ),
+                // const Expanded(
+                //   flex: 4,
+                //   child: Info(),
+                // ),
               ],
             ),
           ),

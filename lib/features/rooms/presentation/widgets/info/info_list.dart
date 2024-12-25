@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
@@ -29,6 +30,8 @@ class _InfoListState extends State<InfoList> {
     return BlocBuilder<RoomsBloc, RoomsState>(
       builder: (context, state) {
         return Container(
+          constraints:
+              const BoxConstraints(minHeight: 300, minWidth: double.infinity),
           color: Colors.white,
           child: state.roomConsumptions.isEmpty
               ? const Center(child: Label(text: 'لا يوجد'))
@@ -39,14 +42,34 @@ class _InfoListState extends State<InfoList> {
                     var restaurantImage = restaurantBloc.state.restaurants[state
                         .roomConsumptions[index]['restaurant_id']]['image'];
 
-                    // loggerWarn(restaurantBloc.state.restaurants);
-                    return ListTile(
-                      trailing: CircleAvatar(
-                          backgroundImage: FileImage(File(restaurantImage))),
-                      title: Text(
-                          state.roomConsumptions[index]['price'].toString()),
-                      subtitle: Text(
-                          state.roomConsumptions[index]['quantity'].toString()),
+                    loggerWarn(restaurantBloc.state.restaurants);
+                    return Column(
+                      children: [
+                        ListTile(
+                          trailing: CircleAvatar(
+                              radius: 30,
+                              backgroundImage:
+                                  FileImage(File(restaurantImage))),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${state.roomConsumptions[index]['name']}'),
+                              Text(
+                                '${state.roomConsumptions[index]['price'].toString()} جنيه',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                          subtitle: Text(
+                            ' الكمية: ${state.roomConsumptions[index]['quantity'].toString()} ',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        const Divider(
+                          color: Color(0xffEBD6D6),
+                        )
+                      ],
                     );
                   },
                 ),

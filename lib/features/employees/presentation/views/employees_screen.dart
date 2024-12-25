@@ -50,12 +50,12 @@ class EmployeesScreen extends StatelessWidget {
             AppGaps.gap48Vertical,
             BlocBuilder<EmployeesBloc, EmployeesState>(
               builder: (context, state) {
-                return Expanded(
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxHeight: mediaQuery.size.height * .4,
-                      minWidth: mediaQuery.size.width * .7,
-                    ),
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  child: SizedBox(
+                    height: mediaQuery.size.height * 0.6,
+                    width: double.infinity,
                     child: TableWidget(
                       columns: columns,
                       rows: state.employees.map((item) {
@@ -86,12 +86,12 @@ class EmployeesScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 60, vertical: 15),
                     child: CustomButton(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 8),
+                            horizontal: 24, vertical: 20),
                         text: 'إضافه موظف',
                         onPressed: () {
                           showDialog(

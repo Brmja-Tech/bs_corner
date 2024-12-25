@@ -17,6 +17,7 @@ class ShiftsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     return CustomScaffold(
       selectedIndex: 2,
       body: Column(
@@ -38,54 +39,60 @@ class ShiftsScreen extends StatelessWidget {
                   child: CircularProgressIndicator(),
                 );
               }
-              return Expanded(
-                child: TableWidget(
-                  columns: [
-                    DataColumn(
-                      label: Text(
-                        'اسم الموظف',
-                        overflow: TextOverflow.ellipsis,
-                        style: context.appTextTheme.headlineSmall,
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                child: SizedBox(
+                  height: mediaQuery.size.height * 0.6,
+                  width: double.infinity,
+                  child: TableWidget(
+                    columns: [
+                      DataColumn(
+                        label: Text(
+                          'اسم الموظف',
+                          overflow: TextOverflow.ellipsis,
+                          style: context.appTextTheme.headlineSmall,
+                        ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'مدة البداية',
-                        style: context.appTextTheme.headlineSmall,
+                      DataColumn(
+                        label: Text(
+                          'مدة البداية',
+                          style: context.appTextTheme.headlineSmall,
+                        ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'مدة النهاية',
-                        style: context.appTextTheme.headlineSmall,
+                      DataColumn(
+                        label: Text(
+                          'مدة النهاية',
+                          style: context.appTextTheme.headlineSmall,
+                        ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'تفاصيل',
-                        style: context.appTextTheme.headlineSmall,
+                      DataColumn(
+                        label: Text(
+                          'تفاصيل',
+                          style: context.appTextTheme.headlineSmall,
+                        ),
                       ),
-                    ),
-                  ],
-                  rows: state.shifts.map((item) {
-                    logger('item: $item');
-                    return DataRow(cells: [
-                      DataCell(Text(
-                        item['shift_user_name'] ?? '',
-                        // Access 'name' from the map
-                        style: context.appTextTheme.headlineSmall,
-                      )),
-                      DataCell(Text(
-                        formatDateTime(item['from_time']),
-                        style: context.appTextTheme.headlineSmall,
-                      )),
-                      DataCell(Text(
-                        formatDateTime(item['to_time']),
-                        style: context.appTextTheme.headlineSmall,
-                      )),
-                      DataCell(CustomButton(text: 'عرض', onPressed: () {})),
-                    ]);
-                  }).toList(),
+                    ],
+                    rows: state.shifts.map((item) {
+                      logger('item: $item');
+                      return DataRow(cells: [
+                        DataCell(Text(
+                          item['shift_user_name'] ?? '',
+                          // Access 'name' from the map
+                          style: context.appTextTheme.headlineSmall,
+                        )),
+                        DataCell(Text(
+                          formatDateTime(item['from_time']),
+                          style: context.appTextTheme.headlineSmall,
+                        )),
+                        DataCell(Text(
+                          formatDateTime(item['to_time']),
+                          style: context.appTextTheme.headlineSmall,
+                        )),
+                        DataCell(CustomButton(text: 'عرض', onPressed: () {})),
+                      ]);
+                    }).toList(),
+                  ),
                 ),
               );
             },
@@ -106,13 +113,15 @@ class ShiftsScreen extends StatelessWidget {
       ),
     );
   }
+
   String formatDateTime(String dateTime) {
     final date = DateTime.parse(dateTime);
     // Format the date
     String formattedDate = DateFormat('yyyy/MM/dd').format(date);
 
     // Format the time
-    int hour = date.hour % 12 == 0 ? 12 : date.hour % 12; // Convert to 12-hour format
+    int hour =
+        date.hour % 12 == 0 ? 12 : date.hour % 12; // Convert to 12-hour format
     String minute = date.minute.toString().padLeft(2, '0');
     String period = date.hour < 12 ? 'صباحا' : 'مساء';
 
