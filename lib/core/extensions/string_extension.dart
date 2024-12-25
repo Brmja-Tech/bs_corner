@@ -3,4 +3,5 @@ extension StringX on String {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
   num get numerate => num.parse(this);
+  double get toDouble => double.parse(this);
 }

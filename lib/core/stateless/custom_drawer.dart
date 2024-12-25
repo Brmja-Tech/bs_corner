@@ -4,6 +4,7 @@ import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/features/accounts/presentation/views/accounts_screen.dart';
 import 'package:pscorner/features/employees/presentation/views/employees_screen.dart';
 import 'package:pscorner/features/home/presentation/views/home_screen.dart';
+import 'package:pscorner/features/recipes/presentation/views/inventory_screen.dart';
 import 'package:pscorner/features/reports/presentation/blocs/reports_cubit.dart';
 import 'package:pscorner/features/reports/presentation/views/reports_screen.dart';
 import 'package:pscorner/features/shifts/presentation/views/shifts_screen.dart';
@@ -42,6 +43,11 @@ class CustomDrawer extends StatelessWidget {
         'icon': Icons.analytics,
         'label': 'الحسابات',
         'widget': const AccountsScreen()
+      },
+      {
+        'icon': Icons.inventory_outlined,
+        'label': 'المخزن',
+        'widget': const InventoryScreen()
       },
     ];
     return Drawer(

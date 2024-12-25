@@ -98,7 +98,7 @@ class ShiftsScreen extends StatelessWidget {
             },
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
             child: CustomButton(
                 width: double.infinity,
                 text: 'إضافه شيفت',
