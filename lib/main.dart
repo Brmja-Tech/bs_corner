@@ -6,6 +6,7 @@ import 'package:pscorner/core/theme/app_theme.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 import 'package:pscorner/features/auth/presentation/views/login_screen.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
+import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
@@ -30,10 +31,9 @@ Future<void> main() async {
     BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
     BlocProvider<RoomsBloc>(create: (context) => sl<RoomsBloc>()),
     BlocProvider<RestaurantsBloc>(create: (context) => sl<RestaurantsBloc>()),
-    BlocProvider<EmployeesBloc>(
-        create: (context) => sl<EmployeesBloc>()..fetchAllEmployees()),
-    BlocProvider<ShiftsBloc>(
-        create: (context) => sl<ShiftsBloc>()..fetchAllShifts()),
+    BlocProvider<EmployeesBloc>(create: (context) => sl<EmployeesBloc>()),
+    BlocProvider<ShiftsBloc>(create: (context) => sl<ShiftsBloc>()),
+    BlocProvider<RecipesBloc>(create: (context) => sl<RecipesBloc>()),
   ], child: const MyApp()));
 }
 

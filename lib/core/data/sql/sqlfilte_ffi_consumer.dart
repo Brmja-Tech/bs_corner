@@ -16,6 +16,8 @@ abstract interface class SQLFLiteFFIConsumer {
   Future<Either<Failure, List<Map<String, dynamic>>>> get(String table,
       {String? where, List<dynamic>? whereArgs});
 
+  Future<Either<Failure, List<Map<String, dynamic>>>> rawGet(String query, {List<dynamic>? whereArgs});
+
   Future<Either<Failure, int>> update(String table, Map<String, dynamic> data,
       {String? where, List<dynamic>? whereArgs});
 
@@ -217,6 +219,23 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         where: where,
         whereArgs: whereArgs,
       );
+      return Right(result);
+    } catch (e) {
+      return Left(AuthFailure('Failed to fetch data: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> rawGet(
+    String query, {
+    List<dynamic>? whereArgs,
+  }) async {
+    try {
+      if (_database == null) throw Exception("Database not initialized");
+
+      // Use rawQuery to execute the custom SQL query
+      final result = await _database!.rawQuery(query, whereArgs ?? []);
+
       return Right(result);
     } catch (e) {
       return Left(AuthFailure('Failed to fetch data: $e'));

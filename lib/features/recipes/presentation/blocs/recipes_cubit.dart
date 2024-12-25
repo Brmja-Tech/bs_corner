@@ -9,14 +9,16 @@ import 'package:pscorner/features/recipes/domain/usecases/search_for_recipes_use
 import 'package:pscorner/features/recipes/domain/usecases/update_recipes_use_case.dart';
 import 'recipes_state.dart';
 
-class RecipesCubit extends Cubit<RecipesState> {
-  RecipesCubit(
+class RecipesBloc extends Cubit<RecipesState> {
+  RecipesBloc(
       this._fetchAllRecipesUseCase,
       this._updateRecipesUseCase,
       this._deleteRecipesUseCase,
       this._searchForRecipesUseCase,
       this._insertRecipesUseCase)
-      : super(const RecipesState());
+      : super(const RecipesState()){
+    fetchAllRecipes();
+  }
   final FetchAllRecipesUseCase _fetchAllRecipesUseCase;
   final UpdateRecipesUseCase _updateRecipesUseCase;
   final DeleteRecipesUseCase _deleteRecipesUseCase;

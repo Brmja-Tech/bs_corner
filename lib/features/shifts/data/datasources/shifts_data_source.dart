@@ -37,8 +37,7 @@ class ShiftDataSourceImpl implements ShiftDataSource {
   }
 
   @override
-  @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
+    Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
       NoParams noParams) async {
     try {
       // Perform a JOIN query to fetch shifts and associated usernames
@@ -59,7 +58,7 @@ class ShiftDataSourceImpl implements ShiftDataSource {
     ''';
 
       // Execute the query using the database consumer
-      final result = await _databaseConsumer.get(query);
+      final result = await _databaseConsumer.rawGet(query);
 
       return result.fold(
           (left) => Left(UnknownFailure(

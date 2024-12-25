@@ -14,7 +14,9 @@ import 'employees_state.dart';
 class EmployeesBloc extends Cubit<EmployeesState> {
   EmployeesBloc(this._insertEmployeeUseCase, this._updateEmployeeUseCase,
       this._deleteEmployeeUseCase, this._getAllEmployeesUseCase)
-      : super(const EmployeesState());
+      : super(const EmployeesState()){
+    fetchAllEmployees();
+  }
   final InsertEmployeeUseCase _insertEmployeeUseCase;
   final UpdateEmployeeUseCase _updateEmployeeUseCase;
   final DeleteEmployeeUseCase _deleteEmployeeUseCase;

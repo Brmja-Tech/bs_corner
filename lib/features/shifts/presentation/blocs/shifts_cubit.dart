@@ -11,7 +11,9 @@ import 'shifts_state.dart';
 class ShiftsBloc extends Cubit<ShiftsState> {
   ShiftsBloc(this._insertShiftUseCase, this._fetchAllShiftsUseCase,
       this._updateShiftUseCase, this._deleteShiftUseCase)
-      : super(const ShiftsState());
+      : super(const ShiftsState()){
+    fetchAllShifts();
+  }
   final InsertShiftUseCase _insertShiftUseCase;
   final FetchAllShiftsUseCase _fetchAllShiftsUseCase;
   final UpdateShiftUseCase _updateShiftUseCase;
@@ -55,9 +57,15 @@ class ShiftsBloc extends Cubit<ShiftsState> {
     emit(state.copyWith(status: ShiftsStateStatus.loading));
     final result = await _fetchAllShiftsUseCase(const NoParams());
     result.fold(
-      (l) => emit(state.copyWith(
-          status: ShiftsStateStatus.error, errorMessage: l.message)),
-      (r) => emit(state.copyWith(status: ShiftsStateStatus.success, shifts: r)),
+      (l) {
+        loggerError('Failed to fetch all shifts: ${l.message}');
+        emit(state.copyWith(
+          status: ShiftsStateStatus.error, errorMessage: l.message));
+      },
+      (r) {
+        logger('fetch all shifts $r');
+        emit(state.copyWith(status: ShiftsStateStatus.success, shifts: r));
+      },
     );
   }
 
