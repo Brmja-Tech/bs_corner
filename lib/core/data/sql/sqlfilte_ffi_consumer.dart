@@ -32,6 +32,9 @@ abstract interface class SQLFLiteFFIConsumer {
   Future<Either<Failure, void>> importToExcel(BackupParams params);
 
   Future<Either<Failure, void>> clearTable(String tableName);
+
+  Future<Either<Failure, T>> runTransaction<T>(
+      Future<T> Function(Transaction txn) transactionCallback);
 }
 
 class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
@@ -50,134 +53,136 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
 
       _database = await openDatabase(
         path,
-        version: 15, // Incremented database version
+        version: 17, // Incremented database version
         onCreate: (db, version) async {
           logger('Creating database schema');
 
           // Create the 'users' table with the 'isAdmin' column
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            password TEXT NOT NULL,
-            isAdmin BOOLEAN NOT NULL DEFAULT 0  -- False for regular users, True for admins
-          )
-        ''');
+            CREATE TABLE IF NOT EXISTS users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT NOT NULL,
+              password TEXT NOT NULL,
+              isAdmin BOOLEAN NOT NULL DEFAULT 0  -- False for regular users, True for admins
+            )
+          ''');
 
           // Create the 'restaurants' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS restaurants (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            image TEXT,
-            price REAL NOT NULL,
-            type TEXT NOT NULL CHECK(type IN ('drink', 'dish'))
-          )
-        ''');
+            CREATE TABLE IF NOT EXISTS restaurants (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              image TEXT,
+              price REAL NOT NULL,
+              type TEXT NOT NULL CHECK(type IN ('drink', 'dish')),
+              default_recipe_id INTEGER, -- Optional reference to a primary recipe
+              FOREIGN KEY (default_recipe_id) REFERENCES recipes (id) ON DELETE SET NULL
+                );
+          ''');
 
           // Create the 'rooms' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS rooms (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-            state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
-            open_time BOOLEAN DEFAULT NULL,
-            is_multiplayer BOOLEAN NOT NULL,
-            price REAL NOT NULL DEFAULT 0,
-            time TEXT NOT NULL DEFAULT '00:00:00',
-            multi_time TEXT NOT NULL DEFAULT '00:00:00'
-          )
-        ''');
+            CREATE TABLE IF NOT EXISTS rooms (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+              state TEXT NOT NULL CHECK(state IN ('running', 'not running', 'paused', 'pre-booked')),
+              open_time BOOLEAN DEFAULT NULL,
+              is_multiplayer BOOLEAN NOT NULL,
+              price REAL NOT NULL DEFAULT 0,
+              time TEXT NOT NULL DEFAULT '00:00:00',
+              multi_time TEXT NOT NULL DEFAULT '00:00:00'
+            )
+          ''');
 
           // Create the 'controllers' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS controllers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
-            state TEXT NOT NULL CHECK(state IN ('running', 'not running')),
-            room_id INTEGER NOT NULL,
-            FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
-          )
-        ''');
+            CREATE TABLE IF NOT EXISTS controllers (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
+              state TEXT NOT NULL CHECK(state IN ('running', 'not running')),
+              room_id INTEGER NOT NULL,
+              FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+            )
+          ''');
 
           // Create the 'shifts' table with a foreign key reference to 'users'
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS shifts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            total_collected_money REAL NOT NULL,
-            from_time TIMESTAMP NOT NULL,
-            to_time TIMESTAMP NOT NULL,
-            user_id INTEGER,  -- Reference to 'users' table
-            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
-          )
-        ''');
+            CREATE TABLE IF NOT EXISTS shifts (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              total_collected_money REAL NOT NULL,
+              from_time TIMESTAMP NOT NULL,
+              to_time TIMESTAMP NOT NULL,
+              user_id INTEGER,  -- Reference to 'users' table
+              FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+            )
+          ''');
 
           // Create the 'room_consumptions' table with a 'paid' column
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS room_consumptions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            room_id INTEGER NOT NULL,
-            restaurant_id INTEGER NOT NULL,
-            quantity INTEGER NOT NULL DEFAULT 1,
-            price REAL NOT NULL DEFAULT 0.0,
-            total_price REAL AS (quantity * price) STORED,
-            paid BOOLEAN NOT NULL DEFAULT 0,  -- New 'paid' column with default value false
-            FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
-            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
-          )
-        ''');
-
-          // Create the 'gradients' table
+            CREATE TABLE IF NOT EXISTS room_consumptions (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              room_id INTEGER NOT NULL,
+              restaurant_id INTEGER NOT NULL,
+              quantity INTEGER NOT NULL DEFAULT 1,
+              price REAL NOT NULL DEFAULT 0.0,
+              total_price REAL AS (quantity * price) STORED,
+              paid BOOLEAN NOT NULL DEFAULT 0,  -- New 'paid' column with default value false
+              FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+              FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+            )
+          ''');
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS gradients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            quantity REAL DEFAULT 0,
-            weight REAL DEFAULT 0
-          )
-        ''');
+              CREATE TABLE IF NOT EXISTS recipes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    restaurant_id INTEGER NOT NULL,
+                    name TEXT NOT NULL, -- Added column for recipe name
+                    ingredient_name TEXT NOT NULL,
+                    quantity REAL DEFAULT 0,
+                    weight REAL DEFAULT 0,
+                    CHECK (quantity IS NOT NULL OR weight IS NOT NULL),
+                    FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
+                );
+            ''');
 
-          // Create the 'recipes' table
           await db.execute('''
-          CREATE TABLE IF NOT EXISTS recipes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            gradient_id INTEGER NOT NULL,
-            quantity REAL,
-            weight REAL,
-            CHECK (quantity IS NOT NULL OR weight IS NOT NULL),
-            FOREIGN KEY (gradient_id) REFERENCES gradients (id) ON DELETE CASCADE
-          )
-        ''');
-
-          // Create the 'restaurant_gradients' table
-          await db.execute('''
-          CREATE TABLE IF NOT EXISTS restaurant_gradients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            restaurant_id INTEGER NOT NULL,
-            gradient_id INTEGER NOT NULL,
-            required_quantity REAL DEFAULT 0,
-            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE,
-            FOREIGN KEY (gradient_id) REFERENCES gradients (id) ON DELETE CASCADE
-          )
-        ''');
-
-          // Create the 'reports' table
-          await db.execute('''
-          CREATE TABLE IF NOT EXISTS reports (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            table_name TEXT NOT NULL,
-            data TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
-
+            CREATE TABLE IF NOT EXISTS reports (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              table_name TEXT NOT NULL,
+              data TEXT NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+          ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          logger('Upgrading database to version $newVersion');
+          logger('Upgrading database from version $oldVersion to $newVersion');
 
-          if (oldVersion < 17) {
-           
+          if (oldVersion < 18) {
+            // Drop the 'gradients' table if it exists
+            await db.execute('DROP TABLE IF EXISTS gradients');
+
+            // Drop the 'restaurant_gradients' table if it exists
+            await db.execute('DROP TABLE IF EXISTS restaurant_gradients');
+
+            // Add a new column to the 'restaurants' table
+            try {
+              await db.execute(
+                  'ALTER TABLE restaurants ADD COLUMN default_recipe_id INTEGER DEFAULT NULL');
+              await db.execute(
+                  'ALTER TABLE recipes ADD COLUMN ingredient_name TEXT DEFAULT NOT NULL');
+
+              logger('Added new column to the restaurants table');
+            } catch (e) {
+              loggerError(
+                  'Error adding new column to the restaurants table: $e');
+            }
           }
+
+          // Add more upgrade logic for future versions if needed
+          if (oldVersion < 18) {
+            // Future upgrade logic can go here
+          }
+
+          logger('Database upgrade to version $newVersion completed');
         },
       );
 
@@ -185,7 +190,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       return Right(null); // Success
     } catch (e) {
       loggerError('Database initialization failed: $e');
-      return Left(UnknownFailure(message: 'Database initialization failed: $e'));
+      return Left(
+          UnknownFailure(message: 'Database initialization failed: $e'));
     }
   }
 
@@ -426,6 +432,20 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       loggerError('Failed to clear table $tableName: $e');
       return Left(
           UnknownFailure(message: 'Failed to clear table $tableName: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, T>> runTransaction<T>(
+      Future<T> Function(Transaction txn) transactionCallback) async {
+    try {
+      if (_database == null) throw Exception("Database not initialized");
+      final result = await _database!.transaction((txn) async {
+        return await transactionCallback(txn);
+      });
+      return Right(result);
+    } catch (e) {
+      return Left(AuthFailure('Transaction failed: $e'));
     }
   }
 }

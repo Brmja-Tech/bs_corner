@@ -14,7 +14,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       this._deleteRestaurantItemUseCase,
       this._updateRestaurantItemUseCase,
       this._fetchAllRestaurantsDepartmentUseCase)
-      : super(const RestaurantsState()){
+      : super(const RestaurantsState()) {
     fetchAllItems();
   }
 
@@ -31,11 +31,13 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
     required String type,
   }) async {
     emit(state.copyWith(status: RestaurantsStateStatus.loading));
-    final result = await _insertRestaurantItemUseCase(InsertItemParams(
+    final result =
+        await _insertRestaurantItemUseCase(InsertItemWithRecipesParams(
       name: name,
       imagePath: imagePath,
-      price: price,
+      price: price.toDouble(),
       type: type,
+      recipes: [],
     ));
 
     result.fold((failure) {
