@@ -184,7 +184,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         AppGaps.gap28Vertical,
                         BlocListener<RestaurantsBloc, RestaurantsState>(
                           listener: (context, state) {
-                            if (state.isSuccess) {
+                            if (state.isAdded) {
                               setState(() {
                                 _nameController.clear();
                                 _priceController.clear();

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum RestaurantsStateStatus { initial, loading, success, error }
+enum RestaurantsStateStatus { initial, loading, success, error, added }
 
 extension RestaurantsStateStatusX on RestaurantsState {
   bool get isLoading => status == RestaurantsStateStatus.loading;
@@ -10,6 +10,8 @@ extension RestaurantsStateStatusX on RestaurantsState {
   bool get isError => status == RestaurantsStateStatus.error;
 
   bool get isInitial => status == RestaurantsStateStatus.initial;
+
+  bool get isAdded => status == RestaurantsStateStatus.added;
 }
 
 class RestaurantsState extends Equatable {
