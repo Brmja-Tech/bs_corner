@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 class TableWidget extends StatelessWidget {
   const TableWidget({super.key, this.rows, this.columns});
+
   final List<DataRow>? rows;
   final List<DataColumn>? columns;
+
   @override
   Widget build(BuildContext context) {
     const BorderSide borderSide =
@@ -35,35 +37,5 @@ class TableWidget extends StatelessWidget {
         rows: rows ?? [],
       ),
     );
-  }
-}
-
-class Centered extends StatelessWidget {
-  const Centered({super.key, required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: child,
-      ),
-    );
-  }
-}
-
-class TableLists {
-  static late int columnLenght;
-  static List<DataColumn> columns(List<String> columns) {
-    columnLenght = columns.length;
-    return columns
-        .map((e) => DataColumn(label: Centered(child: Text(e.toString()))))
-        .toList()
-        .reversed
-        .toList();
-  }
-
-  static List<DataRow> rows(List<DataRow> rows) {
-    return rows.map((e) => DataRow(cells: e.cells)).toList();
   }
 }

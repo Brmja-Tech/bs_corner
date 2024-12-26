@@ -47,44 +47,45 @@ class ShiftsScreen extends StatelessWidget {
                   child: TableWidget(
                     columns: [
                       DataColumn(
-                        label: Text(
-                          'اسم الموظف',
+                        label: Label(
+                          text: 'اسم الموظف',
                           overflow: TextOverflow.ellipsis,
                           style: context.appTextTheme.headlineSmall,
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'مدة البداية',
+                        label: Label(
+                          text: 'مدة البداية',
                           style: context.appTextTheme.headlineSmall,
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'مدة النهاية',
+                        label: Label(
+                          text: 'مدة النهاية',
                           style: context.appTextTheme.headlineSmall,
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'تفاصيل',
+                        label: Label(
+                          text: 'تفاصيل',
                           style: context.appTextTheme.headlineSmall,
                         ),
                       ),
                     ],
                     rows: state.shifts.map((item) {
                       return DataRow(cells: [
-                        DataCell(Text(
-                          item['shift_user_name'] ?? '',
+
+                        DataCell(Label(
+                          text: item['shift_user_name'] ?? '',
                           // Access 'name' from the map
                           style: context.appTextTheme.headlineSmall,
                         )),
-                        DataCell(Text(
-                          formatDateTime(item['from_time']),
+                        DataCell(Label(
+                          text: formatDateTime(item['from_time']),
                           style: context.appTextTheme.headlineSmall,
                         )),
-                        DataCell(Text(
-                          formatDateTime(item['to_time']),
+                        DataCell(Label(
+                          text: formatDateTime(item['to_time']),
                           style: context.appTextTheme.headlineSmall,
                         )),
                         DataCell(CustomButton(text: 'عرض', onPressed: () {})),

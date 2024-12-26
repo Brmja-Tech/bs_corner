@@ -46,7 +46,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
           status: RestaurantsStateStatus.error, errorMessage: failure.message));
     }, (id) {
       logger('id $id');
-      emit(state.copyWith(status: RestaurantsStateStatus.success, restaurants: [
+      emit(state.copyWith(status: RestaurantsStateStatus.added, restaurants: [
         ...state.restaurants,
         {
           'id': id,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
@@ -14,23 +13,25 @@ import 'employees_state.dart';
 class EmployeesBloc extends Cubit<EmployeesState> {
   EmployeesBloc(this._insertEmployeeUseCase, this._updateEmployeeUseCase,
       this._deleteEmployeeUseCase, this._getAllEmployeesUseCase)
-      : super(const EmployeesState()){
+      : super(const EmployeesState()) {
     fetchAllEmployees();
   }
+
   final InsertEmployeeUseCase _insertEmployeeUseCase;
   final UpdateEmployeeUseCase _updateEmployeeUseCase;
   final DeleteEmployeeUseCase _deleteEmployeeUseCase;
   final FetchEmployeeUseCase _getAllEmployeesUseCase;
+
   String _hashPassword(String password) {
     final bytes = utf8.encode(password);
     final hash = sha256.convert(bytes);
     return hash.toString();
   }
+
   Future<void> insertEmployee(
       {required String username,
       required String password,
       required bool isAdmin}) async {
-
     emit(state.copyWith(status: EmployeesStateStatus.loading));
     final result = await _insertEmployeeUseCase(InsertEmployeeParams(
       username: username,
@@ -48,9 +49,9 @@ class EmployeesBloc extends Cubit<EmployeesState> {
           ...state.employees,
           {
             'id': right,
-            'username': username,
+             'username': username,
             'password': _hashPassword(password),
-            'isAdmin': isAdmin
+            'isAdmin': isAdmin ? 1 : 0
           }
         ],
       ));
@@ -64,21 +65,39 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     bool? isAdmin,
   }) async {
     emit(state.copyWith(status: EmployeesStateStatus.loading));
+
     final result = await _updateEmployeeUseCase(UpdateEmployeeParams(
       id: id,
       username: username,
       password: password,
       isAdmin: isAdmin,
     ));
+
     result.fold((left) {
       loggerError(left.message);
       emit(state.copyWith(
-          status: EmployeesStateStatus.failure, errorMessage: left.message));
+        status: EmployeesStateStatus.failure,
+        errorMessage: left.message,
+      ));
     }, (right) {
+      final updatedEmployees = state.employees.map((employee) {
+        // Create a new employee map for the one to be updated
+        if (employee['id'] == id) {
+          return {
+            ...employee,
+            if(username != null) 'username': username,
+            if(password != null)'password': password,
+            'isAdmin': isAdmin != null && isAdmin ? 1 : 0,
+          };
+        }
+        return employee; // Return unchanged employees
+      }).toList();
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
+        employees: updatedEmployees,
       ));
     });
+    logger(state.employees);
   }
 
   Future<void> deleteEmployee({required int id}) async {
@@ -91,6 +110,7 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     }, (right) {
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
+        employees: state.employees.where((employee) => employee['id'] != id).toList(),
       ));
     });
   }

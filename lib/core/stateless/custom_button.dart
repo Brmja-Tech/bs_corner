@@ -12,12 +12,14 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
   final EdgeInsets? padding;
   final AlignmentGeometry? alignment;
+  final Color? color;
 
   const CustomButton(
       {super.key,
       required this.text,
       required this.onPressed,
       this.style,
+      this.color,
       this.width,
       this.padding,
       this.height,
@@ -31,7 +33,6 @@ class CustomButton extends StatelessWidget {
           width: width,
           margin: const EdgeInsets.only(left: 20),
           child: ElevatedButton(
-            
             style: style ??
                 context.theme.elevatedButtonTheme.style!.copyWith(
                   padding: WidgetStateProperty.all(padding ??
@@ -39,7 +40,7 @@ class CustomButton extends StatelessWidget {
                           horizontal: width == null ? 0 : context.width * 0.09,
                           vertical: 20)),
                   backgroundColor: WidgetStateProperty.all(
-                      const Color.fromRGBO(44, 102, 153, 1)),
+                      color??const Color.fromRGBO(44, 102, 153, 1)),
                 ),
             onPressed: onPressed,
             child: Label(
