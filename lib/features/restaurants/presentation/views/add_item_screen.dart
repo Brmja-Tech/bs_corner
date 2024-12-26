@@ -141,10 +141,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                     return null;
                                   }
                                 },
-                                hintStyle: AppTextTheme.bodyLarge,
-                                itemStyle: AppTextTheme.bodyLarge
-                                    .copyWith(color: Colors.black54),
-                                value: type.isEmpty ? null : type,
+                                  hintStyle: AppTextTheme.bodyLarge,
+                                  itemStyle: AppTextTheme.bodyLarge
+                                      .copyWith(color: Colors.black54),
+                                  value: type.isEmpty ? null : type,
                                 onChanged: (String? value) {
                                   setState(() {
                                     type = value ?? '';
