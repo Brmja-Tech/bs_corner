@@ -5,7 +5,6 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 
 abstract interface class RestaurantDataSource {
-
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
       NoParams noParams);
 
@@ -21,8 +20,6 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
 
   RestaurantDataSourceImpl(this._databaseConsumer);
-
-
 
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
@@ -67,11 +64,12 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
       return Left(UnknownFailure(message: 'Failed to update item: $e'));
     }
   }
+
   @override
   Future<Either<Failure, int>> insertItemWithRecipes(InsertItemWithRecipesParams params) async {
     try {
       return await _databaseConsumer.runTransaction((txn) async {
-        // Insert restaurant item
+        // Step 1: Insert restaurant item
         final restaurantData = {
           'name': params.name,
           'image': params.imagePath,
@@ -80,22 +78,27 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
         };
         final restaurantId = await txn.insert('restaurants', restaurantData);
 
-        // Insert recipes associated with the restaurant
+        // Step 2: Associate existing recipes with the restaurant
+        final batch = txn.batch();
+
         for (final recipe in params.recipes) {
-          final recipeData = {
-            'ingredient_name': recipe.ingredientName,
-            'name': recipe.name,
-            'weight': recipe.weight,
-            'quantity': recipe.quantity,
+          // Associate recipe with the restaurant in the restaurant_recipes table
+          final associationData = {
             'restaurant_id': restaurantId,
+            'recipe_id': recipe.recipeId, // Use existing recipe ID
+            'quantity': recipe.quantity,  // Recipe-specific quantity
           };
-          await txn.insert('recipes', recipeData);
+          batch.insert('restaurant_recipes', associationData);
         }
+
+        // Commit batch operations
+        await batch.commit(noResult: true);
 
         return restaurantId;
       });
     } catch (e) {
-      return Left(UnknownFailure(message: 'Failed to insert item with recipes: $e'));
+      return Left(
+          UnknownFailure(message: 'Failed to insert item with recipes: $e'));
     }
   }
 
@@ -154,14 +157,16 @@ class InsertItemWithRecipesParams {
 }
 
 class Recipe {
+  final int recipeId;
   final String name;
-  final String ingredientName;
+  final String? ingredientName;
   final num? weight;
   final num? quantity;
 
   Recipe({
+    required this.recipeId,
     required this.name,
-    required this.ingredientName,
+    this.ingredientName,
     this.weight,
     this.quantity,
   }) : assert(weight != null || quantity != null);

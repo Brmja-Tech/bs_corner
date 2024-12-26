@@ -146,6 +146,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                             });
                           },
                         ),
+                        AppGaps.gap16Vertical,
                         CustomButton(
                           width: double.infinity,
                           text: 'اضافة الوصفة',
@@ -191,6 +192,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                 _nameController.clear();
                                 _selectedImage = null;
                                 type = '';
+                                context.read<RestaurantsBloc>().clearRecipes();
                               });
                               context.showSuccessMessage('تم الاضافه بنجاح');
                             }
@@ -221,6 +223,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                             .trim()
                                             .numerate,
                                         type: selectedType,
+                                    recipes:state.recipes,
                                       );
                                 },
                                 padding: const EdgeInsets.symmetric(

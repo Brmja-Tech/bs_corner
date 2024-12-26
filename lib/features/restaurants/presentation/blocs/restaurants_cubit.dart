@@ -24,20 +24,27 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
   final FetchAllRestaurantsDepartmentUseCase
       _fetchAllRestaurantsDepartmentUseCase;
 
-  Future<void> insertItem({
-    required String name,
-    required String imagePath,
-    required num price,
-    required String type,
-  }) async {
+  Future<void> insertItem(
+      {required String name,
+      required String imagePath,
+      required num price,
+      required String type,
+      required List<Recipe> recipes}) async {
     emit(state.copyWith(status: RestaurantsStateStatus.loading));
+    final recipeObjects = recipes.map((recipe) {
+      return Recipe(
+        recipeId: recipe.recipeId,
+        quantity: recipe.quantity,
+        name: recipe.name,
+      );
+    }).toList();
     final result =
         await _insertRestaurantItemUseCase(InsertItemWithRecipesParams(
       name: name,
       imagePath: imagePath,
       price: price.toDouble(),
       type: type,
-      recipes: [],
+      recipes: recipeObjects,
     ));
 
     result.fold((failure) {
@@ -176,5 +183,11 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
 
   void clearSelectedItems() {
     emit(state.copyWith(selectedItems: [], quantity: []));
+  }
+  void setRecipes(Recipe recipes) {
+    emit(state.copyWith(recipes: [recipes, ...state.recipes]));
+  }
+  void clearRecipes() {
+    emit(state.copyWith(recipes: []));
   }
 }
