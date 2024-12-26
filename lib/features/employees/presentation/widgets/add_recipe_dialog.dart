@@ -59,32 +59,24 @@ class _AddRecipeDialogState extends State<AddRecipeDialog> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    SizedBox(
-                      height: 50,
-                      child: Row(
-                        children: [
-                          DropdownButton<String>(
-                            enableFeedback: true,
-                            isExpanded: true,
-                            value: ingredient,
-                            hint: const Text('اختر مكونًا'),
-                            icon: const Icon(Icons.arrow_downward),
-                            elevation: 16,
-                            onChanged: (String? value) {
-                              setState(() {
-                                ingredient = value;
-                              });
-                            },
-                            items: ingredients.map((value) {
-                              return DropdownMenuItem(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          ),
-                         
-                        ],
-                      ),
+                    DropdownButton(
+                      enableFeedback: true,
+                      isExpanded: true,
+                      value: ingredient,
+                      hint: const Text('اختر مكونًا'),
+                      icon: const Icon(Icons.arrow_downward),
+                      elevation: 16,
+                      onChanged: (String? value) {
+                        setState(() {
+                          ingredient = value;
+                        });
+                      },
+                      items: ingredients.map((value) {
+                        return DropdownMenuItem(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: 10),
                     CustomTextFormField(
