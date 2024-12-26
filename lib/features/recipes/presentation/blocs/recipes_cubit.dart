@@ -17,7 +17,7 @@ class RecipesBloc extends Cubit<RecipesState> {
       this._searchForRecipesUseCase,
       this._insertRecipesUseCase)
       : super(const RecipesState()) {
-    // fetchAllRecipes();
+    fetchAllRecipes();
   }
 
   final FetchAllRecipesUseCase _fetchAllRecipesUseCase;
@@ -30,12 +30,10 @@ class RecipesBloc extends Cubit<RecipesState> {
     emit(state.copyWith(status: RecipesStateStatus.loading));
 
     final result = await _fetchAllRecipesUseCase(const NoParams());
-    result
-        .fold((failure) {
-          loggerError(failure.message);
-          emit(state.copyWith(errorMessage: failure.message));
-        },
-            (recipes) {
+    result.fold((failure) {
+      loggerError(failure.message);
+      emit(state.copyWith(errorMessage: failure.message));
+    }, (recipes) {
       logger(recipes);
       emit(
           state.copyWith(recipes: recipes, status: RecipesStateStatus.success));
@@ -50,9 +48,9 @@ class RecipesBloc extends Cubit<RecipesState> {
   }
 
   Future<void> insertRecipe({
-     double? quantity,
+    double? quantity,
     required String name,
-     double? weight,
+    double? weight,
     required String ingredientName,
   }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
@@ -63,14 +61,21 @@ class RecipesBloc extends Cubit<RecipesState> {
       weight: weight,
       ingredientName: ingredientName,
     ));
-    result
-        .fold((failure) {
-          loggerError(failure.message);
-          emit(state.copyWith(errorMessage: failure.message));
-        },
-            (success) {
+    result.fold((failure) {
+      loggerError(failure.message);
+      emit(state.copyWith(errorMessage: failure.message));
+    }, (success) {
       logger(success);
-      emit(state.copyWith(status: RecipesStateStatus.success));
+      emit(state.copyWith(status: RecipesStateStatus.success, recipes: [
+        ...state.recipes,
+        {
+          'id': success,
+          'quantity': quantity,
+          'name': name,
+          'weight': weight,
+          'ingredient_name': ingredientName
+        }
+      ]));
     });
   }
 
@@ -80,7 +85,7 @@ class RecipesBloc extends Cubit<RecipesState> {
       String? name,
       double? weight,
       String? ingredientName,
-      int? restaurantId}) async {
+      }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
 
     final result = await _updateRecipesUseCase(UpdateRecipeParams(
@@ -89,23 +94,12 @@ class RecipesBloc extends Cubit<RecipesState> {
       name: name,
       weight: weight,
       ingredientName: ingredientName,
-      restaurantId: restaurantId,
     ));
     result
         .fold((failure) => emit(state.copyWith(errorMessage: failure.message)),
             (success) {
       logger(success);
-      emit(state.copyWith(status: RecipesStateStatus.success, recipes: [
-        ...state.recipes,
-        {
-          'id': id,
-          'quantity': quantity,
-          'name': name,
-          'weight': weight,
-          'ingredientName': ingredientName,
-          'restaurantId': restaurantId
-        }
-      ]));
+      emit(state.copyWith(status: RecipesStateStatus.success));
     });
   }
 

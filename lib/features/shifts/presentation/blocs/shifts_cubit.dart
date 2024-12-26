@@ -63,7 +63,6 @@ class ShiftsBloc extends Cubit<ShiftsState> {
           status: ShiftsStateStatus.error, errorMessage: l.message));
       },
       (r) {
-        logger('fetch all shifts $r');
         emit(state.copyWith(status: ShiftsStateStatus.success, shifts: r));
       },
     );

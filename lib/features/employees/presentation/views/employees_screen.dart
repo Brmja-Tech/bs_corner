@@ -87,7 +87,7 @@ class EmployeesScreen extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 60, vertical: 15),
+                        horizontal: 60, vertical: 0),
                     child: CustomButton(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(

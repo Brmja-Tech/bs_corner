@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
-import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
@@ -74,7 +73,6 @@ class ShiftsScreen extends StatelessWidget {
                       ),
                     ],
                     rows: state.shifts.map((item) {
-                      logger('item: $item');
                       return DataRow(cells: [
                         DataCell(Text(
                           item['shift_user_name'] ?? '',
