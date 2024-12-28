@@ -11,4 +11,6 @@ abstract class RestaurantsRepository {
   Future<Either<Failure, int>> deleteItem(int id);
 
   Future<Either<Failure, int>> updateItem(UpdateItemParams params);
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchRecipesByRestaurantId(int restaurantId);
+
 }

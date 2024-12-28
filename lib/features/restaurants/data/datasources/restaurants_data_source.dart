@@ -3,6 +3,7 @@ import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/helper/functions.dart';
 
 abstract interface class RestaurantDataSource {
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
@@ -14,6 +15,9 @@ abstract interface class RestaurantDataSource {
 
   Future<Either<Failure, int>> insertItemWithRecipes(
       InsertItemWithRecipesParams params);
+
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRecipesByRestaurantId(int restaurantId);
 }
 
 class RestaurantDataSourceImpl implements RestaurantDataSource {
@@ -66,10 +70,10 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   }
 
   @override
-  Future<Either<Failure, int>> insertItemWithRecipes(InsertItemWithRecipesParams params) async {
+  Future<Either<Failure, int>> insertItemWithRecipes(
+      InsertItemWithRecipesParams params) async {
     try {
       return await _databaseConsumer.runTransaction((txn) async {
-        // Step 1: Insert restaurant item
         final restaurantData = {
           'name': params.name,
           'image': params.imagePath,
@@ -78,20 +82,17 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
         };
         final restaurantId = await txn.insert('restaurants', restaurantData);
 
-        // Step 2: Associate existing recipes with the restaurant
         final batch = txn.batch();
 
         for (final recipe in params.recipes) {
-          // Associate recipe with the restaurant in the restaurant_recipes table
           final associationData = {
             'restaurant_id': restaurantId,
-            'recipe_id': recipe.recipeId, // Use existing recipe ID
-            'quantity': recipe.quantity,  // Recipe-specific quantity
+            'recipe_id': recipe.recipeId,
+            'quantity': recipe.quantity,
           };
           batch.insert('restaurant_recipes', associationData);
         }
 
-        // Commit batch operations
         await batch.commit(noResult: true);
 
         return restaurantId;
@@ -102,6 +103,28 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
     }
   }
 
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      fetchRecipesByRestaurantId(int restaurantId) async {
+    try {
+      final result = await _databaseConsumer.get(
+        'restaurant_recipes',
+        where: 'restaurant_id = ?',
+        whereArgs: [restaurantId],
+      );
+      return result.fold(
+          (l) => Left(UnknownFailure(
+              message:
+                  'Failed to fetch recipes for restaurant $restaurantId: ${l.message}')),
+          (right) {
+        loggerWarn(right);
+        return Right(right);
+      });
+    } catch (e) {
+      return Left(UnknownFailure(
+          message: 'Failed to fetch recipes for restaurant $restaurantId: $e'));
+    }
+  }
 }
 
 class InsertItemParams extends Equatable {
