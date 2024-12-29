@@ -48,12 +48,9 @@ dependencies:
   path_provider: ^2.1.5
   file_picker: ^8.1.4
   sqflite: ^2.4.1
-<<<<<<< HEAD
   supabase: ^2.6.1
   supabase_flutter: ^2.8.2
-=======
 
->>>>>>> 30588ca38aa7b892940dce6e9ba32e0cd14dc33d
 dev_dependencies:
   flutter_test:
     sdk: flutter
