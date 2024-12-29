@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
@@ -51,17 +52,25 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       databaseFactory = databaseFactoryFfi;
 
       final dbPath = await getDatabasesPath();
+      
       logger('dbPath: $dbPath');
+      
+
       final path = join(dbPath, databaseName);
 
-      _database = await openDatabase(
-        path,
-        version: 22, // Incremented database version
-        onCreate: (db, version) async {
-          logger('Creating database schema');
-
-          // Create the 'users' table with the 'isAdmin' column
-          await db.execute('''
+      _database =
+          await openDatabase(path, version: 22, // Incremented database version
+              onCreate: (db, version) async {
+        logger('Creating database schema');
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS Days (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              date TEXT NOT NULL,
+              list TEXT NOT NULL
+            )
+          ''');
+        // Create the 'users' table with the 'isAdmin' column
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL,
@@ -70,8 +79,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             )
           ''');
 
-          // Create the 'restaurants' table
-          await db.execute('''
+        // Create the 'restaurants' table
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS restaurants (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name TEXT NOT NULL,
@@ -83,8 +92,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
                 );
           ''');
 
-          // Create the 'rooms' table
-          await db.execute('''
+        // Create the 'rooms' table
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS rooms (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
@@ -97,8 +106,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             )
           ''');
 
-          // Create the 'controllers' table
-          await db.execute('''
+        // Create the 'controllers' table
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS controllers (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               device_type TEXT NOT NULL CHECK(device_type IN ('PS4', 'PS5')),
@@ -108,8 +117,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             )
           ''');
 
-          // Create the 'shifts' table with a foreign key reference to 'users'
-          await db.execute('''
+        // Create the 'shifts' table with a foreign key reference to 'users'
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS shifts (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               total_collected_money REAL NOT NULL,
@@ -120,8 +129,8 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             )
           ''');
 
-          // Create the 'room_consumptions' table with a 'paid' column
-          await db.execute('''
+        // Create the 'room_consumptions' table with a 'paid' column
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS room_consumptions (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               room_id INTEGER NOT NULL,
@@ -134,7 +143,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
               FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE
             )
           ''');
-          await db.execute('''
+        await db.execute('''
               CREATE TABLE IF NOT EXISTS recipes (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL, -- Added column for recipe name
@@ -145,8 +154,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
                 );
             ''');
 
-
-          await db.execute('''
+        await db.execute('''
             CREATE TABLE IF NOT EXISTS reports (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               table_name TEXT NOT NULL,
@@ -154,13 +162,12 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
           ''');
-        },
-          onUpgrade: (db, oldVersion, newVersion) async {
-            logger('Upgrading database from version $oldVersion to $newVersion');
+      }, onUpgrade: (db, oldVersion, newVersion) async {
+        logger('Upgrading database from version $oldVersion to $newVersion');
 
-            if (oldVersion < 22) {
-              // Create a new table without the `restaurant_id` column
-              await db.execute('''
+        if (oldVersion < 22) {
+          // Create a new table without the `restaurant_id` column
+          await db.execute('''
       CREATE TABLE IF NOT EXISTS recipes_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -171,38 +178,38 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       );
     ''');
 
-              // Migrate data from the old `recipes` table to the new one
-              try {
-                await db.execute('''
+          // Migrate data from the old `recipes` table to the new one
+          try {
+            await db.execute('''
         INSERT INTO recipes_new (id, name, ingredient_name, quantity, weight)
         SELECT id, name, ingredient_name, quantity, weight
         FROM recipes;
       ''');
-              } catch (e) {
-                loggerError('Error migrating data from "recipes" to "recipes_new": $e');
-              }
-
-              // Drop the old `recipes` table
-              try {
-                await db.execute('DROP TABLE IF EXISTS recipes;');
-              } catch (e) {
-                loggerError('Error dropping old "recipes" table: $e');
-              }
-
-              // Rename the new table to `recipes`
-              try {
-                await db.execute('ALTER TABLE recipes_new RENAME TO recipes;');
-              } catch (e) {
-                loggerError('Error renaming "recipes_new" to "recipes": $e');
-              }
-
-              logger('Removed "restaurant_id" column from "recipes" table successfully.');
-            }
-
-            logger('Database upgrade to version $newVersion completed');
+          } catch (e) {
+            loggerError(
+                'Error migrating data from "recipes" to "recipes_new": $e');
           }
 
-      );
+          // Drop the old `recipes` table
+          try {
+            await db.execute('DROP TABLE IF EXISTS recipes;');
+          } catch (e) {
+            loggerError('Error dropping old "recipes" table: $e');
+          }
+
+          // Rename the new table to `recipes`
+          try {
+            await db.execute('ALTER TABLE recipes_new RENAME TO recipes;');
+          } catch (e) {
+            loggerError('Error renaming "recipes_new" to "recipes": $e');
+          }
+
+          logger(
+              'Removed "restaurant_id" column from "recipes" table successfully.');
+        }
+
+        logger('Database upgrade to version $newVersion completed');
+      });
 
       logger('Database initialized');
       return Right(null); // Success
