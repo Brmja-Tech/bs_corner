@@ -36,7 +36,9 @@ Future<void> main() async {
     await windowManager.show();
     await windowManager.focus();
   });
+
   await DI.init();
+
   runApp(MultiBlocProvider(providers: [
     BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
     BlocProvider<RoomsBloc>(create: (context) => sl<RoomsBloc>()),

@@ -30,4 +30,9 @@ class RestaurantsRepositoryImpl implements RestaurantsRepository {
   Future<Either<Failure, int>> updateItem(UpdateItemParams params) {
     return _restaurantRepository.updateItem(params);
   }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchRecipesByRestaurantId(int restaurantId) {
+    return _restaurantRepository.fetchRecipesByRestaurantId(restaurantId);
+  }
 }

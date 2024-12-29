@@ -4,6 +4,7 @@ import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/delete_restaurant_item_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/fetch_all_restaurants_department_use_case.dart';
+import 'package:pscorner/features/restaurants/domain/usecases/fetch_recipes_by_restaurant_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/insert_restaurant_item_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/update_restaurant_item_use_case.dart';
 import 'restaurants_state.dart';
@@ -13,7 +14,8 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       this._insertRestaurantItemUseCase,
       this._deleteRestaurantItemUseCase,
       this._updateRestaurantItemUseCase,
-      this._fetchAllRestaurantsDepartmentUseCase)
+      this._fetchAllRestaurantsDepartmentUseCase,
+      this._fetchRecipesByRestaurantUseCase)
       : super(const RestaurantsState()) {
     fetchAllItems();
   }
@@ -23,6 +25,23 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
   final UpdateRestaurantItemUseCase _updateRestaurantItemUseCase;
   final FetchAllRestaurantsDepartmentUseCase
       _fetchAllRestaurantsDepartmentUseCase;
+  final FetchRecipesByRestaurantUseCase _fetchRecipesByRestaurantUseCase;
+  List<Recipe> recipes = [];
+
+  Future<void> fetchRecipesByRestaurantId(int id) async {
+    // logger('message');
+    recipes.clear();
+    emit(state.copyWith(status: RestaurantsStateStatus.loading));
+    final result = await _fetchRecipesByRestaurantUseCase(id);
+    result.fold((failure) {
+      loggerError('failure ${failure.message}');
+      emit(state.copyWith(
+          status: RestaurantsStateStatus.error, errorMessage: failure.message));
+    }, (recipes) {
+      logger('recipes $recipes');
+      emit(state.copyWith(status: RestaurantsStateStatus.success));
+    });
+  }
 
   Future<void> insertItem(
       {required String name,
@@ -118,20 +137,16 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
   void selectItem(Map<String, dynamic> item) {
     final List<Map<String, dynamic>> selectedItems = [...state.selectedItems];
 
-    // Check if the item is already in the selected items list based on the 'id'
     final isAlreadySelected =
         selectedItems.any((selectedItem) => selectedItem['id'] == item['id']);
 
     if (!isAlreadySelected) {
-      selectedItems.add(item); // Add the item if not already selected
+      selectedItems.add(item);
       emit(state.copyWith(selectedItems: selectedItems, quantity: [
         ...state.quantity,
         ItemQuantity(id: item['id'], quantity: 1, price: item['price'])
       ]));
-      // loggerWarn('Item added: $item');
-    } else {
-      // loggerWarn('Item already selected: $item');
-    }
+    } else {}
   }
 
   void setQuantity(
@@ -184,9 +199,11 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
   void clearSelectedItems() {
     emit(state.copyWith(selectedItems: [], quantity: []));
   }
+
   void setRecipes(Recipe recipes) {
     emit(state.copyWith(recipes: [recipes, ...state.recipes]));
   }
+
   void clearRecipes() {
     emit(state.copyWith(recipes: []));
   }

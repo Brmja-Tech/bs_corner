@@ -80,31 +80,5 @@ class GridViewTab extends StatelessWidget {
         },
       ),
     );
-    // return GridView.builder(
-    //   padding: const EdgeInsets.all(8.0),
-    //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    //     crossAxisCount: 2, // Number of columns
-    //     mainAxisSpacing: 8.0, // Vertical spacing
-    //     crossAxisSpacing: 8.0, // Horizontal spacing
-    //     childAspectRatio: 1, // Aspect ratio of each item
-    //   ),
-    //   itemCount: data.length,
-    //   itemBuilder: (BuildContext context, int index) {
-    //     final item = data[index];
-    //     return Card(
-    //       shape: RoundedRectangleBorder(
-    //         borderRadius: BorderRadius.circular(8.0),
-    //       ),
-    //       elevation: 4.0,
-    //       child: Center(
-    //         child: Text(
-    //           item['name'],
-    //           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-    //           textAlign: TextAlign.center,
-    //         ),
-    //       ),
-    //     );
-    //   },
-    // );
   }
 }

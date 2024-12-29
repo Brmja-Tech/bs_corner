@@ -46,12 +46,12 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
   @override
   Future<Either<Failure, void>> initDatabase(String databaseName) async {
     try {
-      logger('Initializing database');
+      // logger('Initializing database');
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
 
       final dbPath = await getDatabasesPath();
-      logger('dbPath: $dbPath');
+      // logger('dbPath: $dbPath');
       final path = join(dbPath, databaseName);
 
       _database = await openDatabase(
@@ -60,7 +60,6 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         onCreate: (db, version) async {
           logger('Creating database schema');
 
-          // Create the 'users' table with the 'isAdmin' column
           await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,6 +68,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
             isAdmin BOOLEAN NOT NULL DEFAULT 0  -- False for regular users, True for admins
           )
         ''');
+          // Create the 'users' table with the 'isAdmin' column
 
           // Create the 'restaurants' table
           await db.execute('''
@@ -190,7 +190,7 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
         },
       );
 
-      logger('Database initialized');
+      // logger('Database initialized');
       return Right(null); // Success
     } catch (e) {
       loggerError('Database initialization failed: $e');
