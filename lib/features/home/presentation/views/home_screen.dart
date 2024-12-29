@@ -7,6 +7,8 @@ import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/core/theme/text_theme.dart';
+import 'package:pscorner/core/ui/items_consumed_view.dart';
+import 'package:pscorner/core/ui/items_grid.dart';
 import 'package:pscorner/features/restaurants/presentation/views/add_item_screen.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
@@ -20,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<String> _deviceTypes = ['PS4', 'PS5'];
+  final List<String> _deviceTypes = ['PS4', 'PS5', 'TV'];
   String? _selectedDeviceType;
 
   @override
@@ -80,16 +82,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     children: [
                       if (state.isLoading) const LinearProgressIndicator(),
-                      if (state.rooms.isEmpty)
-                        const Expanded(
-                          child: Center(
-                            child: Text('لا يوجد غرف'),
-                          ),
-                        )
-                      else
-                        RoomGridBuilder(
-                          state: state,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            // Rooms Section
+                            Expanded(
+                              flex: 4,
+                              child: state.rooms.isEmpty
+                                  ? const Center(
+                                      child: Text('لا يوجد غرف'),
+                                    )
+                                  : RoomGridBuilder(state: state),
+                            ),
+                            // Items Consumed Section
+                            const Flexible(
+                              child: ItemsConsumedView(),
+                            ),
+                          ],
                         ),
+                      ),
+                      // ItemsGrid Section
+                      const Expanded(
+                        child: SingleChildScrollView(
+                          child: SizedBox(
+                            height: 200,
+                            width: double.infinity,
+                            child: ItemsGrid(),
+                            ),
+                        ),
+                      ),
                     ],
                   );
                 },
