@@ -22,14 +22,23 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<Either<Failure, void>> registerUser(AuthParams params) async {
     try {
       final hashedPassword = _hashPassword(params.password);
-      final result = await _dbConsumer.add('users', {
+
+      // Step 2: Prepare the data to be inserted
+      final data = {
         'username': params.username,
-        'password': hashedPassword,
+        'password': hashedPassword, // Storing the hashed password
         'isAdmin': params.isAdmin ? 1 : 0,
-      });
+      };
+      final result = await _dbConsumer.add('users', data);
       return result.fold(
-        (failure) => Left(failure),
-        (_) => Right(null),
+        (failure) {
+          loggerError('message ${failure.message}');
+          return Left(failure);
+        },
+        (_) {
+          logger('success');
+          return Right(null);
+        },
       );
     } catch (e) {
       loggerError('Failed to register user: $e');
