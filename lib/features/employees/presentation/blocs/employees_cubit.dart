@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/enums/user_role_enum.dart';
-import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/features/auth/data/models/user_model.dart';
 import 'package:pscorner/features/employees/data/datasources/employees_data_source.dart';
 import 'package:pscorner/features/employees/domain/usecases/delete_empolyee_use_case.dart';
 import 'package:pscorner/features/employees/domain/usecases/fetch_employees_use_case.dart';
@@ -50,19 +50,18 @@ class EmployeesBloc extends Cubit<EmployeesState> {
         status: EmployeesStateStatus.success,
         employees: [
           ...state.employees,
-          {
-            'id': right,
-            'name': username,
-            'password': _hashPassword(password),
-            'role': role.name.capitalize
-          }
+          UserModel(
+              id: right.toString(),
+              username: username,
+              role: role.name,
+              password: password)
         ],
       ));
     });
   }
 
   Future<void> updateEmployee({
-    required int id,
+    required String id,
     String? username,
     String? password,
     bool? isAdmin,
@@ -70,7 +69,7 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     emit(state.copyWith(status: EmployeesStateStatus.loading));
 
     final result = await _updateEmployeeUseCase(UpdateEmployeeParams(
-      id: id,
+      id: id.toString(),
       username: username,
       password: password,
       isAdmin: isAdmin,
@@ -83,21 +82,9 @@ class EmployeesBloc extends Cubit<EmployeesState> {
         errorMessage: left.message,
       ));
     }, (right) {
-      final updatedEmployees = state.employees.map((employee) {
-        // Create a new employee map for the one to be updated
-        if (employee['id'] == id) {
-          return {
-            ...employee,
-            if (username != null) 'username': username,
-            if (password != null) 'password': password,
-            'isAdmin': isAdmin != null && isAdmin ? 1 : 0,
-          };
-        }
-        return employee; // Return unchanged employees
-      }).toList();
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
-        employees: updatedEmployees,
+        employees: state.employees,
       ));
     });
     logger(state.employees);
@@ -113,8 +100,9 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     }, (right) {
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
-        employees:
-            state.employees.where((employee) => employee['id'] != id).toList(),
+        employees: state.employees
+            .where((employee) => employee.id != id.toString())
+            .toList(),
       ));
     });
   }

@@ -92,17 +92,49 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
 
   @override
   Future<Either<Failure, T>> get(String table,
-      {Map<String, dynamic>? filters}) {
-    // TODO: implement get
-    throw UnimplementedError();
+      {Map<String, dynamic>? filters}) async {
+    try {
+      var query = _client.from(table).select();
+
+      if (filters != null) {
+        filters.forEach((key, value) {
+          query = query.eq(key, value);
+        });
+      }
+
+      final response = await query.single();
+      logger('Data fetched successfully from $table: $response');
+
+      return Right(response as T);
+    } catch (e) {
+      loggerError('Failed to fetch data from $table: $e');
+      return Left(CreateFailure(message: 'Failed to fetch data: $e'));
+    }
   }
 
   @override
-  Future<Either<Failure, List<T>>> getAll(String table,
-      {Map<String, dynamic>? filters}) {
-    // TODO: implement getAll
-    throw UnimplementedError();
+  Future<Either<Failure, List<T>>> getAll(String table, {Map<String, dynamic>? filters}) async {
+    try {
+      var query = _client.from(table).select();
+
+      if (filters != null) {
+        filters.forEach((key, value) {
+          query = query.eq(key, value);
+        });
+      }
+
+      final response = await query;
+      logger('Data fetched successfully from $table: $response');
+
+      // Cast each record to the generic type T
+      final dataList = (response as List).map((json) => json as T).toList();
+      return Right(dataList);
+    } catch (e) {
+      loggerError('Failed to fetch data from $table: $e');
+      return Left(CreateFailure(message: 'Failed to fetch data: $e'));
+    }
   }
+
 
   @override
   Future<Either<Failure, T>> getById(String table, String id) {
@@ -211,7 +243,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, String?>> uploadImage(File image, String fileName) async {
+  Future<Either<Failure, String?>> uploadImage(
+      File image, String fileName) async {
     try {
       await _client.storage.from('items_image').upload(fileName, image);
       final imageUrl =

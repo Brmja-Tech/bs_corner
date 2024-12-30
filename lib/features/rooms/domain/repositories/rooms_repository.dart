@@ -4,7 +4,7 @@ import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
 
 abstract interface class RoomsRepository {
-  Future<Either<Failure, int>> insertRoom(InsertRoomParams params);
+  Future<Either<Failure, String>> insertRoom(InsertRoomParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
       NoParams noParams);

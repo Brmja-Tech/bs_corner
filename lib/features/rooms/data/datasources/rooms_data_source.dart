@@ -1,13 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 
 abstract interface class RoomDataSource {
-  Future<Either<Failure, int>> insertRoom(InsertRoomParams params);
+  Future<Either<Failure, String>> insertRoom(InsertRoomParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
       NoParams noParams);
@@ -37,22 +38,17 @@ abstract interface class RoomDataSource {
 
 class RoomDataSourceImpl implements RoomDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
-
-  RoomDataSourceImpl(this._databaseConsumer);
+  final SupabaseConsumer _supabaseConsumer;
+  RoomDataSourceImpl(this._databaseConsumer,this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, int>> insertRoom(InsertRoomParams params) async {
+  Future<Either<Failure, String>> insertRoom(InsertRoomParams params) async {
     try {
       final data = {
-        'device_type': params.deviceType, // PS4 or PS5
-        'state': params.state, // running, not running, paused, pre-booked
-        'open_time': params.openTime ? 1 : 0, // BOOLEAN as INTEGER (0 or 1)
-        'is_multiplayer': params.isMultiplayer ? 1 : 0, // BOOLEAN as INTEGER
-        'price': params.price,
-        'time': '00:00:00'
+        'title': 'VIP1',
       };
 
-      return await _databaseConsumer.add('rooms', data);
+      return await _supabaseConsumer.insert('rooms', data);
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to insert room: $e'));
     }

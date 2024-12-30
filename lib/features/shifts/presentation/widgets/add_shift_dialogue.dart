@@ -38,15 +38,15 @@ class _AddShiftDialogState extends State<AddShiftDialog> {
                   decoration: const InputDecoration(labelText: 'اسم الموظف'),
                   items: state.employees
                       .map((employee) => DropdownMenuItem<String>(
-                    value: employee['id'].toString(),
-                    child: Text(employee['username']),
+                    value: employee.id.toString(),
+                    child: Text(employee.username),
                   ))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedEmployeeId = value;
                       selectedEmployeeName = state.employees
-                          .firstWhere((employee) => employee['id'].toString() == value)['username'];
+                          .firstWhere((employee) => employee.id.toString() == value).username;
                     });
                   },
                 ),

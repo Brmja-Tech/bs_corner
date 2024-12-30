@@ -21,7 +21,7 @@ class RoomsRepositoryImpl implements RoomsRepository {
   }
 
   @override
-  Future<Either<Failure, int>> insertRoom(InsertRoomParams params) {
+  Future<Either<Failure, String>> insertRoom(InsertRoomParams params) {
     return _roomDataSource.insertRoom(params);
   }
 

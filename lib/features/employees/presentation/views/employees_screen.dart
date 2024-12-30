@@ -65,14 +65,11 @@ class EmployeesScreen extends StatelessWidget {
                         rows: state.employees.map((item) {
                           return DataRow(cells: [
                             DataCell(Label(
-                              text: item['username'] ??
-                                  '', // Access 'name' from the map
+                              text: item.username, // Access 'name' from the map
                               style: context.appTextTheme.headlineMedium,
                             )),
                             DataCell(Label(
-                              text: item['isAdmin'] == 1
-                                  ? 'مدير'
-                                  : 'موظف', // Access 'job' from the map
+                              text: item.role, // Access 'job' from the map
                               style: context.appTextTheme.headlineMedium,
                             )),
                             DataCell(
@@ -86,10 +83,8 @@ class EmployeesScreen extends StatelessWidget {
                                           context: context,
                                           builder: (context) =>
                                               UpdateEmployeeDialogue(
-                                            id: item['id'],
-                                            role: item['isAdmin'] == 1
-                                                ? 'مدير'
-                                                : 'موظف',
+                                            id: item.id.toString(),
+                                            role: item.role,
                                           ),
                                         );
                                       }),
@@ -97,7 +92,7 @@ class EmployeesScreen extends StatelessWidget {
                                       text: 'ازاله',
                                       color: context.theme.colorScheme.error,
                                       onPressed: () {
-                                        context.read<EmployeesBloc>().deleteEmployee(id: item['id']);
+                                        context.read<EmployeesBloc>().deleteEmployee(id: int.parse(item.id));
                                       }),
                                 ],
                               ),
