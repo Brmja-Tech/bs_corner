@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:pscorner/features/auth/domain/usecases/login_use_case.dart';
@@ -26,8 +27,8 @@ class AuthBloc extends Cubit<AuthState> {
 
   Future<void> register(String username, String password) async {
     emit(state.copyWith(status: AuthStateStatus.loading));
-    final result = await _registerUseCase(
-        AuthParams(username: username, password: password));
+    final result = await _registerUseCase(RegisterParams(
+        username: username, password: password, role: UserRole.admin));
     result.fold((left) {
       loggerError(left.message);
       emit(state.copyWith(

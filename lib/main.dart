@@ -17,7 +17,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   await initializeDateFormatting('ar', null);
-  initSupabase();
 
   WindowOptions windowOptions = const WindowOptions(
     minimumSize: Size(1024, 600),

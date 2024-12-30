@@ -9,7 +9,7 @@ import 'package:crypto/crypto.dart';
 import 'package:pscorner/core/helper/functions.dart';
 
 abstract interface class AuthLocalDataSource {
-  Future<Either<Failure, void>> registerUser(AuthParams params);
+  Future<Either<Failure, void>> registerUser(RegisterParams params);
 
   Future<Either<Failure, Map<String, dynamic>?>> login(AuthParams params);
 }
@@ -17,12 +17,17 @@ abstract interface class AuthLocalDataSource {
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final SQLFLiteFFIConsumer _dbConsumer;
   final SupabaseConsumer _supabaseConsumer;
+
   AuthLocalDataSourceImpl(this._dbConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, void>> registerUser(AuthParams params) async {
-    try {    
-      final result = await _supabaseConsumer.register( params.username, params.password);
+  Future<Either<Failure, void>> registerUser(RegisterParams params) async {
+    try {
+      final hashedPassword = _hashPassword(params.password);
+      final result = await _supabaseConsumer.register(RegisterParams(
+          username: params.username,
+          password: hashedPassword,
+          role: params.role));
       return result.fold(
         (failure) {
           loggerError('message ${failure.message}');
