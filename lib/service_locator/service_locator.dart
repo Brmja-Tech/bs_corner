@@ -1,6 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
-import 'package:pscorner/core/secrets/secrets.dart';
 import 'package:pscorner/service_locator/auth_local_service_locator.dart';
 import 'package:pscorner/service_locator/data_base_service_locator.dart';
 import 'package:pscorner/service_locator/empolyee_service_locator.dart';
@@ -27,13 +25,13 @@ abstract interface class DI {
   }
 }
 
-Future<void> initSupabase() async {
-  final supabase = await Supabase.initialize(
-    url: Secrets.supabaseUrl,
-    anonKey: Secrets.supabaseAnnonKey,
-  );
-  sl.registerLazySingleton<SupabaseClient>(() => supabase.client);
+// Future<void> initSupabase() async {
+//   final supabase = await Supabase.initialize(
+//     url: Secrets.supabaseUrl,
+//     anonKey: Secrets.supabaseAnnonKey,
+//   );
+//   sl.registerLazySingleton<SupabaseClient>(() => supabase.client);
 
-  sl.registerLazySingleton<SupabaseConsumer>(
-      () => SupabaseConsumerImpl(sl<SupabaseClient>()));
-}
+//   sl.registerLazySingleton<SupabaseConsumer>(
+//       () => SupabaseConsumerImpl(sl<SupabaseClient>()));
+// }
