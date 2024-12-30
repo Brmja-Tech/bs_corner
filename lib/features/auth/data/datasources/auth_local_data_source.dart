@@ -3,33 +3,31 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:crypto/crypto.dart';
 import 'package:pscorner/core/helper/functions.dart';
 
 abstract interface class AuthLocalDataSource {
-  Future<Either<Failure, void>> registerUser(AuthParams params);
+  Future<Either<Failure, void>> registerUser(RegisterParams params);
 
   Future<Either<Failure, Map<String, dynamic>?>> login(AuthParams params);
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final SQLFLiteFFIConsumer _dbConsumer;
+  final SupabaseConsumer _supabaseConsumer;
 
-  AuthLocalDataSourceImpl(this._dbConsumer);
+  AuthLocalDataSourceImpl(this._dbConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, void>> registerUser(AuthParams params) async {
+  Future<Either<Failure, void>> registerUser(RegisterParams params) async {
     try {
       final hashedPassword = _hashPassword(params.password);
-
-      // Step 2: Prepare the data to be inserted
-      final data = {
-        'username': params.username,
-        'password': hashedPassword, // Storing the hashed password
-        'isAdmin': params.isAdmin ? 1 : 0,
-      };
-      final result = await _dbConsumer.add('users', data);
+      final result = await _supabaseConsumer.register(RegisterParams(
+          username: params.username,
+          password: hashedPassword,
+          role: params.role));
       return result.fold(
         (failure) {
           loggerError('message ${failure.message}');
@@ -81,7 +79,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 class AuthParams extends Equatable {
   final String username;
   final String password;
-  final bool isAdmin;
+  final bool? isAdmin;
 
   const AuthParams(
       {required this.username, required this.password, this.isAdmin = false});

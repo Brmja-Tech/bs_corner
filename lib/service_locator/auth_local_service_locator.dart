@@ -9,7 +9,7 @@ import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 class AuthLocalServiceLocator {
   static Future<void> execute({required GetIt sl}) async {
     sl.registerLazySingleton<AuthLocalDataSource>(
-        () => AuthLocalDataSourceImpl(sl()));
+        () => AuthLocalDataSourceImpl(sl(),sl()));
     sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
     sl.registerFactory(() => LoginUseCase(sl()));
     sl.registerFactory(() => RegisterUseCase(sl()));

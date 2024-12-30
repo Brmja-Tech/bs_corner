@@ -11,7 +11,6 @@ import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cub
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
 import 'package:window_manager/window_manager.dart';
-
 import 'service_locator/service_locator.dart';
 
 Future<void> main() async {

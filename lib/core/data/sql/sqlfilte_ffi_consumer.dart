@@ -193,11 +193,11 @@ class SQLFLiteFFIConsumerImpl implements SQLFLiteFFIConsumer {
       // logger('Database initialized');
       return Right(null); // Success
     } catch (e) {
-      // loggerError('Database initialization failed: $e');
-      return Left(UnknownFailure(message: 'Database initialization failed: $e'));
+      loggerError('Database initialization failed: $e');
+      return Left(
+          UnknownFailure(message: 'Database initialization failed: $e'));
     }
   }
-
 
   @override
   Future<Either<Failure, int>> add(

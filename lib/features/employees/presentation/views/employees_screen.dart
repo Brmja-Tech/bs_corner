@@ -5,7 +5,7 @@ import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
-import 'package:pscorner/core/stateless/table_widget.dart';
+import 'package:pscorner/core/ui/table_widget.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_state.dart';
 import 'package:pscorner/features/employees/presentation/widgets/add_employee_dialog.dart';

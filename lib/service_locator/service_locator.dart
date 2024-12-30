@@ -7,12 +7,14 @@ import 'package:pscorner/service_locator/report_service_locator.dart';
 import 'package:pscorner/service_locator/restraurants_service_locator.dart';
 import 'package:pscorner/service_locator/rooms_service_locator.dart';
 import 'package:pscorner/service_locator/shift_service_locator.dart';
+import 'package:pscorner/service_locator/supabase_service_locator.dart';
 
 final sl = GetIt.instance;
 
 abstract interface class DI {
   static Future<void> init() async {
     await DatabaseServiceLocator.execute(sl: sl);
+    await SupabaseServiceLocator.execute(sl: sl);
     await AuthLocalServiceLocator.execute(sl: sl);
     await ReportServiceLocator.execute(sl: sl);
     await RestaurantsServiceLocator.execute(sl: sl);
@@ -22,3 +24,14 @@ abstract interface class DI {
     await RecipesServiceLocator.execute(sl: sl);
   }
 }
+
+// Future<void> initSupabase() async {
+//   final supabase = await Supabase.initialize(
+//     url: Secrets.supabaseUrl,
+//     anonKey: Secrets.supabaseAnnonKey,
+//   );
+//   sl.registerLazySingleton<SupabaseClient>(() => supabase.client);
+
+//   sl.registerLazySingleton<SupabaseConsumer>(
+//       () => SupabaseConsumerImpl(sl<SupabaseClient>()));
+// }
