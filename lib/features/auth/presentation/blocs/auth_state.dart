@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pscorner/features/auth/data/models/user_model.dart';
 
 enum AuthStateStatus { initial, loading, success, error }
 
@@ -12,7 +13,7 @@ extension AuthStateStatusX on AuthState {
 class AuthState extends Equatable {
   final AuthStateStatus status;
   final String? errorMessage;
-  final Map<String, dynamic>? user;
+  final UserModel? user;
 
   const AuthState({
     this.status = AuthStateStatus.initial,
@@ -22,7 +23,7 @@ class AuthState extends Equatable {
 
   AuthState copyWith({
     AuthStateStatus? status,
-    Map<String, dynamic>? user,
+    UserModel? user,
     String? errorMessage,
   }) {
     return AuthState(

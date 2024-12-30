@@ -76,7 +76,7 @@ fit: BoxFit.cover,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          context.read<AuthBloc>().state.user!['username'], // Arabic for user name
+                          context.read<AuthBloc>().state.user!.username, // Arabic for user name
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                         const Text(

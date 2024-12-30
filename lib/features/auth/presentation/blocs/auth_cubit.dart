@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/enums/user_role.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/core/identity/user_identity.dart';
 import 'package:pscorner/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:pscorner/features/auth/domain/usecases/login_use_case.dart';
 import 'package:pscorner/features/auth/domain/usecases/register_use_case.dart';
@@ -22,7 +23,7 @@ class AuthBloc extends Cubit<AuthState> {
           status: AuthStateStatus.error, errorMessage: left.message));
     }, (right) {
       logger('user is  $right');
-      emit(state.copyWith(status: AuthStateStatus.success));
+      emit(state.copyWith(status: AuthStateStatus.success,user: UserData.model!));
     });
   }
 
@@ -35,7 +36,7 @@ class AuthBloc extends Cubit<AuthState> {
       emit(state.copyWith(
           status: AuthStateStatus.error, errorMessage: left.message));
     }, (right) {
-      emit(state.copyWith(status: AuthStateStatus.success));
+      emit(state.copyWith(status: AuthStateStatus.success,user: UserData.model!));
     });
   }
 }
