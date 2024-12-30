@@ -19,96 +19,98 @@ class ShiftsScreen extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     return CustomScaffold(
       selectedIndex: 2,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          AppGaps.gap16Vertical,
-          Align(
-            alignment: AlignmentDirectional.topStart,
-            child: Label(
-              text: 'جدول الشيفتات',
-              style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AppGaps.gap16Vertical,
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: Label(
+                text: 'جدول الشيفتات',
+                style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+              ),
             ),
-          ),
-          AppGaps.gap48Vertical,
-          BlocBuilder<ShiftsBloc, ShiftsState>(
-            builder: (context, state) {
-              if (state.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                child: SizedBox(
-                  height: mediaQuery.size.height * 0.6,
-                  width: double.infinity,
-                  child: TableWidget(
-                    columns: [
-                      DataColumn(
-                        label: Label(
-                          text: 'اسم الموظف',
-                          overflow: TextOverflow.ellipsis,
-                          style: context.appTextTheme.headlineSmall,
-                        ),
-                      ),
-                      DataColumn(
-                        label: Label(
-                          text: 'مدة البداية',
-                          style: context.appTextTheme.headlineSmall,
-                        ),
-                      ),
-                      DataColumn(
-                        label: Label(
-                          text: 'مدة النهاية',
-                          style: context.appTextTheme.headlineSmall,
-                        ),
-                      ),
-                      DataColumn(
-                        label: Label(
-                          text: 'تفاصيل',
-                          style: context.appTextTheme.headlineSmall,
-                        ),
-                      ),
-                    ],
-                    rows: state.shifts.map((item) {
-                      return DataRow(cells: [
-
-                        DataCell(Label(
-                          text: item['shift_user_name'] ?? '',
-                          // Access 'name' from the map
-                          style: context.appTextTheme.headlineSmall,
-                        )),
-                        DataCell(Label(
-                          text: formatDateTime(item['from_time']),
-                          style: context.appTextTheme.headlineSmall,
-                        )),
-                        DataCell(Label(
-                          text: formatDateTime(item['to_time']),
-                          style: context.appTextTheme.headlineSmall,
-                        )),
-                        DataCell(CustomButton(text: 'عرض', onPressed: () {})),
-                      ]);
-                    }).toList(),
-                  ),
-                ),
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
-            child: CustomButton(
-                width: double.infinity,
-                text: 'إضافه شيفت',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const AddShiftDialog(),
+            AppGaps.gap48Vertical,
+            BlocBuilder<ShiftsBloc, ShiftsState>(
+              builder: (context, state) {
+                if (state.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
-                }),
-          ),
-        ],
+                }
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  child: SizedBox(
+                    height: mediaQuery.size.height * 0.6,
+                    width: double.infinity,
+                    child: TableWidget(
+                      columns: [
+                        DataColumn(
+                          label: Label(
+                            text: 'اسم الموظف',
+                            overflow: TextOverflow.ellipsis,
+                            style: context.appTextTheme.headlineSmall,
+                          ),
+                        ),
+                        DataColumn(
+                          label: Label(
+                            text: 'مدة البداية',
+                            style: context.appTextTheme.headlineSmall,
+                          ),
+                        ),
+                        DataColumn(
+                          label: Label(
+                            text: 'مدة النهاية',
+                            style: context.appTextTheme.headlineSmall,
+                          ),
+                        ),
+                        DataColumn(
+                          label: Label(
+                            text: 'تفاصيل',
+                            style: context.appTextTheme.headlineSmall,
+                          ),
+                        ),
+                      ],
+                      rows: state.shifts.map((item) {
+                        return DataRow(cells: [
+        
+                          DataCell(Label(
+                            text: item['shift_user_name'] ?? '',
+                            // Access 'name' from the map
+                            style: context.appTextTheme.headlineSmall,
+                          )),
+                          DataCell(Label(
+                            text: formatDateTime(item['from_time']),
+                            style: context.appTextTheme.headlineSmall,
+                          )),
+                          DataCell(Label(
+                            text: formatDateTime(item['to_time']),
+                            style: context.appTextTheme.headlineSmall,
+                          )),
+                          DataCell(CustomButton(text: 'عرض', onPressed: () {})),
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
+              child: CustomButton(
+                  width: double.infinity,
+                  text: 'إضافه شيفت',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const AddShiftDialog(),
+                    );
+                  }),
+            ),
+          ],
+        ),
       ),
     );
   }

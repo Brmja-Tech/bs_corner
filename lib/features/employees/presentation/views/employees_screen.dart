@@ -42,94 +42,96 @@ class EmployeesScreen extends StatelessWidget {
       selectedIndex: 3,
       body: Padding(
         padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppGaps.gap16Vertical,
-            Label(
-              text: 'جدول الموظفين',
-              style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
-            ),
-            AppGaps.gap48Vertical,
-            BlocBuilder<EmployeesBloc, EmployeesState>(
-              builder: (context, state) {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  child: SizedBox(
-                    height: mediaQuery.size.height * 0.6,
-                    width: double.infinity,
-                    child: TableWidget(
-                      columns: columns,
-                      rows: state.employees.map((item) {
-                        return DataRow(cells: [
-                          DataCell(Label(
-                            text: item['username'] ??
-                                '', // Access 'name' from the map
-                            style: context.appTextTheme.headlineMedium,
-                          )),
-                          DataCell(Label(
-                            text: item['isAdmin'] == 1
-                                ? 'مدير'
-                                : 'موظف', // Access 'job' from the map
-                            style: context.appTextTheme.headlineMedium,
-                          )),
-                          DataCell(
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CustomButton(
-                                    text: 'تعديل',
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            UpdateEmployeeDialogue(
-                                          id: item['id'],
-                                          role: item['isAdmin'] == 1
-                                              ? 'مدير'
-                                              : 'موظف',
-                                        ),
-                                      );
-                                    }),
-                                CustomButton(
-                                    text: 'ازاله',
-                                    color: context.theme.colorScheme.error,
-                                    onPressed: () {
-                                      context.read<EmployeesBloc>().deleteEmployee(id: item['id']);
-                                    }),
-                              ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppGaps.gap16Vertical,
+              Label(
+                text: 'جدول الموظفين',
+                style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+              ),
+              AppGaps.gap48Vertical,
+              BlocBuilder<EmployeesBloc, EmployeesState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                    child: SizedBox(
+                      height: mediaQuery.size.height * 0.6,
+                      width: double.infinity,
+                      child: TableWidget(
+                        columns: columns,
+                        rows: state.employees.map((item) {
+                          return DataRow(cells: [
+                            DataCell(Label(
+                              text: item['username'] ??
+                                  '', // Access 'name' from the map
+                              style: context.appTextTheme.headlineMedium,
+                            )),
+                            DataCell(Label(
+                              text: item['isAdmin'] == 1
+                                  ? 'مدير'
+                                  : 'موظف', // Access 'job' from the map
+                              style: context.appTextTheme.headlineMedium,
+                            )),
+                            DataCell(
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CustomButton(
+                                      text: 'تعديل',
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              UpdateEmployeeDialogue(
+                                            id: item['id'],
+                                            role: item['isAdmin'] == 1
+                                                ? 'مدير'
+                                                : 'موظف',
+                                          ),
+                                        );
+                                      }),
+                                  CustomButton(
+                                      text: 'ازاله',
+                                      color: context.theme.colorScheme.error,
+                                      onPressed: () {
+                                        context.read<EmployeesBloc>().deleteEmployee(id: item['id']);
+                                      }),
+                                ],
+                              ),
                             ),
-                          ),
-                        ]);
-                      }).toList(),
+                          ]);
+                        }).toList(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
+                      child: CustomButton(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 20),
+                          text: 'إضافه موظف',
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const AddEmployeeDialog(),
+                            );
+                          }),
                     ),
                   ),
-                );
-              },
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
-                    child: CustomButton(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 20),
-                        text: 'إضافه موظف',
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => const AddEmployeeDialog(),
-                          );
-                        }),
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
