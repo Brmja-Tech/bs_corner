@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
@@ -216,15 +217,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                     return;
                                   }
 
-                                  context.read<RestaurantsBloc>().insertItem(
-                                        name: _nameController.text.trim(),
-                                        imagePath: _selectedImage!.path,
-                                        price: _priceController.text
-                                            .trim()
-                                            .numerate,
-                                        type: selectedType,
-                                    recipes:state.recipes,
-                                      );
+                                  insertItem(context);
                                 },
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 40, vertical: 20),
@@ -286,5 +279,16 @@ class _AddItemScreenState extends State<AddItemScreen> {
         ),
       ),
     );
+  }
+
+  void insertItem(BuildContext context) {
+    context.read<RestaurantsBloc>().insertItem(
+          name: _nameController.text.trim(),
+          imagePath: _selectedImage!.path,
+          price: _priceController.text.trim().numerate,
+          type: selectedType == 'مأكولات'
+              ? ItemTypeEnum.food
+              : ItemTypeEnum.beverage,
+        );
   }
 }

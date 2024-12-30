@@ -22,7 +22,7 @@ class RestaurantsRepositoryImpl implements RestaurantsRepository {
   }
 
   @override
-  Future<Either<Failure, int>> insertItem(InsertItemWithRecipesParams params) {
+  Future<Either<Failure, String>> insertItem(InsertItemWithRecipesParams params) {
     return _restaurantRepository.insertItemWithRecipes(params);
   }
 

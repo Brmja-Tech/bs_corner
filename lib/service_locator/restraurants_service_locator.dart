@@ -11,7 +11,7 @@ import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cub
 
 class RestaurantsServiceLocator {
   static Future<void> execute({required GetIt sl}) async {
-    sl.registerLazySingleton<RestaurantDataSource>(()=>RestaurantDataSourceImpl(sl()));
+    sl.registerLazySingleton<RestaurantDataSource>(()=>RestaurantDataSourceImpl(sl(),sl(),));
     sl.registerLazySingleton<RestaurantsRepository>(()=>RestaurantsRepositoryImpl(sl()));
     sl.registerFactory(()=> FetchAllRestaurantsDepartmentUseCase(sl()));
     sl.registerFactory(()=> UpdateRestaurantItemUseCase(sl()));

@@ -1,6 +1,6 @@
 enum ItemTypeEnum {
   food,
-  drink,
+  beverage,
   other,
   all,
 }
@@ -10,7 +10,7 @@ extension ItemTypeEnumExtension on ItemTypeEnum {
     switch (this) {
       case ItemTypeEnum.food:
         return 'مأكولات';
-      case ItemTypeEnum.drink:
+      case ItemTypeEnum.beverage:
         return 'مشروبات';
       case ItemTypeEnum.other:
         return 'اخرى';

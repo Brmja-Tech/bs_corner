@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/either.dart';
@@ -11,7 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class SupabaseConsumer<T> {
   // Initialize Supabase
-  Future<Either<Failure, void>> initSupabase();
+  Future<Either<Failure, String?>> uploadImage(File image, String fileName);
 
   // User Authentication
   Future<Either<Failure, void>> signIn(AuthParams params);
@@ -115,20 +117,13 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, void>> initSupabase() {
-    // TODO: implement initSupabase
-    throw UnimplementedError();
-  }
-
-  @override
   Future<Either<Failure, String>> insert(String table, T data) async {
     try {
-      final response = await _client.from(table).insert(data as Object).select().single();
+      final response =
+          await _client.from(table).insert(data as Object).select().single();
 
-
-
-      logger('Data inserted successfully into $table');
-      return Right(response['id']);
+      logger('Data inserted successfully into $response');
+      return Right(response['id'].toString());
     } catch (e) {
       loggerError('Failed to insert data into $table: $e');
       return Left(CreateFailure(message: 'Failed to insert data: $e'));
@@ -151,7 +146,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   @override
   Future<Either<Failure, void>> register(RegisterParams params) async {
     try {
-      final user = await _client.from('users').insert(params.toJson()).select().single();
+      final user =
+          await _client.from('users').insert(params.toJson()).select().single();
       UserData.setUser(UserModel.fromJson(user));
       logger('User registered successfully');
       return Right(null);
@@ -178,7 +174,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
           .eq('password', params.password)
           .single();
 
-
       final userModel = UserModel.fromJson(response);
 
       UserData.setUser(userModel);
@@ -190,7 +185,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
       return Left(AuthFailure('Invalid username or password'));
     }
   }
-
 
   @override
   Future<Either<Failure, void>> signOut() {
@@ -214,6 +208,20 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   Future<Either<Failure, T>> update(String table, T data) {
     // TODO: implement update
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, String?>> uploadImage(File image, String fileName) async {
+    try {
+      await _client.storage.from('items_image').upload(fileName, image);
+      final imageUrl =
+          _client.storage.from('items_image').getPublicUrl(fileName);
+      loggerWarn('Image uploaded successfully $imageUrl');
+      return Right(imageUrl);
+    } catch (e) {
+      loggerError('Failed to upload image: $e');
+      return Left(CreateFailure(message: 'Failed to upload image: $e'));
+    }
   }
 }
 

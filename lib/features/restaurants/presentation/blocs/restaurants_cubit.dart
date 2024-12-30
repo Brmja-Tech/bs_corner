@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
+import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/delete_restaurant_item_use_case.dart';
@@ -43,27 +44,20 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
     });
   }
 
-  Future<void> insertItem(
-      {required String name,
-      required String imagePath,
-      required num price,
-      required String type,
-      required List<Recipe> recipes}) async {
+  Future<void> insertItem({
+    required String name,
+    required String imagePath,
+    required num price,
+    required ItemTypeEnum type,
+  }) async {
     emit(state.copyWith(status: RestaurantsStateStatus.loading));
-    final recipeObjects = recipes.map((recipe) {
-      return Recipe(
-        recipeId: recipe.recipeId,
-        quantity: recipe.quantity,
-        name: recipe.name,
-      );
-    }).toList();
+
     final result =
         await _insertRestaurantItemUseCase(InsertItemWithRecipesParams(
       name: name,
       imagePath: imagePath,
       price: price.toDouble(),
       type: type,
-      recipes: recipeObjects,
     ));
 
     result.fold((failure) {
@@ -78,7 +72,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
           'id': id,
           'name': name,
           'image': imagePath,
-          'price': price,
+          'price': price.toString(),
           'type': type
         }
       ]));

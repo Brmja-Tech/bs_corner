@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 
 abstract interface class RestaurantDataSource {
@@ -13,7 +17,7 @@ abstract interface class RestaurantDataSource {
 
   Future<Either<Failure, int>> updateItem(UpdateItemParams params);
 
-  Future<Either<Failure, int>> insertItemWithRecipes(
+  Future<Either<Failure, String>> insertItemWithRecipes(
       InsertItemWithRecipesParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>>
@@ -22,8 +26,9 @@ abstract interface class RestaurantDataSource {
 
 class RestaurantDataSourceImpl implements RestaurantDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
+  final SupabaseConsumer _supabaseConsumer;
 
-  RestaurantDataSourceImpl(this._databaseConsumer);
+  RestaurantDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
@@ -70,32 +75,22 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   }
 
   @override
-  Future<Either<Failure, int>> insertItemWithRecipes(
-      InsertItemWithRecipesParams params) async {
+  Future<Either<Failure, String>> insertItemWithRecipes(InsertItemWithRecipesParams params) async {
     try {
-      return await _databaseConsumer.runTransaction((txn) async {
-        final restaurantData = {
+      String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}.jpg'; // Unique file name
+
+      final result =
+          await _supabaseConsumer.uploadImage(File(params.imagePath), fileName);
+      return result.fold((left) => Left(CreateFailure(message: left.message)),
+          (imagePath) {
+        final data = {
           'name': params.name,
-          'image': params.imagePath,
-          'price': params.price,
-          'type': params.type,
+          'image': imagePath,
+          'price': params.price.toString(),
+          'type': params.type.name,
         };
-        final restaurantId = await txn.insert('restaurants', restaurantData);
-
-        final batch = txn.batch();
-
-        for (final recipe in params.recipes) {
-          final associationData = {
-            'restaurant_id': restaurantId,
-            'recipe_id': recipe.recipeId,
-            'quantity': recipe.quantity,
-          };
-          batch.insert('restaurant_recipes', associationData);
-        }
-
-        await batch.commit(noResult: true);
-
-        return restaurantId;
+        return _supabaseConsumer.insert('restaurant-items', data);
       });
     } catch (e) {
       return Left(
@@ -167,15 +162,16 @@ class InsertItemWithRecipesParams {
   final String name;
   final String imagePath;
   final double price;
-  final String type;
-  final List<Recipe> recipes;
+  final ItemTypeEnum type;
+
+  // final List<Recipe> recipes;
 
   InsertItemWithRecipesParams({
     required this.name,
     required this.imagePath,
     required this.price,
     required this.type,
-    required this.recipes,
+    // required this.recipes,
   });
 }
 
