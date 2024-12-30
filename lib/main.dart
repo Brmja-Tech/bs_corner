@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pscorner/core/helper/functions.dart';
-import 'package:pscorner/core/secrets/secrets.dart';
 import 'package:pscorner/core/theme/app_theme.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 import 'package:pscorner/features/auth/presentation/views/login_screen.dart';
@@ -11,7 +10,6 @@ import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart'
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 import 'service_locator/service_locator.dart';
 
@@ -19,15 +17,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   await initializeDateFormatting('ar', null);
-  try {
-    await Supabase.initialize(
-      url: Secrets.supabaseUrl,
-      anonKey: Secrets.supabaseAnnonKey,
-    );
-    logger('Supabase initialized');
-  } catch (e) {
-    logger(e);
-  }
+  initSupabase();
 
   WindowOptions windowOptions = const WindowOptions(
     minimumSize: Size(1024, 600),

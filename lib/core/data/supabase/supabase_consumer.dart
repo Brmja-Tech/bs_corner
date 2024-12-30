@@ -1,5 +1,6 @@
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class SupabaseConsumer<T> {
@@ -8,14 +9,15 @@ abstract interface class SupabaseConsumer<T> {
 
   // User Authentication
   Future<Either<Failure, void>> signIn(String email, String password);
-  Future<Either<Failure, void>> register(String email, String password);
+  Future<Either<Failure, dynamic>> register(String email, String password);
   Future<Either<Failure, void>> signOut();
 
   // Data Operations
   Future<Either<Failure, T>> insert(String table, T data);
   Future<Either<Failure, T>> update(String table, T data);
   Future<Either<Failure, T>> get(String table, {Map<String, dynamic>? filters});
-  Future<Either<Failure, List<T>>> getAll(String table, {Map<String, dynamic>? filters});
+  Future<Either<Failure, List<T>>> getAll(String table,
+      {Map<String, dynamic>? filters});
   Future<Either<Failure, void>> delete(String table, String id);
 
   // Real-Time Subscriptions
@@ -33,7 +35,8 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, void>> resetPassword(String email);
 
   // Query with Filters
-  Future<Either<Failure, List<T>>> query(String table, {Map<String, dynamic>? filters});
+  Future<Either<Failure, List<T>>> query(String table,
+      {Map<String, dynamic>? filters});
 
   // Error Handling
   Future<Either<Failure, void>> handleError(dynamic error);
@@ -68,13 +71,15 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, T>> get(String table, {Map<String, dynamic>? filters}) {
+  Future<Either<Failure, T>> get(String table,
+      {Map<String, dynamic>? filters}) {
     // TODO: implement get
     throw UnimplementedError();
   }
 
   @override
-  Future<Either<Failure, List<T>>> getAll(String table, {Map<String, dynamic>? filters}) {
+  Future<Either<Failure, List<T>>> getAll(String table,
+      {Map<String, dynamic>? filters}) {
     // TODO: implement getAll
     throw UnimplementedError();
   }
@@ -110,15 +115,30 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, List<T>>> query(String table, {Map<String, dynamic>? filters}) {
+  Future<Either<Failure, List<T>>> query(String table,
+      {Map<String, dynamic>? filters}) {
     // TODO: implement query
     throw UnimplementedError();
   }
 
   @override
-  Future<Either<Failure, void>> register(String email, String password) {
-    // TODO: implement register
-    throw UnimplementedError();
+  Future<Either<Failure, dynamic>> register(
+      String email, String password) async {
+    try {
+      final response = await _client
+          .from('users')
+          .insert({'email': email, 'password': password});
+      return response.fold(
+        (failure) {
+          print(response.toString());
+          logger(failure.toString());
+          return Left(failure);
+        },
+        (data) => Right(data),
+      );
+    } catch (e) {
+      throw UnknownFailure(message: 'Failed to register user: $e');
+    }
   }
 
   @override
@@ -156,5 +176,4 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
     // TODO: implement update
     throw UnimplementedError();
   }
-  
 }
