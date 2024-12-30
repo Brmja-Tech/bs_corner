@@ -1,17 +1,20 @@
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/enums/user_role.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/core/identity/user_identity.dart';
+import 'package:pscorner/features/auth/data/datasources/auth_local_data_source.dart';
+import 'package:pscorner/features/auth/data/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 
 abstract interface class SupabaseConsumer<T> {
   // Initialize Supabase
   Future<Either<Failure, void>> initSupabase();
 
   // User Authentication
-  Future<Either<Failure, void>> signIn(String email, String password);
+  Future<Either<Failure, void>> signIn(AuthParams params);
 
   Future<Either<Failure, void>> register(RegisterParams params);
 
@@ -139,8 +142,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   @override
   Future<Either<Failure, void>> register(RegisterParams params) async {
     try {
-      final x = await _client.from('users').insert(params.toJson()).select();
-      loggerWarn(x);
+      final user = await _client.from('users').insert(params.toJson()).select().single();
+      UserData.setUser(UserModel.fromJson(user));
       logger('User registered successfully');
       return Right(null);
     } catch (e) {
@@ -156,10 +159,29 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, void>> signIn(String email, String password) {
-    // TODO: implement signIn
-    throw UnimplementedError();
+  Future<Either<Failure, void>> signIn(AuthParams params) async {
+    try {
+      // Query the database for the user with the provided username and password
+      final response = await _client
+          .from('users')
+          .select()
+          .eq('name', params.username)
+          .eq('password', params.password)
+          .single();
+
+
+      final userModel = UserModel.fromJson(response);
+
+      UserData.setUser(userModel);
+
+      logger('User logged in successfully');
+      return Right(null);
+    } catch (e) {
+      loggerError('Failed to log in: $e');
+      return Left(AuthFailure('Invalid username or password'));
+    }
   }
+
 
   @override
   Future<Either<Failure, void>> signOut() {
@@ -185,21 +207,10 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
     throw UnimplementedError();
   }
 }
-enum UserRole {
-  admin,
-  employee,
-  supervisor,
-}
-
-extension UserRoleX on UserRole {
-  String get name => toString().split('.').last;
-
-}
 
 class RegisterParams extends Equatable {
   final String username;
   final String password;
-
   final UserRole role;
 
   const RegisterParams({

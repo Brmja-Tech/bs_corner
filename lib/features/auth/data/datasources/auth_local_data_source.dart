@@ -49,19 +49,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       AuthParams params) async {
     try {
       final hashedPassword = _hashPassword(params.password);
-      final result = await _dbConsumer.get(
-        'users',
-        where: 'username = ? AND password = ?',
-        whereArgs: [params.username, hashedPassword],
+      final result = await _supabaseConsumer.signIn(
+        AuthParams(
+          username: params.username,
+          password: hashedPassword,
+        ),
       );
       return result.fold(
         (failure) => Left(failure),
         (users) {
-          if (users.isEmpty) {
-            return Left(AuthFailure('خطأ في تسجيل البيانات'));
-          }
-          final user = users.first;
-          return Right(user);
+          return Right(null);
         },
       );
     } catch (e) {
