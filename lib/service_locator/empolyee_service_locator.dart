@@ -10,7 +10,7 @@ import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.d
 
 class EmployeeServiceLocator {
   static Future<void> execute({required GetIt sl}) async {
-   sl.registerLazySingleton<EmployeeDataSource>(()=>EmployeeDataSourceImpl(sl()));
+   sl.registerLazySingleton<EmployeeDataSource>(()=>EmployeeDataSourceImpl(sl(),sl(),));
    sl.registerLazySingleton<EmployeesRepository>(()=>EmployeesRepositoryImpl(sl()));
    sl.registerFactory(()=> FetchEmployeeUseCase(sl()));
    sl.registerFactory(()=> UpdateEmployeeUseCase(sl()));

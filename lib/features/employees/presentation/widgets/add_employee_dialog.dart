@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/enums/user_role_enum.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/stateless/custom_text_field.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
@@ -47,7 +48,7 @@ class _AddEmployeeDialogState extends State<AddEmployeeDialog> {
             const SizedBox(height: 10),
             Row(
               children: [
-                const Text('هل هو مدير؟'),
+                const Text('هل هو مشرف؟'),
                 const Spacer(),
                 Switch(
                   activeColor: context.theme.primaryColor,
@@ -85,7 +86,7 @@ class _AddEmployeeDialogState extends State<AddEmployeeDialog> {
             context.read<EmployeesBloc>().insertEmployee(
                   username: username,
                   password: password,
-                  isAdmin: isAdmin,
+                  role: isAdmin? UserRole.supervisor : UserRole.employee,
                 );
 
             Navigator.of(context).pop(); // Close the dialog

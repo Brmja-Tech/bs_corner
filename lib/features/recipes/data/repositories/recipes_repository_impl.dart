@@ -20,7 +20,7 @@ class RecipesRepositoryImpl implements RecipesRepository {
     return _recipeDataSource.searchRecipeByName(name);
   }
   @override
-  Future<Either<Failure, Object>> insertRecipe(InsertRecipeParams params) {
+  Future<Either<Failure, String>> insertRecipe(InsertRecipeParams params) {
     return _recipeDataSource.insertRecipe(params);
   }
   @override

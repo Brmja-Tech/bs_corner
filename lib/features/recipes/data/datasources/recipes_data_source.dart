@@ -6,7 +6,7 @@ import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/enums/ingredient_enum.dart';
 
 abstract interface class RecipeDataSource {
-  Future<Either<Failure, Object>> insertRecipe(InsertRecipeParams params);
+  Future<Either<Failure, String>> insertRecipe(InsertRecipeParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
       NoParams noParams);
@@ -26,7 +26,7 @@ class RecipeDataSourceImpl implements RecipeDataSource {
   RecipeDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, Object>> insertRecipe(
+  Future<Either<Failure, String>> insertRecipe(
       InsertRecipeParams params) async {
     try {
       final data = {

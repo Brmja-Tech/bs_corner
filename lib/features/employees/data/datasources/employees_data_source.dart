@@ -1,10 +1,15 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/extensions/string_extension.dart';
 
 abstract interface class EmployeeDataSource {
-  Future<Either<Failure, int>> insertEmployee(InsertEmployeeParams params);
+  Future<Either<Failure, String>> insertEmployee(RegisterParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllEmployees(
       NoParams noParams);
@@ -16,22 +21,28 @@ abstract interface class EmployeeDataSource {
 
 class EmployeeDataSourceImpl implements EmployeeDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
+  final SupabaseConsumer _supabaseConsumer;
+  EmployeeDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
-  EmployeeDataSourceImpl(this._databaseConsumer);
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
+  }
 
   @override
-  Future<Either<Failure, int>> insertEmployee(
-      InsertEmployeeParams params) async {
+  Future<Either<Failure, String>> insertEmployee(RegisterParams params) async {
     try {
+      final hashedPassword = _hashPassword(params.password);
+
       final data = {
-        'username': params.username,
-        'password': params.password,
-        'isAdmin': params.isAdmin ? 1 : 0,
-        // Converting boolean to integer for database
+        'name': params.username,
+        'password': hashedPassword,
+        'role': params.role.name.capitalize,
       };
 
       // Insert data into the 'users' table
-      return await _databaseConsumer.add('users', data);
+      return await _supabaseConsumer.insert('users', data);
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to insert employee: $e'));
     }

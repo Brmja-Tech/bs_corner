@@ -4,7 +4,7 @@ import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/features/recipes/data/datasources/recipes_data_source.dart';
 
 abstract class RecipesRepository {
-  Future<Either<Failure, Object>> insertRecipe(InsertRecipeParams params);
+  Future<Either<Failure, String>> insertRecipe(InsertRecipeParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(NoParams noParams);
 
