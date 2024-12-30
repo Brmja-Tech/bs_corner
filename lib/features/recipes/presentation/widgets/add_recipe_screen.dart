@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/enums/ingredient_enum.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/stateful/custom_drop_down_form_field.dart';
@@ -61,7 +62,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         width: context.width * 0.3,
                         child: CustomDropdownField<String>(
                           hintText: 'اختر الوحدة',
-                          items: const ['كيلو جرام', 'جرام', 'لتر'],
+                          items: const ['كيلوجرام', 'جرام', 'لتر'],
                           value: value,
                           onChanged: (unit) {
                             _selectedUnit.value = unit;
@@ -116,7 +117,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                         .trim()
                                         .toDouble,
                                     name: _nameController.text.trim(),
-                                    ingredientName: _selectedUnit.value!.trim(),
+                                    ingredientName: _selectedUnit.value!.trim().ingredientEnum,
                                   );
                             }
                           });

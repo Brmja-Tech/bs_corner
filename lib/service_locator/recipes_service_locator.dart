@@ -12,7 +12,7 @@ import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart'
 class RecipesServiceLocator {
   static Future<void> execute({required GetIt sl}) async {
     sl.registerLazySingleton<RecipeDataSource>(
-        () => RecipeDataSourceImpl(sl()));
+        () => RecipeDataSourceImpl(sl(),sl(),));
     sl.registerLazySingleton<RecipesRepository>(
         () => RecipesRepositoryImpl(sl()));
     sl.registerFactory(() => FetchAllRecipesUseCase(sl()));

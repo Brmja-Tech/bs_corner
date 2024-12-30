@@ -1,10 +1,12 @@
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/enums/ingredient_enum.dart';
 
 abstract interface class RecipeDataSource {
-  Future<Either<Failure, int>> insertRecipe(InsertRecipeParams params);
+  Future<Either<Failure, Object>> insertRecipe(InsertRecipeParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
       NoParams noParams);
@@ -19,22 +21,21 @@ abstract interface class RecipeDataSource {
 
 class RecipeDataSourceImpl implements RecipeDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
+  final SupabaseConsumer _supabaseConsumer;
 
-  RecipeDataSourceImpl(this._databaseConsumer);
+  RecipeDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, int>> insertRecipe(InsertRecipeParams params) async {
+  Future<Either<Failure, Object>> insertRecipe(
+      InsertRecipeParams params) async {
     try {
       final data = {
         'name': params.name,
-        'ingredient_name': params.ingredientName,
-        'quantity': params.quantity,
-
-        // Assuming restaurant ID is passed
+        'ingredient_unit': params.ingredientName.name,
+        'quantity': params.quantity
       };
-
       // Insert data into the 'recipes' table
-      return await _databaseConsumer.add('recipes', data);
+      return await _supabaseConsumer.insert('recipes', data);
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to insert recipe: $e'));
     }
@@ -107,13 +108,13 @@ class RecipeDataSourceImpl implements RecipeDataSource {
 
 class InsertRecipeParams {
   final String name;
-  final String ingredientName;
-  final double? quantity;
+  final IngredientEnum ingredientName;
+  final double quantity;
 
   InsertRecipeParams({
     required this.name,
     required this.ingredientName,
-    this.quantity,
+    required this.quantity,
   });
 }
 

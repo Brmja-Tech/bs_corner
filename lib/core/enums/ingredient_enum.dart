@@ -1,14 +1,16 @@
 enum IngredientEnum{kilogram, gram, liter}
 
-extension IngredientEnumExtension on IngredientEnum {
-  String get value {
+extension StringIngredientExtension on String {
+  IngredientEnum get ingredientEnum {
     switch (this) {
-      case IngredientEnum.kilogram:
-        return 'كيلوجرام';
-      case IngredientEnum.gram:
-        return 'جرام';
-      case IngredientEnum.liter:
-        return 'لتر';
+      case 'كيلوجرام':
+        return IngredientEnum.kilogram;
+      case 'جرام':
+        return IngredientEnum.gram;
+      case 'لتر':
+        return IngredientEnum.liter;
+      default:
+        throw ArgumentError('Invalid ingredient string value');
     }
   }
 }

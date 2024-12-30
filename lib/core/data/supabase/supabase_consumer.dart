@@ -21,7 +21,7 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, void>> signOut();
 
   // Data Operations
-  Future<Either<Failure, T>> insert(String table, T data);
+  Future<Either<Failure, Map<String, dynamic>>> insert(String table, T data);
 
   Future<Either<Failure, T>> update(String table, T data);
 
@@ -121,17 +121,14 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, T>> insert(String table, T data) async {
+  Future<Either<Failure, Map<String, dynamic>>> insert(String table, T data) async {
     try {
       final response = await _client.from(table).insert(data as Object).select().single();
 
-      // Ensure that the data passed can be parsed to type T.
-      if (response == null) {
-        throw Exception("Failed to insert data. Response is null.");
-      }
+
 
       logger('Data inserted successfully into $table');
-      return Right(data);
+      return Right(response);
     } catch (e) {
       loggerError('Failed to insert data into $table: $e');
       return Left(CreateFailure(message: 'Failed to insert data: $e'));

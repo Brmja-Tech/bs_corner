@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
+import 'package:pscorner/core/enums/ingredient_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/recipes/data/datasources/recipes_data_source.dart';
 import 'package:pscorner/features/recipes/domain/usecases/delete_recipes_use_case.dart';
@@ -48,10 +49,10 @@ class RecipesBloc extends Cubit<RecipesState> {
   }
 
   Future<void> insertRecipe({
-    double? quantity,
+    required double quantity,
     required String name,
     double? weight,
-    required String ingredientName,
+    required IngredientEnum ingredientName,
   }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
 
@@ -62,7 +63,7 @@ class RecipesBloc extends Cubit<RecipesState> {
     ));
     result.fold((failure) {
       loggerError(failure.message);
-      emit(state.copyWith(errorMessage: failure.message));
+      emit(state.copyWith(errorMessage: failure.message,status: RecipesStateStatus.error));
     }, (success) {
       logger(success);
       emit(state.copyWith(status: RecipesStateStatus.success, recipes: [
