@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -138,7 +139,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   @override
   Future<Either<Failure, void>> register(RegisterParams params) async {
     try {
-      await _client.from('users').insert(params.toJson());
+      final x = await _client.from('users').insert(params.toJson()).select();
+      loggerWarn(x);
       logger('User registered successfully');
       return Right(null);
     } catch (e) {
@@ -191,6 +193,7 @@ enum UserRole {
 
 extension UserRoleX on UserRole {
   String get name => toString().split('.').last;
+
 }
 
 class RegisterParams extends Equatable {
@@ -206,7 +209,7 @@ class RegisterParams extends Equatable {
   });
 
   Map<String, dynamic> toJson() =>
-      {'name': username, 'password': password, 'role': role.name};
+      {'name': username, 'password': password, 'role': role.name.capitalize};
 
   @override
   List<Object?> get props => [username, password, role];
