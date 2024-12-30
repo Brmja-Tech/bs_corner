@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:crypto/crypto.dart';
 import 'package:pscorner/core/helper/functions.dart';
@@ -15,8 +16,8 @@ abstract interface class AuthLocalDataSource {
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final SQLFLiteFFIConsumer _dbConsumer;
-
-  AuthLocalDataSourceImpl(this._dbConsumer);
+  final SupabaseConsumer _supabaseConsumer;
+  AuthLocalDataSourceImpl(this._dbConsumer,this._supabaseConsumer);
 
   @override
   Future<Either<Failure, void>> registerUser(AuthParams params) async {
