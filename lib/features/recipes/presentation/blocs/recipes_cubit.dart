@@ -58,7 +58,6 @@ class RecipesBloc extends Cubit<RecipesState> {
     final result = await _insertRecipesUseCase(InsertRecipeParams(
       quantity: quantity,
       name: name,
-      weight: weight,
       ingredientName: ingredientName,
     ));
     result.fold((failure) {
@@ -79,20 +78,19 @@ class RecipesBloc extends Cubit<RecipesState> {
     });
   }
 
-  Future<void> updateRecipe(
-      {required int id,
-      double? quantity,
-      String? name,
-      double? weight,
-      String? ingredientName,
-      }) async {
+  Future<void> updateRecipe({
+    required int id,
+    double? quantity,
+    String? name,
+    double? weight,
+    String? ingredientName,
+  }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
 
     final result = await _updateRecipesUseCase(UpdateRecipeParams(
       id: id,
       quantity: quantity,
       name: name,
-      weight: weight,
       ingredientName: ingredientName,
     ));
     result

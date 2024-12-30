@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
-import 'package:pscorner/core/enums/user_role.dart';
+import 'package:pscorner/core/enums/user_role_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/identity/user_identity.dart';
 import 'package:pscorner/features/auth/data/datasources/auth_local_data_source.dart';

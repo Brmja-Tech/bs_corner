@@ -29,7 +29,6 @@ class RecipeDataSourceImpl implements RecipeDataSource {
         'name': params.name,
         'ingredient_name': params.ingredientName,
         'quantity': params.quantity,
-        'weight': params.weight,
 
         // Assuming restaurant ID is passed
       };
@@ -58,9 +57,9 @@ class RecipeDataSourceImpl implements RecipeDataSource {
       final data = <String, dynamic>{};
 
       if (params.name != null) data['name'] = params.name;
-      if (params.ingredientName != null) data['ingredient_name'] = params.ingredientName;
+      if (params.ingredientName != null)
+        data['ingredient_name'] = params.ingredientName;
       if (params.quantity != null) data['quantity'] = params.quantity;
-      if (params.weight != null) data['weight'] = params.weight;
 
       // Update recipe data in the 'recipes' table based on the recipe ID
       return await _databaseConsumer.update(
@@ -110,14 +109,12 @@ class InsertRecipeParams {
   final String name;
   final String ingredientName;
   final double? quantity;
-  final double? weight;
 
   InsertRecipeParams({
     required this.name,
     required this.ingredientName,
     this.quantity,
-    this.weight,
-  }) ;
+  });
 }
 
 class UpdateRecipeParams {
@@ -125,14 +122,11 @@ class UpdateRecipeParams {
   final String? name;
   final String? ingredientName;
   final double? quantity;
-  final double? weight;
-
 
   UpdateRecipeParams({
     required this.id,
     this.name,
     this.ingredientName,
     this.quantity,
-    this.weight,
   });
 }

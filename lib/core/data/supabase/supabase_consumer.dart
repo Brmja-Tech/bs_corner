@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/either.dart';
-import 'package:pscorner/core/enums/user_role.dart';
+import 'package:pscorner/core/enums/user_role_enum.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/identity/user_identity.dart';
@@ -121,9 +121,21 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, T>> insert(String table, T data) {
-    // TODO: implement insert
-    throw UnimplementedError();
+  Future<Either<Failure, T>> insert(String table, T data) async {
+    try {
+      final response = await _client.from(table).insert(data as Object).select().single();
+
+      // Ensure that the data passed can be parsed to type T.
+      if (response == null) {
+        throw Exception("Failed to insert data. Response is null.");
+      }
+
+      logger('Data inserted successfully into $table');
+      return Right(data);
+    } catch (e) {
+      loggerError('Failed to insert data into $table: $e');
+      return Left(CreateFailure(message: 'Failed to insert data: $e'));
+    }
   }
 
   @override
