@@ -11,16 +11,17 @@ import 'shifts_state.dart';
 class ShiftsBloc extends Cubit<ShiftsState> {
   ShiftsBloc(this._insertShiftUseCase, this._fetchAllShiftsUseCase,
       this._updateShiftUseCase, this._deleteShiftUseCase)
-      : super(const ShiftsState()){
+      : super(const ShiftsState()) {
     fetchAllShifts();
   }
+
   final InsertShiftUseCase _insertShiftUseCase;
   final FetchAllShiftsUseCase _fetchAllShiftsUseCase;
   final UpdateShiftUseCase _updateShiftUseCase;
   final DeleteShiftUseCase _deleteShiftUseCase;
 
   Future<void> insertShift(
-      {required int userId,
+      {required String userId,
       required String userName,
       required double totalCollectedMoney,
       required String fromTime,
@@ -30,7 +31,8 @@ class ShiftsBloc extends Cubit<ShiftsState> {
         totalCollectedMoney: totalCollectedMoney,
         fromTime: DateTime.parse(fromTime),
         toTime: DateTime.parse(toTime),
-        userId: userId));
+        userId: userId,
+        userName: userName));
     result.fold(
       (l) {
         loggerError('Failed to insert shift: ${l.message}');
@@ -60,7 +62,7 @@ class ShiftsBloc extends Cubit<ShiftsState> {
       (l) {
         loggerError('Failed to fetch all shifts: ${l.message}');
         emit(state.copyWith(
-          status: ShiftsStateStatus.error, errorMessage: l.message));
+            status: ShiftsStateStatus.error, errorMessage: l.message));
       },
       (r) {
         emit(state.copyWith(status: ShiftsStateStatus.success, shifts: r));

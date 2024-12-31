@@ -19,9 +19,11 @@ class EmployeesScreen extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     List<DataColumn> columns = [
       DataColumn(
-        label: Label(
-          text: 'اسم الموظف',
-          style: context.appTextTheme.headlineSmall,
+        label: Flexible(
+          child: Label(
+            text: 'اسم الموظف',
+            style: context.appTextTheme.headlineSmall,
+          ),
         ),
       ),
       DataColumn(

@@ -22,7 +22,7 @@ class ShiftsRepositoryImpl implements ShiftsRepository {
   }
 
   @override
-  Future<Either<Failure, int>> insertShift(InsertShiftParams params) {
+  Future<Either<Failure, String>> insertShift(InsertShiftParams params) {
     return _shiftDataSource.insertShift(params);
   }
 

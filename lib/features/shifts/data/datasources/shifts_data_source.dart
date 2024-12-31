@@ -1,10 +1,12 @@
 import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/sql/sqlfilte_ffi_consumer.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
+import 'package:pscorner/core/helper/functions.dart';
 
 abstract interface class ShiftDataSource {
-  Future<Either<Failure, int>> insertShift(InsertShiftParams params);
+  Future<Either<Failure, String>> insertShift(InsertShiftParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
       NoParams noParams);
@@ -16,28 +18,32 @@ abstract interface class ShiftDataSource {
 
 class ShiftDataSourceImpl implements ShiftDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
+  final SupabaseConsumer _supabaseConsumer;
 
-  ShiftDataSourceImpl(this._databaseConsumer);
+  ShiftDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, int>> insertShift(InsertShiftParams params) async {
+  Future<Either<Failure, String>> insertShift(InsertShiftParams params) async {
     try {
       final data = {
         'total_collected_money': params.totalCollectedMoney,
-        'from_time': params.fromTime.toIso8601String(),
-        'to_time': params.toTime.toIso8601String(),
+        'start_time': params.fromTime.toUtc().toIso8601String(),
+        'end_time': params.toTime.toUtc().toIso8601String(),
         'user_id': params.userId,
+        'shift_user_name': params.userName
       };
-
+      logger(params.fromTime.toUtc());
+      logger(params.toTime.toUtc());
+      return await _supabaseConsumer.insert('shifts', data);
       // Insert data into the 'shifts' table
-      return await _databaseConsumer.add('shifts', data);
+      // return await _databaseConsumer.add('shifts', data);
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to insert shift: $e'));
     }
   }
 
   @override
-    Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
       NoParams noParams) async {
     try {
       // Perform a JOIN query to fetch shifts and associated usernames
@@ -121,13 +127,15 @@ class InsertShiftParams {
   final double totalCollectedMoney;
   final DateTime fromTime;
   final DateTime toTime;
-  final int userId;
+  final String userId;
+  final String userName;
 
   InsertShiftParams({
     required this.totalCollectedMoney,
     required this.fromTime,
     required this.toTime,
     required this.userId,
+    required this.userName,
   });
 }
 

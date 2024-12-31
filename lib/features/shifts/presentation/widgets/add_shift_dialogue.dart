@@ -149,7 +149,7 @@ class _AddShiftDialogState extends State<AddShiftDialog> {
                 toTime != null &&selectedEmployeeName != null) {
               context.read<ShiftsBloc>().insertShift(
                 userName: selectedEmployeeName!,
-                userId: int.parse(selectedEmployeeId!),
+                userId: selectedEmployeeId!.toString(),
                 totalCollectedMoney: 0,
                 fromTime: fromTime!.toString(),
                 toTime: toTime!.toString(),
