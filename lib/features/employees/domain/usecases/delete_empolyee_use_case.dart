@@ -3,13 +3,13 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/features/employees/domain/repositories/employees_repository.dart';
 
-class DeleteEmployeeUseCase extends BaseUseCase<int, int> {
+class DeleteEmployeeUseCase extends BaseUseCase<int, String> {
   final EmployeesRepository _employeesRepository;
 
   const DeleteEmployeeUseCase(this._employeesRepository);
 
   @override
-  Future<Either<Failure, int>> call(int params) {
+  Future<Either<Failure, int>> call(String params) {
     return _employeesRepository.deleteEmployee(params);
   }
 }

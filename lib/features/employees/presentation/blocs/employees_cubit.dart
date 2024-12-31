@@ -108,7 +108,7 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     logger(state.employees);
   }
 
-  Future<void> deleteEmployee({required int id}) async {
+  Future<void> deleteEmployee({required String id}) async {
     emit(state.copyWith(status: EmployeesStateStatus.loading));
     final result = await _deleteEmployeeUseCase(id);
     result.fold((left) {

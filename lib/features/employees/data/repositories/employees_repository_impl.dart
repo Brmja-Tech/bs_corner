@@ -27,7 +27,7 @@ class EmployeesRepositoryImpl implements EmployeesRepository {
     return _employeeDataSource.updateEmployee(params);
   }
   @override
-  Future<Either<Failure, int>> deleteEmployee(int params) {
+  Future<Either<Failure, int>> deleteEmployee(String params) {
     return _employeeDataSource.deleteEmployee(params);
   }
 

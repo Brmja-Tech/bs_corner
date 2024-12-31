@@ -11,5 +11,5 @@ abstract class EmployeesRepository {
   Future<Either<Failure, List<UserModel>>> fetchAllEmployees(NoParams noParams);
 
   Future<Either<Failure, int>> updateEmployee(UpdateEmployeeParams params);
-  Future<Either<Failure, int>> deleteEmployee(int params);
+  Future<Either<Failure, int>> deleteEmployee(String params);
 }

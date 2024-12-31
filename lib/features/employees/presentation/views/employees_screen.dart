@@ -105,7 +105,7 @@ class EmployeesScreen extends StatelessWidget {
                                         context
                                             .read<EmployeesBloc>()
                                             .deleteEmployee(
-                                                id: int.parse(item.id));
+                                                id: item.id);
                                       }),
                                 ],
                               ),

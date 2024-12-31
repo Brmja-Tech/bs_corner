@@ -16,7 +16,7 @@ abstract interface class EmployeeDataSource {
 
   Future<Either<Failure, int>> updateEmployee(UpdateEmployeeParams params);
 
-  Future<Either<Failure, int>> deleteEmployee(int id);
+  Future<Either<Failure, int>> deleteEmployee(String id);
 }
 
 class EmployeeDataSourceImpl implements EmployeeDataSource {
@@ -82,13 +82,12 @@ class EmployeeDataSourceImpl implements EmployeeDataSource {
   }
 
   @override
-  Future<Either<Failure, int>> deleteEmployee(int id) async {
-    final result = await _databaseConsumer
-        .delete('users', where: 'id = ?', whereArgs: [id]);
+  Future<Either<Failure, int>> deleteEmployee(String id) async {
+    final result = await _supabaseConsumer.delete('users', filters: {'id': id});
     return result.fold(
         (l) => Left(
             UnknownFailure(message: 'Failed to delete employee: ${l.message}')),
-        (r) => Right(r));
+        (r) => Right(r ? 1 : 0));
   }
 }
 
