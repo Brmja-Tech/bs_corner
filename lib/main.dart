@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:path/path.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/theme/app_theme.dart';
 import 'package:pscorner/features/auth/presentation/blocs/auth_cubit.dart';
 import 'package:pscorner/features/auth/presentation/views/login_screen.dart';
 import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.dart';
+import 'package:pscorner/features/facilities/presentation/blocs/facilities_cubit.dart';
 import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
+import 'package:pscorner/features/timers/presentation/blocs/timers_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 import 'service_locator/service_locator.dart';
 
@@ -34,6 +37,9 @@ Future<void> main() async {
     BlocProvider<EmployeesBloc>(create: (context) => sl<EmployeesBloc>()),
     BlocProvider<ShiftsBloc>(create: (context) => sl<ShiftsBloc>()),
     BlocProvider<RecipesBloc>(create: (context) => sl<RecipesBloc>()),
+    BlocProvider(create: (context) => sl<FacilitiesCubit>()),
+    BlocProvider(create: (context) => sl<TimersCubit>()),
+
   ], child: const MyApp()));
 }
 

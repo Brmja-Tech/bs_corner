@@ -14,8 +14,20 @@ class TimersCubit extends Cubit<TimersState> {
         emit(TimerFailure(l.message));
         return Left(l);
       }, (r) {
-        emit(TimerSuccess());
+        emit(TimerSuccess(r));
 
+        return Right(r);
+      });
+    });
+  }
+  Future<Either< Failure, String >> stopTimer({required String roomId}) async {
+    emit(TimersLoading());
+    return _timersDataSource.stopATimer(roomId: roomId).then((value) {
+      return value.fold((l) {
+        emit(TimerFailure(l.message));
+        return Left(l);
+      }, (r) {
+        emit(TimerSuccess(r));
         return Right(r);
       });
     });

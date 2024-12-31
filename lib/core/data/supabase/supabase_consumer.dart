@@ -63,6 +63,7 @@ abstract interface class SupabaseConsumer<T> {
 
   // Error Handling
   Future<Either<Failure, void>> handleError(dynamic error);
+  
 }
 
 class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
