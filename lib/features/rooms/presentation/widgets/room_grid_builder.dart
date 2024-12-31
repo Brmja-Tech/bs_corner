@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/grid_item_widget.dart';
-import 'package:pscorner/features/rooms/presentation/widgets/info/info.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/info/info_list.dart';
 
 class RoomGridBuilder extends StatelessWidget {

@@ -51,14 +51,22 @@ class EmployeesScreen extends StatelessWidget {
               AppGaps.gap16Vertical,
               Label(
                 text: 'جدول الموظفين',
-                style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
+                style:
+                    context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
               ),
               AppGaps.gap48Vertical,
               BlocBuilder<EmployeesBloc, EmployeesState>(
+                  builder: (context, state) {
+                if (state.isLoading) {
+                  return const LinearProgressIndicator();
+                }
+                return Container();
+              }),
+              BlocBuilder<EmployeesBloc, EmployeesState>(
                 builder: (context, state) {
                   return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 20),
                     child: SizedBox(
                       height: mediaQuery.size.height * 0.6,
                       width: double.infinity,
@@ -94,7 +102,10 @@ class EmployeesScreen extends StatelessWidget {
                                       text: 'ازاله',
                                       color: context.theme.colorScheme.error,
                                       onPressed: () {
-                                        context.read<EmployeesBloc>().deleteEmployee(id: int.parse(item.id));
+                                        context
+                                            .read<EmployeesBloc>()
+                                            .deleteEmployee(
+                                                id: item.id);
                                       }),
                                 ],
                               ),
@@ -110,8 +121,8 @@ class EmployeesScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 60, vertical: 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 60, vertical: 0),
                       child: CustomButton(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(

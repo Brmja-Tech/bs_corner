@@ -36,7 +36,10 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, List<T>>> getAll(String table,
       {Map<String, dynamic>? filters});
 
-  Future<Either<Failure, void>> delete(String table, String id);
+  Future<Either<Failure, bool>> delete(
+    String table, {
+    required Map<String, dynamic> filters,
+  });
 
   // Real-Time Subscriptions
   Stream<Either<Failure, T>> subscribeToTable(String table);
@@ -54,8 +57,6 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, bool>> isAuthenticated();
 
   Future<Either<Failure, T>> getById(String table, String id);
-
-  Future<Either<Failure, void>> resetPassword(String email);
 
   // Query with Filters
   Future<Either<Failure, List<T>>> query(String table,
@@ -90,9 +91,27 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, void>> delete(String table, String id) {
-    // TODO: implement delete
-    throw UnimplementedError();
+  Future<Either<Failure, bool>> delete(
+    String table, {
+    required Map<String, dynamic> filters,
+  }) async {
+    try {
+      if (filters.isEmpty) {
+        throw ArgumentError('Filters cannot be empty for delete operation.');
+      }
+
+      var query = _client.from(table).delete();
+      filters.forEach((key, value) {
+        query = query.eq(key, value);
+      });
+      final response = await query;
+      logger(
+          'Data deleted successfully from $table with filters $filters: $response');
+      return Right(true);
+    } catch (e) {
+      loggerError('Failed to delete data from $table: $e');
+      return Left(CreateFailure(message: 'Failed to delete data: $e'));
+    }
   }
 
   @override
@@ -152,12 +171,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, void>> handleError(error) {
-    // TODO: implement handleError
-    throw UnimplementedError();
-  }
-
-  @override
   Future<Either<Failure, String>> insert(String table, T data) async {
     try {
       final response =
@@ -203,15 +216,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, void>> resetPassword(String email) {
-    // TODO: implement resetPassword
-    throw UnimplementedError();
-  }
-
-  @override
   Future<Either<Failure, void>> signIn(AuthParams params) async {
     try {
-      // Query the database for the user with the provided username and password
       final response = await _client
           .from('users')
           .select()

@@ -16,7 +16,7 @@ abstract interface class EmployeeDataSource {
 
   Future<Either<Failure, int>> updateEmployee(UpdateEmployeeParams params);
 
-  Future<Either<Failure, int>> deleteEmployee(int id);
+  Future<Either<Failure, int>> deleteEmployee(String id);
 }
 
 class EmployeeDataSourceImpl implements EmployeeDataSource {
@@ -70,32 +70,24 @@ class EmployeeDataSourceImpl implements EmployeeDataSource {
   Future<Either<Failure, int>> updateEmployee(
       UpdateEmployeeParams params) async {
     try {
-      final data = <String, dynamic>{};
-
-      if (params.username != null) data['username'] = params.username;
-      if (params.password != null) data['password'] = params.password;
-      if (params.isAdmin != null) data['isAdmin'] = params.isAdmin! ? 1 : 0;
-
-      // Update employee data in the 'users' table based on the employee ID
-      return await _databaseConsumer.update(
-        'users',
-        data,
-        where: 'id = ?',
-        whereArgs: [params.id],
-      );
+      final result =
+          await _supabaseConsumer.update('users', params.updates, filters: {
+        'id': params.updates['id'],
+      });
+      return result.fold(
+          (failure) => Left(failure), (data) => Right(data ? 1 : 0));
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to update employee: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, int>> deleteEmployee(int id) async {
-    final result = await _databaseConsumer
-        .delete('users', where: 'id = ?', whereArgs: [id]);
+  Future<Either<Failure, int>> deleteEmployee(String id) async {
+    final result = await _supabaseConsumer.delete('users', filters: {'id': id});
     return result.fold(
         (l) => Left(
             UnknownFailure(message: 'Failed to delete employee: ${l.message}')),
-        (r) => Right(r));
+        (r) => Right(r ? 1 : 0));
   }
 }
 
@@ -113,15 +105,9 @@ class InsertEmployeeParams {
 }
 
 class UpdateEmployeeParams {
-  final String id;
-  final String? username;
-  final String? password;
-  final bool? isAdmin;
+  final Map<String, dynamic> updates;
 
   UpdateEmployeeParams({
-    required this.id,
-    this.username,
-    this.password,
-    this.isAdmin,
+    required this.updates,
   });
 }
