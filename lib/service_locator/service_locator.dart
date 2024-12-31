@@ -5,6 +5,7 @@ import 'package:pscorner/service_locator/empolyee_service_locator.dart';
 import 'package:pscorner/service_locator/recipes_service_locator.dart';
 import 'package:pscorner/service_locator/report_service_locator.dart';
 import 'package:pscorner/service_locator/restraurants_service_locator.dart';
+import 'package:pscorner/service_locator/rooms_repo_impl.dart';
 import 'package:pscorner/service_locator/rooms_service_locator.dart';
 import 'package:pscorner/service_locator/shift_service_locator.dart';
 import 'package:pscorner/service_locator/supabase_service_locator.dart';
@@ -22,5 +23,7 @@ abstract interface class DI {
     await EmployeeServiceLocator.execute(sl: sl);
     await ShiftServiceLocator.execute(sl: sl);
     await RecipesServiceLocator.execute(sl: sl);
+    await RoomsRepoImplServiceLocator.execute(sl: sl);
+
   }
 }

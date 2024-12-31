@@ -75,7 +75,8 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   }
 
   @override
-  Future<Either<Failure, String>> insertItemWithRecipes(InsertItemWithRecipesParams params) async {
+  Future<Either<Failure, String>> insertItemWithRecipes(
+      InsertItemWithRecipesParams params) async {
     try {
       String fileName =
           '${DateTime.now().millisecondsSinceEpoch}.jpg'; // Unique file name

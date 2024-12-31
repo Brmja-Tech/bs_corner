@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
       logger('Device Type: $_selectedDeviceType');
 
       // Close the dialog
-      cubit.insertItem(deviceType: _selectedDeviceType!);
+      cubit.insertRoom(deviceType: _selectedDeviceType!);
 
       // Optional: Show confirmation
       context.pop();

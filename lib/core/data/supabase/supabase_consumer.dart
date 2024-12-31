@@ -19,6 +19,7 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, void>> signIn(AuthParams params);
 
   Future<Either<Failure, void>> register(RegisterParams params);
+  
 
   Future<Either<Failure, void>> signOut();
 

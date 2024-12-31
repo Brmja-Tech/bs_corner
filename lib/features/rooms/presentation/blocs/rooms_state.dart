@@ -30,6 +30,7 @@ class RoomsState extends Equatable {
     String? errorMessage,
     List<Map<String, dynamic>>? rooms,
     List<Map<String, dynamic>>? roomConsumptions,
+    Map<String, dynamic>? insertedRoom,
   }) {
     return RoomsState(
       status: status ?? this.status,

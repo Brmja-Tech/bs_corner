@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/features/restaurants/data/repos/repo.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
 import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_case.dart';
@@ -11,14 +12,13 @@ import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dar
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_room_consmption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/insert_room_consmption_use_case.dart';
-import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/transfer_room_data_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
 import 'rooms_state.dart';
 
 class RoomsBloc extends Cubit<RoomsState> {
   RoomsBloc(
-      this._insertRoomUseCase,
+      this._roomsRepoImpl,
       this._deleteRoomUseCase,
       this._fetchAllRoomsUseCase,
       this._updateRoomUseCase,
@@ -30,8 +30,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       : super(const RoomsState()) {
     _fetchAllItems();
   }
-
-  final InsertRoomUseCase _insertRoomUseCase;
+  final RoomsRepoImpl _roomsRepoImpl;
   final DeleteRoomUseCase _deleteRoomUseCase;
   final ClearRoomTableUseCase _clearRoomTableUseCase;
   final FetchAllRoomsUseCase _fetchAllRoomsUseCase;
@@ -41,34 +40,17 @@ class RoomsBloc extends Cubit<RoomsState> {
   final FetchRoomConsumptionUseCase _fetchRoomConsumptionUseCase;
   final DeleteRoomConsumptionUseCase _deleteRoomConsumptionUseCase;
 
-  Future<void> insertItem({
+  Future<void> insertRoom({
     required String deviceType,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
-    final result = await _insertRoomUseCase(InsertRoomParams(
-      deviceType: deviceType,
-      state: 'not running',
-      openTime: false,
-      isMultiplayer: false,
-      price: calculatePrice(deviceType, false),
-    ));
-
+    final result = await _roomsRepoImpl.insertARoom(name: deviceType);
     result.fold((failure) {
-      loggerError('failure ${failure.message}');
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
-    }, (id) {
-      logger('id $id');
-      final newRoom = {
-        'id': id,
-        'device_type': deviceType,
-        'state': 'not running',
-        'open_time': 0,
-        'price': calculatePrice(deviceType, false),
-        'is_multiplayer': false
-      };
+    }, (items) {
       emit(state.copyWith(
-          status: RoomsStateStatus.success, rooms: [newRoom, ...state.rooms]));
+          status: RoomsStateStatus.success, rooms: [...state.rooms, items]));
     });
   }
 
@@ -212,8 +194,8 @@ class RoomsBloc extends Cubit<RoomsState> {
               'is_multiplayer': targetIsMultiplayer ? 1 : 0,
               'open_time': targetOpenTime ? 1 : 0,
               'price': targetPrice,
-              'time': targetElapsedTime??'00:00:00',
-              'multi_time': targetElapsedMultiTime??'00:00:00',
+              'time': targetElapsedTime ?? '00:00:00',
+              'multi_time': targetElapsedMultiTime ?? '00:00:00',
             };
           }
           return room;
