@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/features/home/presentation/widgets/home_widget.dart';
@@ -12,7 +14,7 @@ import 'package:pscorner/features/rooms/presentation/widgets/counter_widget.dart
 
 class GridItemWidget extends StatefulWidget {
   final num price;
-  final int id;
+  final String id;
   final String deviceType;
   final String state;
   final bool openTime;
@@ -273,16 +275,10 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                           if (state.isSuccess) {
                             // Find the room that matches the current widget.id
                             final currentRoom = state.rooms.firstWhere(
-                              (room) => room['id'] == widget.id,
+                              (room) => room.id == widget.id.toString(),
                             );
 
-                            setState(() {
-                              // Update _elapsedTime based on is_multiplayer
-                              // loggerWarn(currentRoom['is_multiplayer'] ==1);
-                              _elapsedTime = currentRoom['is_multiplayer'] == 1
-                                  ? currentRoom['multi_time']
-                                  : currentRoom['time'];
-                            });
+
                           }
                         },
                         child: RoomActionWidget(
@@ -362,11 +358,11 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     );
   }
 
-  int? selectedRoomId;
+  String? selectedRoomId;
 
   void _showAvailableRooms(
     BuildContext context, {
-    required int id,
+    required String id,
     required String deviceType,
     required String state,
     required bool openTime,
@@ -402,12 +398,12 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: availableRooms.map((room) {
                       return ListTile(
-                        title: Text('${room['device_type']}  ${room['id']}'),
-                        leading: Radio<int>(
-                          value: room['id'],
+                        title: Text('${room.title}  ${room.id}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                        leading: Radio<String>(
+                          value: room.id,
                           // Use room ID as the value
                           groupValue: selectedRoomId,
-                          onChanged: (int? value) {
+                          onChanged: (String? value) {
                             setState(() {
                               selectedRoomId = value!;
                             });

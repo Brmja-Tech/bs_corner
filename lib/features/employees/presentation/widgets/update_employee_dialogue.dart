@@ -8,7 +8,7 @@ import 'package:pscorner/features/employees/presentation/blocs/employees_cubit.d
 import 'package:pscorner/features/employees/presentation/blocs/employees_state.dart';
 
 class UpdateEmployeeDialogue extends StatefulWidget {
-  final int id;
+  final String id;
   final String role;
 
   const UpdateEmployeeDialogue(
@@ -99,7 +99,7 @@ class _UpdateEmployeeDialogueState extends State<UpdateEmployeeDialogue> {
                       if (formKey.currentState!.validate()) {
                         context
                             .read<EmployeesBloc>()
-                            .updateEmployee(id: widget.id, isAdmin: isAdmin);
+                            .updateEmployee(id: widget.id.toString(), isAdmin: isAdmin);
                       }
                     });
               },

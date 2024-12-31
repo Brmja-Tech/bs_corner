@@ -12,7 +12,7 @@ import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
 
 class AddExtraQuantity extends StatelessWidget {
-  final int roomId;
+  final String roomId;
   final String deviceType;
 
   const AddExtraQuantity(

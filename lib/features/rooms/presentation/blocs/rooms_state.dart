@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pscorner/features/rooms/data/models/room_model.dart';
 
 enum RoomsStateStatus { initial, loading, success, error }
 
@@ -15,7 +16,7 @@ extension RoomsStateStatusX on RoomsState {
 class RoomsState extends Equatable {
   final RoomsStateStatus status;
   final String errorMessage;
-  final List<Map<String, dynamic>> rooms;
+  final List<RoomModel> rooms;
   final List<Map<String, dynamic>> roomConsumptions;
 
   const RoomsState({
@@ -28,7 +29,7 @@ class RoomsState extends Equatable {
   RoomsState copyWith({
     RoomsStateStatus? status,
     String? errorMessage,
-    List<Map<String, dynamic>>? rooms,
+    List<RoomModel>? rooms,
     List<Map<String, dynamic>>? roomConsumptions,
     Map<String, dynamic>? insertedRoom,
   }) {

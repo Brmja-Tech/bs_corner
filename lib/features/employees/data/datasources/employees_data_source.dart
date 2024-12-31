@@ -7,12 +7,12 @@ import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
+import 'package:pscorner/features/auth/data/models/user_model.dart';
 
 abstract interface class EmployeeDataSource {
   Future<Either<Failure, String>> insertEmployee(RegisterParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllEmployees(
-      NoParams noParams);
+  Future<Either<Failure, List<UserModel>>> fetchAllEmployees(NoParams noParams);
 
   Future<Either<Failure, int>> updateEmployee(UpdateEmployeeParams params);
 
@@ -22,6 +22,7 @@ abstract interface class EmployeeDataSource {
 class EmployeeDataSourceImpl implements EmployeeDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
   final SupabaseConsumer _supabaseConsumer;
+
   EmployeeDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   String _hashPassword(String password) {
@@ -49,11 +50,17 @@ class EmployeeDataSourceImpl implements EmployeeDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllEmployees(
+  Future<Either<Failure, List<UserModel>>> fetchAllEmployees(
       NoParams noParams) async {
     try {
-      // Fetch all employees from the 'users' table
-      return await _databaseConsumer.get('users');
+      final result = await _supabaseConsumer.getAll('users');
+      return result.fold(
+        (failure) => Left(failure),
+        (data) {
+          final employees = data.map((e) => UserModel.fromJson(e)).toList();
+          return Right(employees);
+        },
+      );
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch employees: $e'));
     }
@@ -106,7 +113,7 @@ class InsertEmployeeParams {
 }
 
 class UpdateEmployeeParams {
-  final int id;
+  final String id;
   final String? username;
   final String? password;
   final bool? isAdmin;

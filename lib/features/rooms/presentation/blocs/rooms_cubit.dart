@@ -6,6 +6,7 @@ import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/data/repos/repo.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
+import 'package:pscorner/features/rooms/data/models/room_model.dart';
 import 'package:pscorner/features/rooms/domain/usecases/clear_room_table_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_consumption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dart';
@@ -48,7 +49,9 @@ class RoomsBloc extends Cubit<RoomsState> {
     result.fold((failure) {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
-    }, (items) {
+    }, (id) {
+      logger('id $id');
+      final newRoom = RoomModel(id: id, title: deviceType);
       emit(state.copyWith(
           status: RoomsStateStatus.success, rooms: [...state.rooms, items]));
     });
@@ -67,7 +70,7 @@ class RoomsBloc extends Cubit<RoomsState> {
   }
 
   Future<void> updateItem(
-      {required int id,
+      {required String id,
       String? deviceType,
       String? roomState,
       String? time,
@@ -93,27 +96,9 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (updated) {
-      // logger('result ${state.rooms[id]}');
-      final updatedRooms = state.rooms.map((room) {
-        // loggerWarn(multTime);
-        // loggerWarn(time);
-        if (room['id'] == id) {
-          return {
-            ...room, // Copy existing data
-            if (deviceType != null) 'device_type': deviceType,
-            if (roomState != null) 'state': roomState,
-            if (openTime != null) 'open_time': openTime ? 1 : 0,
-            if (isMultiplayer != null) 'is_multiplayer': isMultiplayer ? 1 : 0,
-            if (price != null) 'price': price,
-            if (time != null) 'time': time,
-            if (multTime != null) 'multi_time': multTime,
-          };
-        }
-        return room;
-      }).toList();
-      // loggerWarn(updatedRooms.where((room)=> room['id']==id));
+
       emit(state.copyWith(
-          status: RoomsStateStatus.success, rooms: updatedRooms));
+          status: RoomsStateStatus.success));
     });
   }
 
@@ -150,8 +135,8 @@ class RoomsBloc extends Cubit<RoomsState> {
   }
 
   Future<void> transferRoomData({
-    required int sourceId,
-    required int targetId,
+    required String sourceId,
+    required String targetId,
     required String targetState,
     required bool targetIsMultiplayer,
     required bool targetOpenTime,
@@ -171,43 +156,13 @@ class RoomsBloc extends Cubit<RoomsState> {
             status: RoomsStateStatus.error, errorMessage: failure.message));
       },
       (_) {
-        // Update the rooms in the state
-        final updatedRooms = state.rooms.map((room) {
-          if (room['id'] == sourceId) {
-            // Reset the source room to default values
-            return {
-              ...room,
-              'state': 'not running',
-              'is_multiplayer': 0,
-              'open_time': 0,
-              'price': 0,
-              'time': "00:00:00",
-              'multi_time': "00:00:00",
-            };
-          } else if (room['id'] == targetId) {
-            // Update the target room with provided inputs
-            loggerWarn('targetElapsedTime $targetElapsedTime');
-            loggerWarn('targetElapsedMultiTime $targetElapsedMultiTime');
-            return {
-              ...room,
-              'state': targetState,
-              'is_multiplayer': targetIsMultiplayer ? 1 : 0,
-              'open_time': targetOpenTime ? 1 : 0,
-              'price': targetPrice,
-              'time': targetElapsedTime ?? '00:00:00',
-              'multi_time': targetElapsedMultiTime ?? '00:00:00',
-            };
-          }
-          return room;
-        }).toList();
-        loggerWarn(updatedRooms.toString());
         emit(state.copyWith(
-            status: RoomsStateStatus.success, rooms: updatedRooms));
+            status: RoomsStateStatus.success));
       },
     );
   }
 
-  Future<void> fetchRoomConsumptions(int roomId) async {
+  Future<void> fetchRoomConsumptions(String roomId) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result = await _fetchRoomConsumptionUseCase(roomId);
     result.fold((failure) {
@@ -224,7 +179,7 @@ class RoomsBloc extends Cubit<RoomsState> {
   Future<void> insertRoomConsumption({
     required BuildContext context,
     required List<ItemQuantity> quantity,
-    required int roomId,
+    required String roomId,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
     final result =
@@ -261,6 +216,6 @@ class RoomsBloc extends Cubit<RoomsState> {
     });
   }
 
-  List<Map<String, dynamic>> get availableRooms =>
-      state.rooms.where((room) => room['state'] == 'not running').toList();
+  List<RoomModel> get availableRooms =>
+      state.rooms.where((room) => room.title == 'PS4').toList();
 }

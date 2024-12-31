@@ -2,6 +2,7 @@ import 'package:pscorner/core/data/errors/failure.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/features/rooms/data/datasources/rooms_data_source.dart';
+import 'package:pscorner/features/rooms/data/models/room_model.dart';
 
 import '../../domain/repositories/rooms_repository.dart';
 
@@ -11,7 +12,7 @@ class RoomsRepositoryImpl implements RoomsRepository {
   RoomsRepositoryImpl(this._roomDataSource);
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(NoParams noParams) {
+  Future<Either<Failure, List<RoomModel>>> fetchAllRooms(NoParams noParams) {
     return _roomDataSource.fetchAllRooms(noParams);
   }
 
@@ -41,7 +42,7 @@ class RoomsRepositoryImpl implements RoomsRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchRoomConsumptionsWithDetails(int roomId) {
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchRoomConsumptionsWithDetails(String roomId) {
     return _roomDataSource.fetchRoomConsumptionsByRoom(roomId);
   }
 

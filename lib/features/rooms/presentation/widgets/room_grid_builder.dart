@@ -27,22 +27,22 @@ class RoomGridBuilder extends StatelessWidget {
           return Stack(
             children: [
               GridItemWidget(
-                price: item['price'],
-                isMultiplayer: item['is_multiplayer'] == 1 ? true : false,
-                id: item['id'],
-                openTime: item['open_time'] as int == 1 ? true : false,
-                state: item['state'],
-                deviceType: item['device_type'],
-                initialTime: item['time'] ?? '00:00:00',
-                initialMultiTime: item['multi_time'] ?? '00:00:00',
+                price: 50,
+                isMultiplayer:true,
+                id: item.id.toString(),
+                openTime: true,
+                state: 'running',
+                deviceType: 'PS5',
+                initialTime:  '00:00:00',
+                initialMultiTime:'00:00:00',
               ),
-              if (item['state'] != 'not running')
+              if ('state' != 'not running')
                 Positioned(
                     top: 0,
                     right: 0,
                     child: IconButton(
                         onPressed: () {
-                          _showInfoDialogue(context, item['id']);
+                          _showInfoDialogue(context, item.id);
                         },
                         icon: const Icon(
                           Icons.info_outline,
@@ -56,7 +56,7 @@ class RoomGridBuilder extends StatelessWidget {
     );
   }
 
-  _showInfoDialogue(BuildContext context, int roomId) {
+  _showInfoDialogue(BuildContext context, String roomId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

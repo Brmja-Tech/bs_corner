@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pscorner/features/auth/data/models/user_model.dart';
 
 enum EmployeesStateStatus { initial, loading, success, failure }
 
@@ -14,7 +15,7 @@ extension EmployeesStateStatusX on EmployeesState {
 
 class EmployeesState extends Equatable {
   final EmployeesStateStatus status;
-  final List<Map<String, dynamic>> employees;
+  final List<UserModel> employees;
   final String? errorMessage;
 
   const EmployeesState({
@@ -25,7 +26,7 @@ class EmployeesState extends Equatable {
 
   EmployeesState copyWith({
     EmployeesStateStatus? status,
-    List<Map<String, dynamic>>? employees,
+    List<UserModel>? employees,
     String? errorMessage,
   }) {
     return EmployeesState(
