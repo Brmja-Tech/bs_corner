@@ -25,7 +25,8 @@ abstract interface class SupabaseConsumer<T> {
   // Data Operations
   Future<Either<Failure, String>> insert(String table, T data);
 
-  Future<Either<Failure, T>> update(String table, T data);
+  Future<Either<Failure, bool>> update(String table, Map<String, dynamic> updates,
+      {required Map<String, dynamic> filters});
 
   Future<Either<Failure, T>> get(String table, {Map<String, dynamic>? filters});
 
@@ -113,7 +114,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, List<T>>> getAll(String table, {Map<String, dynamic>? filters}) async {
+  Future<Either<Failure, List<T>>> getAll(String table,
+      {Map<String, dynamic>? filters}) async {
     try {
       var query = _client.from(table).select();
 
@@ -134,7 +136,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
       return Left(CreateFailure(message: 'Failed to fetch data: $e'));
     }
   }
-
 
   @override
   Future<Either<Failure, T>> getById(String table, String id) {
@@ -237,9 +238,31 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, T>> update(String table, T data) {
-    // TODO: implement update
-    throw UnimplementedError();
+  Future<Either<Failure, bool>> update(
+    String table,
+    Map<String, dynamic> updates, {
+    required Map<String, dynamic> filters,
+  }) async {
+    try {
+      if (filters.isEmpty) {
+        throw ArgumentError('Filters cannot be empty for update operation.');
+      }
+
+      var query = _client.from(table).update(updates);
+
+      filters.forEach((key, value) {
+        query = query.eq(key, value);
+      });
+
+      final response = await query;
+
+      logger(
+          'Data updated successfully in $table with filters $filters: $updates $response');
+      return Right(true);
+    } catch (e) {
+      loggerError('Failed to update data in $table: $e');
+      return Left(CreateFailure(message: 'Failed to update data: $e'));
+    }
   }
 
   @override

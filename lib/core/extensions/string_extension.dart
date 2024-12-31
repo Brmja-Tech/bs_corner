@@ -4,6 +4,7 @@ extension StringX on String {
   String get enumValue => toString().split('.').last;
 
   num get numerate => num.parse(this);
+  int get toInt => int.parse(this);
 
   double get toDouble => double.parse(this);
 }

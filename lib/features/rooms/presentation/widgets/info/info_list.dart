@@ -8,7 +8,7 @@ import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import '../../blocs/rooms_state.dart';
 
 class InfoList extends StatefulWidget {
-  final int id;
+  final String id;
 
   const InfoList({super.key, required this.id});
 

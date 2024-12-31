@@ -6,12 +6,12 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
+import 'package:pscorner/features/rooms/data/models/room_model.dart';
 
 abstract interface class RoomDataSource {
   Future<Either<Failure, String>> insertRoom(InsertRoomParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
-      NoParams noParams);
+  Future<Either<Failure, List<RoomModel>>> fetchAllRooms(NoParams noParams);
 
   Future<Either<Failure, int>> deleteRoom(int id);
 
@@ -25,7 +25,7 @@ abstract interface class RoomDataSource {
       BatchInsertConsumptionParams params);
 
   Future<Either<Failure, List<Map<String, dynamic>>>>
-      fetchRoomConsumptionsByRoom(int roomId);
+      fetchRoomConsumptionsByRoom(String roomId);
 
   Future<Either<Failure, int>> updateRoomConsumption(
       InsertRoomConsumptionParams params);
@@ -39,13 +39,17 @@ abstract interface class RoomDataSource {
 class RoomDataSourceImpl implements RoomDataSource {
   final SQLFLiteFFIConsumer _databaseConsumer;
   final SupabaseConsumer _supabaseConsumer;
-  RoomDataSourceImpl(this._databaseConsumer,this._supabaseConsumer);
+
+  RoomDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
   Future<Either<Failure, String>> insertRoom(InsertRoomParams params) async {
     try {
       final data = {
-        'title': 'VIP1',
+        'title': params.deviceType,
+        'state': 'running',
+        'price': 'price',
+        'facility_id': 0,
       };
 
       return await _supabaseConsumer.insert('rooms', data);
@@ -55,10 +59,14 @@ class RoomDataSourceImpl implements RoomDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRooms(
+  Future<Either<Failure, List<RoomModel>>> fetchAllRooms(
       NoParams noParams) async {
     try {
-      return await _databaseConsumer.get('rooms');
+      final result = await _supabaseConsumer.getAll('rooms');
+      return result.fold((l) => Left(l), (data) {
+        final rooms = data.map((e) => RoomModel.fromJson(e)).toList();
+        return Right(rooms);
+      });
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch rooms: $e'));
     }
@@ -183,7 +191,7 @@ class RoomDataSourceImpl implements RoomDataSource {
 
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>>
-  fetchRoomConsumptionsByRoom(int roomId) async {
+      fetchRoomConsumptionsByRoom(String roomId) async {
     try {
       const query = '''
     SELECT 
@@ -201,7 +209,7 @@ class RoomDataSourceImpl implements RoomDataSource {
 
       // Execute the raw query
       return await _databaseConsumer.rawGet(
-         query,
+        query,
         whereArgs: [roomId],
       );
     } catch (e) {
@@ -209,7 +217,6 @@ class RoomDataSourceImpl implements RoomDataSource {
           UnknownFailure(message: 'Failed to fetch room consumptions: $e'));
     }
   }
-
 
   @override
   Future<Either<Failure, int>> updateRoomConsumption(
@@ -319,7 +326,7 @@ class InsertRoomParams extends Equatable {
 }
 
 class UpdateRoomParams extends Equatable {
-  final int id; // Room ID to update
+  final String id; // Room ID to update
   final String? deviceType;
   final String? state;
   final bool? openTime;
@@ -345,8 +352,8 @@ class UpdateRoomParams extends Equatable {
 }
 
 class TransferRoomDataParams extends Equatable {
-  final int sourceRoomId;
-  final int targetRoomId;
+  final String sourceRoomId;
+  final String targetRoomId;
 
   const TransferRoomDataParams(
       {required this.sourceRoomId, required this.targetRoomId});
@@ -374,7 +381,7 @@ class InsertRoomConsumptionParams extends Equatable {
 
 class BatchInsertConsumptionParams extends Equatable {
   final List<ItemQuantity> dataList;
-  final int roomId;
+  final String roomId;
 
   const BatchInsertConsumptionParams({
     required this.dataList,

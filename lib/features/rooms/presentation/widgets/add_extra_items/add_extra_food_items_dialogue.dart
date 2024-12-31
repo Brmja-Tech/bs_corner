@@ -6,7 +6,7 @@ import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/add
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/view_all_extras.dart';
 
 void showExtraRequestsDialog(BuildContext context, {
-  required int roomId,
+  required String roomId,
   required String deviceType,
   required List<Map<String, dynamic>> restaurantItems,
 }) {
