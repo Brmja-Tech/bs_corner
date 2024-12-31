@@ -7,7 +7,10 @@ class UserModel extends Equatable {
   final String role;
 
   const UserModel(
-      {required this.id, required this.username, required this.role,required this.password});
+      {required this.id,
+      required this.username,
+      required this.role,
+      required this.password});
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -17,6 +20,14 @@ class UserModel extends Equatable {
       role: json['role'],
     );
   }
+
+  UserModel copyWith(
+          {String? id, String? username, String? password, String? role}) =>
+      UserModel(
+          id: id ?? this.id,
+          username: username ?? this.username,
+          password: password ?? this.password,
+          role: role ?? this.role);
 
   @override
   List<Object?> get props => [id, username, role];

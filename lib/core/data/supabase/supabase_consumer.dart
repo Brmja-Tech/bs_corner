@@ -54,15 +54,13 @@ abstract interface class SupabaseConsumer<T> {
 
   Future<Either<Failure, T>> getById(String table, String id);
 
-  Future<Either<Failure, void>> resetPassword(String email);
+
 
   // Query with Filters
   Future<Either<Failure, List<T>>> query(String table,
       {Map<String, dynamic>? filters});
 
-  // Error Handling
-  Future<Either<Failure, void>> handleError(dynamic error);
-}
+  }
 
 class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   final SupabaseClient _client;
@@ -149,11 +147,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
     throw UnimplementedError();
   }
 
-  @override
-  Future<Either<Failure, void>> handleError(error) {
-    // TODO: implement handleError
-    throw UnimplementedError();
-  }
 
   @override
   Future<Either<Failure, String>> insert(String table, T data) async {
@@ -200,16 +193,11 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
     }
   }
 
-  @override
-  Future<Either<Failure, void>> resetPassword(String email) {
-    // TODO: implement resetPassword
-    throw UnimplementedError();
-  }
+
 
   @override
   Future<Either<Failure, void>> signIn(AuthParams params) async {
     try {
-      // Query the database for the user with the provided username and password
       final response = await _client
           .from('users')
           .select()

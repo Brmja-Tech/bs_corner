@@ -64,17 +64,24 @@ class EmployeesBloc extends Cubit<EmployeesState> {
     required String id,
     String? username,
     String? password,
-    bool? isAdmin,
+    String? role,
   }) async {
     emit(state.copyWith(status: EmployeesStateStatus.loading));
+    final updates = <String, dynamic>{};
+    updates['id'] = id;
+    if (username != null) updates['name'] = username;
+    if (password != null) updates['password'] = password;
+    if (role != null) updates['role'] = role;
 
-    final result = await _updateEmployeeUseCase(UpdateEmployeeParams(
-      id: id.toString(),
-      username: username,
-      password: password,
-      isAdmin: isAdmin,
-    ));
-
+    final result =
+        await _updateEmployeeUseCase(UpdateEmployeeParams(updates: updates));
+    if (updates.isEmpty) {
+      emit(state.copyWith(
+        status: EmployeesStateStatus.failure,
+        errorMessage: 'No fields provided for update.',
+      ));
+      return;
+    }
     result.fold((left) {
       loggerError(left.message);
       emit(state.copyWith(
@@ -82,9 +89,20 @@ class EmployeesBloc extends Cubit<EmployeesState> {
         errorMessage: left.message,
       ));
     }, (right) {
+      final updatedEmployees = state.employees.map((user) {
+        if (user.id == id) {
+          return user.copyWith(
+            username: username ?? user.username,
+            password: password ?? user.password,
+            role: role ?? user.role,
+          );
+        }
+        return user;
+      }).toList();
+
       emit(state.copyWith(
         status: EmployeesStateStatus.success,
-        employees: state.employees,
+        employees: updatedEmployees,
       ));
     });
     logger(state.employees);

@@ -5,7 +5,7 @@ class RecipeModel extends Equatable {
   final String id;
   final String name;
   final IngredientEnum ingredientEnum;
-  final double quantity;
+  final num quantity;
 
   const RecipeModel({
     required this.id,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateful/custom_drop_down_form_field.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/theme/text_theme.dart';
@@ -9,10 +10,9 @@ import 'package:pscorner/features/employees/presentation/blocs/employees_state.d
 
 class UpdateEmployeeDialogue extends StatefulWidget {
   final String id;
-  final String role;
+  String role;
 
-  const UpdateEmployeeDialogue(
-      {super.key, required this.id, required this.role});
+  UpdateEmployeeDialogue({super.key, required this.id, required this.role});
 
   @override
   State<UpdateEmployeeDialogue> createState() => _UpdateEmployeeDialogueState();
@@ -20,19 +20,19 @@ class UpdateEmployeeDialogue extends StatefulWidget {
 
 class _UpdateEmployeeDialogueState extends State<UpdateEmployeeDialogue> {
   List<String> items = [
-    'مدير',
-    'موظف',
+    'Admin',
+    'Supervisor',
+    'Employee',
   ];
-  String value = '';
+
   bool isAdmin = false;
+  String? value;
 
   @override
   initState() {
-    value = widget.role;
-    isAdmin = value == 'مدير';
+    isAdmin = widget.role == 'Supervisor';
     super.initState();
   }
-
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -40,13 +40,14 @@ class _UpdateEmployeeDialogueState extends State<UpdateEmployeeDialogue> {
     if (value != null) {
       setState(() {
         this.value = value;
-        isAdmin = value == 'مدير';
+        isAdmin = value == 'Supervisor';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    loggerWarn(widget.role);
     return AlertDialog(
       title: const Text('تعديل  موظف'),
       content: SizedBox(
@@ -64,10 +65,10 @@ class _UpdateEmployeeDialogueState extends State<UpdateEmployeeDialogue> {
                 onChanged: onChanged,
                 validator: (String? value) =>
                     value!.isEmpty ? 'من فضلك اختر صلاحيه' : null,
-                value: value.isEmpty ? null : value,
+                value: value ?? widget.role,
                 hintStyle: AppTextTheme.bodyLarge,
-                itemStyle: AppTextTheme.bodyLarge
-                    .copyWith(color: Colors.black54),
+                itemStyle:
+                    AppTextTheme.bodyLarge.copyWith(color: Colors.black54),
               ),
             ],
           ),
@@ -97,9 +98,8 @@ class _UpdateEmployeeDialogueState extends State<UpdateEmployeeDialogue> {
                     text: 'تأكيد',
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        context
-                            .read<EmployeesBloc>()
-                            .updateEmployee(id: widget.id.toString(), isAdmin: isAdmin);
+                        context.read<EmployeesBloc>().updateEmployee(
+                            id: widget.id.toString(), role: value);
                       }
                     });
               },

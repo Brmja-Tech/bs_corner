@@ -70,19 +70,12 @@ class EmployeeDataSourceImpl implements EmployeeDataSource {
   Future<Either<Failure, int>> updateEmployee(
       UpdateEmployeeParams params) async {
     try {
-      final data = <String, dynamic>{};
-
-      if (params.username != null) data['username'] = params.username;
-      if (params.password != null) data['password'] = params.password;
-      if (params.isAdmin != null) data['isAdmin'] = params.isAdmin! ? 1 : 0;
-
-      // Update employee data in the 'users' table based on the employee ID
-      return await _databaseConsumer.update(
-        'users',
-        data,
-        where: 'id = ?',
-        whereArgs: [params.id],
-      );
+      final result =
+          await _supabaseConsumer.update('users', params.updates, filters: {
+        'id': params.updates['id'],
+      });
+      return result.fold(
+          (failure) => Left(failure), (data) => Right(data ? 1 : 0));
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to update employee: $e'));
     }
@@ -113,15 +106,9 @@ class InsertEmployeeParams {
 }
 
 class UpdateEmployeeParams {
-  final String id;
-  final String? username;
-  final String? password;
-  final bool? isAdmin;
+  final Map<String, dynamic> updates;
 
   UpdateEmployeeParams({
-    required this.id,
-    this.username,
-    this.password,
-    this.isAdmin,
+    required this.updates,
   });
 }
