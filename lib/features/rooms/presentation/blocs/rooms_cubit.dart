@@ -13,6 +13,7 @@ import 'package:pscorner/features/rooms/domain/usecases/delete_room_use_case.dar
 import 'package:pscorner/features/rooms/domain/usecases/fetch_all_rooms_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/fetch_room_consmption_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/insert_room_consmption_use_case.dart';
+import 'package:pscorner/features/rooms/domain/usecases/insert_room_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/transfer_room_data_use_case.dart';
 import 'package:pscorner/features/rooms/domain/usecases/update_room_use_case.dart';
 import 'rooms_state.dart';
@@ -27,7 +28,8 @@ class RoomsBloc extends Cubit<RoomsState> {
       this._transferRoomDataUseCase,
       this._insertRoomConsumptionUseCase,
       this._fetchRoomConsumptionUseCase,
-      this._deleteRoomConsumptionUseCase)
+      this._deleteRoomConsumptionUseCase,
+      this._insertRoomUseCase)
       : super(const RoomsState()) {
     _fetchAllItems();
   }
@@ -40,12 +42,20 @@ class RoomsBloc extends Cubit<RoomsState> {
   final InsertRoomConsumptionUseCase _insertRoomConsumptionUseCase;
   final FetchRoomConsumptionUseCase _fetchRoomConsumptionUseCase;
   final DeleteRoomConsumptionUseCase _deleteRoomConsumptionUseCase;
-
+  final InsertRoomUseCase _insertRoomUseCase;
   Future<void> insertRoom({
     required String deviceType,
   }) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
-    final result = await _roomsRepoImpl.insertARoom(name: deviceType);
+    final result = await _insertRoomUseCase(
+      InsertRoomParams(
+        deviceType: deviceType,
+        state: 'state',
+        openTime: true,
+        isMultiplayer: true,
+        price: 0.0,
+      ),
+    );
     result.fold((failure) {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
@@ -53,7 +63,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       logger('id $id');
       final newRoom = RoomModel(id: id, title: deviceType);
       emit(state.copyWith(
-          status: RoomsStateStatus.success, rooms: [...state.rooms, items]));
+          status: RoomsStateStatus.success, rooms: [...state.rooms, newRoom]));
     });
   }
 
@@ -96,9 +106,7 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (updated) {
-
-      emit(state.copyWith(
-          status: RoomsStateStatus.success));
+      emit(state.copyWith(status: RoomsStateStatus.success));
     });
   }
 
@@ -156,8 +164,7 @@ class RoomsBloc extends Cubit<RoomsState> {
             status: RoomsStateStatus.error, errorMessage: failure.message));
       },
       (_) {
-        emit(state.copyWith(
-            status: RoomsStateStatus.success));
+        emit(state.copyWith(status: RoomsStateStatus.success));
       },
     );
   }

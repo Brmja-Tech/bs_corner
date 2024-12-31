@@ -15,17 +15,21 @@ import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 
 class RoomsServiceLocator {
   static Future<void> execute({required GetIt sl}) async {
-    sl.registerLazySingleton<RoomDataSource>(()=>RoomDataSourceImpl(sl(),sl(),));
-    sl.registerLazySingleton<RoomsRepository>(()=>RoomsRepositoryImpl(sl()));
-    sl.registerFactory(()=> FetchAllRoomsUseCase(sl()));
-    sl.registerFactory(()=> UpdateRoomUseCase(sl()));
-    sl.registerFactory(()=> DeleteRoomUseCase(sl()));
-    sl.registerFactory(()=> InsertRoomUseCase(sl()));
-    sl.registerFactory(()=> ClearRoomTableUseCase(sl()));
-    sl.registerFactory(()=> TransferRoomDataUseCase(sl()));
-    sl.registerFactory(()=> InsertRoomConsumptionUseCase(sl()));
-    sl.registerFactory(()=> FetchRoomConsumptionUseCase(sl()));
-    sl.registerFactory(()=> DeleteRoomConsumptionUseCase(sl()));
-    sl.registerLazySingleton(()=> RoomsBloc(sl(),sl(),sl(),sl(),sl(),sl(),sl(),sl(),sl()));
+    sl.registerLazySingleton<RoomDataSource>(() => RoomDataSourceImpl(
+          sl(),
+          sl(),
+        ));
+    sl.registerLazySingleton<RoomsRepository>(() => RoomsRepositoryImpl(sl()));
+    sl.registerFactory(() => FetchAllRoomsUseCase(sl()));
+    sl.registerFactory(() => UpdateRoomUseCase(sl()));
+    sl.registerFactory(() => DeleteRoomUseCase(sl()));
+    sl.registerFactory(() => InsertRoomUseCase(sl()));
+    sl.registerFactory(() => ClearRoomTableUseCase(sl()));
+    sl.registerFactory(() => TransferRoomDataUseCase(sl()));
+    sl.registerFactory(() => InsertRoomConsumptionUseCase(sl()));
+    sl.registerFactory(() => FetchRoomConsumptionUseCase(sl()));
+    sl.registerFactory(() => DeleteRoomConsumptionUseCase(sl()));
+    sl.registerLazySingleton(() =>
+        RoomsBloc(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()));
   }
 }

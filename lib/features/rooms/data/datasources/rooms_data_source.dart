@@ -47,9 +47,7 @@ class RoomDataSourceImpl implements RoomDataSource {
     try {
       final data = {
         'title': params.deviceType,
-        'state': 'running',
-        'price': 'price',
-        'facility_id': 0,
+        'price': params.price,
       };
 
       return await _supabaseConsumer.insert('rooms', data);
