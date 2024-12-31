@@ -5,6 +5,6 @@ extension StringX on String {
 
   num get numerate => num.parse(this);
   int get toInt => int.parse(this);
-
+  DateTime get toDateTime => DateTime.parse(this);
   double get toDouble => double.parse(this);
 }

@@ -15,4 +15,7 @@ extension UserRoleX on UserRole {
         throw ArgumentError('Invalid user role: $role');
     }
   }
+  bool get isAdmin => this == UserRole.admin;
+  bool get isEmployee => this == UserRole.employee;
+  bool get isSupervisor => this == UserRole.supervisor;
 }

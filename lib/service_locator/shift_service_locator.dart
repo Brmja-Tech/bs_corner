@@ -10,7 +10,7 @@ import 'package:pscorner/features/shifts/presentation/blocs/shifts_cubit.dart';
 
 class ShiftServiceLocator{
   static Future<void> execute({required GetIt sl}) async {
-    sl.registerLazySingleton<ShiftDataSource>(() => ShiftDataSourceImpl(sl()));
+    sl.registerLazySingleton<ShiftDataSource>(() => ShiftDataSourceImpl(sl(),sl()));
     sl.registerLazySingleton<ShiftsRepository>(() => ShiftsRepositoryImpl(sl()));
     sl.registerFactory(() => FetchAllShiftsUseCase(sl()));
     sl.registerFactory(() => UpdateShiftUseCase(sl()));

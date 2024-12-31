@@ -4,11 +4,12 @@ import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/enums/ingredient_enum.dart';
+import 'package:pscorner/features/recipes/data/models/recipe_model.dart';
 
 abstract interface class RecipeDataSource {
   Future<Either<Failure, String>> insertRecipe(InsertRecipeParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
+  Future<Either<Failure, List<RecipeModel>>> fetchAllRecipes(
       NoParams noParams);
 
   Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params);
@@ -42,11 +43,16 @@ class RecipeDataSourceImpl implements RecipeDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllRecipes(
+  Future<Either<Failure, List<RecipeModel>>> fetchAllRecipes(
       NoParams noParams) async {
     try {
       // Fetch all recipes from the 'recipes' table
-      return await _databaseConsumer.get('recipes');
+       final result = await _supabaseConsumer.getAll('recipes');
+       return result.fold((left)=>Left(UnknownFailure(message: 'Failed to fetch recipes: ${left.message}')),(data){
+        final recipes = data.map((e)=>RecipeModel.fromJson(e)).toList();
+         return Right(recipes);
+       });
+
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch recipes: $e'));
     }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_text_field.dart';
+import 'package:pscorner/features/recipes/data/models/recipe_model.dart';
 import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart';
 import 'package:pscorner/features/recipes/presentation/blocs/recipes_state.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
@@ -18,8 +19,8 @@ class AddRecipeDialog extends StatefulWidget {
 class _AddRecipeDialogState extends State<AddRecipeDialog> {
   final TextEditingController _quantityController = TextEditingController();
 
-  List<Map<String, dynamic>> selectedIngredients = [];
-  Map<String, dynamic>? ingredient;
+  List<RecipeModel> selectedIngredients = [];
+  RecipeModel? ingredient;
 
   @override
   void dispose() {
@@ -56,7 +57,7 @@ class _AddRecipeDialogState extends State<AddRecipeDialog> {
                             itemBuilder: (context, index) {
                               logger(selectedIngredients);
                               return ListTile(
-                                title: Text(selectedIngredients[index]['name']),
+                                title: Text(selectedIngredients[index].name),
                                 trailing: IconButton(
                                   icon: const Icon(Icons.delete),
                                   onPressed: () {
@@ -75,22 +76,22 @@ class _AddRecipeDialogState extends State<AddRecipeDialog> {
                           isExpanded: true,
                           borderRadius: BorderRadius.circular(20),
                           focusColor: Colors.white,
-                          value: ingredient?['name'],
+                          value: ingredient?.name,
                           hint: const Text('اختر مكونًا'),
                           icon: const Icon(Icons.arrow_downward),
                           elevation: 16,
                           onChanged: (String? value) {
                             setState(() {
-                              ingredient = state.recipes.firstWhere(
-                                (item) => item['name'] == value,
-                              );
+                              ingredient = state.recipes
+                                  .where((e) => e.name == value)
+                                  .first;
                             });
                           },
                           items: state.recipes.map((value) {
                             return DropdownMenuItem<String>(
-                              value: value[
-                                  'name'], // Use the unique identifier here
-                              child: Text(value['name']),
+                              value:
+                                  value.name, // Use the unique identifier here
+                              child: Text(value.name),
                             );
                           }).toList(),
                         ),
@@ -109,8 +110,8 @@ class _AddRecipeDialogState extends State<AddRecipeDialog> {
                                 selectedIngredients.add(ingredient!);
                               });
                               context.read<RestaurantsBloc>().setRecipes(Recipe(
-                                  recipeId: ingredient!['id'],
-                                  name: ingredient!['name'],
+                                  recipeId: ingredient!.id.numerate.toInt(),
+                                  name: ingredient!.name,
                                   quantity: _quantityController.text
                                       .trim()
                                       .toDouble));

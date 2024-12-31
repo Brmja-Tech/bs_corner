@@ -3,6 +3,7 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/enums/ingredient_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/recipes/data/datasources/recipes_data_source.dart';
+import 'package:pscorner/features/recipes/data/models/recipe_model.dart';
 import 'package:pscorner/features/recipes/domain/usecases/delete_recipes_use_case.dart';
 import 'package:pscorner/features/recipes/domain/usecases/fetch_all_recipes_use_case.dart';
 import 'package:pscorner/features/recipes/domain/usecases/insert_recipes_use_case.dart';
@@ -33,7 +34,7 @@ class RecipesBloc extends Cubit<RecipesState> {
     final result = await _fetchAllRecipesUseCase(const NoParams());
     result.fold((failure) {
       loggerError(failure.message);
-      emit(state.copyWith(errorMessage: failure.message));
+      emit(state.copyWith(errorMessage: failure.message,status: RecipesStateStatus.error));
     }, (recipes) {
       logger(recipes);
       emit(
@@ -63,18 +64,13 @@ class RecipesBloc extends Cubit<RecipesState> {
     ));
     result.fold((failure) {
       loggerError(failure.message);
-      emit(state.copyWith(errorMessage: failure.message,status: RecipesStateStatus.error));
+      emit(state.copyWith(
+          errorMessage: failure.message, status: RecipesStateStatus.error));
     }, (success) {
+      final recipe = RecipeModel(id: success, name: name, ingredientEnum: ingredientName, quantity: quantity);
       logger(success);
       emit(state.copyWith(status: RecipesStateStatus.success, recipes: [
-        ...state.recipes,
-        {
-          'id': success,
-          'quantity': quantity,
-          'name': name,
-          'weight': weight,
-          'ingredient_name': ingredientName
-        }
+        recipe,...state.recipes
       ]));
     });
   }
@@ -111,8 +107,9 @@ class RecipesBloc extends Cubit<RecipesState> {
             (success) {
       logger(success);
       emit(state.copyWith(
-          status: RecipesStateStatus.success,
-          recipes: [...state.recipes.where((element) => element['id'] != id)]));
+        status: RecipesStateStatus.success,
+        // recipes: [...state.recipes.where((element) => element.id != id)],
+      ));
     });
   }
 
@@ -125,7 +122,7 @@ class RecipesBloc extends Cubit<RecipesState> {
             (recipes) {
       logger(recipes);
       emit(
-          state.copyWith(recipes: recipes, status: RecipesStateStatus.success));
+          state.copyWith( status: RecipesStateStatus.success));
     });
   }
 }

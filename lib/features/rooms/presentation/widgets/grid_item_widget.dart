@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
-import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/features/home/presentation/widgets/home_widget.dart';
@@ -79,6 +77,8 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                 children: [
                   Text(
                     'Room ${widget.id}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 25),
                     textAlign: TextAlign.center,
@@ -277,8 +277,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             final currentRoom = state.rooms.firstWhere(
                               (room) => room.id == widget.id.toString(),
                             );
-
-
                           }
                         },
                         child: RoomActionWidget(
@@ -398,7 +396,11 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: availableRooms.map((room) {
                       return ListTile(
-                        title: Text('${room.title}  ${room.id}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                        title: Text(
+                          '${room.title}  ${room.id}',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                         leading: Radio<String>(
                           value: room.id,
                           // Use room ID as the value

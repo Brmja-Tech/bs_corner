@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pscorner/features/recipes/data/models/recipe_model.dart';
 
 enum RecipesStateStatus { initial, loading, success, error }
 
@@ -14,7 +15,7 @@ extension RecipesStateStatusX on RecipesState {
 
 class RecipesState extends Equatable {
   final RecipesStateStatus status;
-  final List<Map<String, dynamic>> recipes;
+  final List<RecipeModel> recipes;
   final String errorMessage;
 
   const RecipesState({
@@ -25,7 +26,7 @@ class RecipesState extends Equatable {
 
   RecipesState copyWith({
     RecipesStateStatus? status,
-    List<Map<String, dynamic>>? recipes,
+    List<RecipeModel>? recipes,
     String? errorMessage,
   }) {
     return RecipesState(

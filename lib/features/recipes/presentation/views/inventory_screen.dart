@@ -81,18 +81,16 @@ class InventoryScreen extends StatelessWidget {
                         rows: state.recipes.map((item) {
                           return DataRow(cells: [
                             DataCell(Label(
-                              text: item['name'] ?? '',
+                              text: item.name,
                               // Access 'name' from the map
                               style: context.appTextTheme.headlineSmall,
                             )),
                             DataCell(Label(
-                              text: item['ingredient_name'],
+                              text: item.ingredientEnum.name,
                               style: context.appTextTheme.headlineSmall,
                             )),
                             DataCell(Label(
-                              text: item['quantity'] == null
-                                  ? "______"
-                                  : (item['quantity'] ?? "______")
+                              text:(item.quantity )
                                       .toString()
                                       .toDouble
                                       .toStringAsFixed(0),
@@ -107,9 +105,9 @@ class InventoryScreen extends StatelessWidget {
                                       text: 'ازاله',
                                       color: context.theme.colorScheme.error,
                                       onPressed: () {
-                                        context
-                                            .read<RecipesBloc>()
-                                            .deleteRecipe(item['id']);
+                                        // context
+                                        //     .read<RecipesBloc>()
+                                        //     .deleteRecipe(item['id']);
                                       }),
                                 ],
                               ),
