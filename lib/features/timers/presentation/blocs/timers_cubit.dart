@@ -20,9 +20,10 @@ class TimersCubit extends Cubit<TimersState> {
       });
     });
   }
-  Future<Either< Failure, String >> stopTimer({required String roomId}) async {
+
+  Future<Either<Failure, String>> stopTimer({required String roomId}) async {
     emit(TimersLoading());
-    return _timersDataSource.stopATimer(roomId: roomId).then((value) {
+    return _timersDataSource.stopAtimer(roomId: roomId).then((value) {
       return value.fold((l) {
         emit(TimerFailure(l.message));
         return Left(l);

@@ -20,7 +20,6 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, void>> signIn(AuthParams params);
 
   Future<Either<Failure, void>> register(RegisterParams params);
-  
 
   Future<Either<Failure, void>> signOut();
 
@@ -64,7 +63,8 @@ abstract interface class SupabaseConsumer<T> {
 
   // Error Handling
   Future<Either<Failure, void>> handleError(dynamic error);
-  
+
+  Future<Either<Failure, String>> updateEndTime({required String roomId});
 }
 
 class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
@@ -295,6 +295,29 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
     } catch (e) {
       loggerError('Failed to upload image: $e');
       return Left(CreateFailure(message: 'Failed to upload image: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> handleError(error) {
+    // TODO: implement handleError
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, String>> updateEndTime(
+      {required String roomId}) async {
+    try {
+      final response =
+          await _client.rpc('set_end_time', params: {'room_id': roomId});
+
+      if (response.error != null) {
+        return Left(CreateFailure(message: response.error!.message));
+      }
+
+      return Right('End time updated successfully');
+    } catch (e) {
+      throw UnimplementedError();
     }
   }
 }
