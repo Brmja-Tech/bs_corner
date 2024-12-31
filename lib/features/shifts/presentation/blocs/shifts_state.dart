@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pscorner/features/shifts/data/models/shift_model.dart';
 
 enum ShiftsStateStatus { initial, loading, success, error }
 
@@ -15,7 +16,7 @@ extension ShiftsStateStatusX on ShiftsState {
 class ShiftsState extends Equatable {
   final ShiftsStateStatus status;
   final String? errorMessage;
-  final List<Map<String, dynamic>> shifts;
+  final List<ShiftModel> shifts;
 
   const ShiftsState({
     this.status = ShiftsStateStatus.initial,
@@ -26,7 +27,7 @@ class ShiftsState extends Equatable {
   ShiftsState copyWith({
     ShiftsStateStatus? status,
     String? errorMessage,
-    List<Map<String, dynamic>>? shifts,
+    List<ShiftModel>? shifts,
   }) {
     return ShiftsState(
       status: status ?? this.status,

@@ -7,8 +7,6 @@ import 'package:pscorner/core/stateless/custom_scaffold.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/core/theme/text_theme.dart';
-import 'package:pscorner/core/ui/items_consumed_view.dart';
-import 'package:pscorner/core/ui/items_grid.dart';
 import 'package:pscorner/features/restaurants/presentation/views/add_item_screen.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_state.dart';
@@ -95,22 +93,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : RoomGridBuilder(state: state),
                             ),
                             // Items Consumed Section
-                            const Flexible(
-                              child: ItemsConsumedView(),
-                            ),
+                            // const Flexible(
+                            //   child: ItemsConsumedView(),
+                            // ),
                           ],
                         ),
                       ),
                       // ItemsGrid Section
-                      const Expanded(
-                        child: SingleChildScrollView(
-                          child: SizedBox(
-                            height: 200,
-                            width: double.infinity,
-                            child: ItemsGrid(),
-                            ),
-                        ),
-                      ),
+                      // const Expanded(
+                      //   child: SingleChildScrollView(
+                      //     child: SizedBox(
+                      //       height: 200,
+                      //       width: double.infinity,
+                      //       child: ItemsGrid(),
+                      //       ),
+                      //   ),
+                      // ),
                     ],
                   );
                 },

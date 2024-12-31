@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/core/data/errors/failure.dart';
+import 'package:pscorner/core/data/errors/supabase_exception.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/enums/user_role_enum.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
@@ -25,7 +26,8 @@ abstract interface class SupabaseConsumer<T> {
   // Data Operations
   Future<Either<Failure, String>> insert(String table, T data);
 
-  Future<Either<Failure, bool>> update(String table, Map<String, dynamic> updates,
+  Future<Either<Failure, bool>> update(
+      String table, Map<String, dynamic> updates,
       {required Map<String, dynamic> filters});
 
   Future<Either<Failure, T>> get(String table, {Map<String, dynamic>? filters});
@@ -131,7 +133,11 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
       // Cast each record to the generic type T
       final dataList = (response as List).map((json) => json as T).toList();
       return Right(dataList);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      if (e is SupabaseException) {
+        loggerError('StackTrace: $stackTrace');
+        return Left(UnknownFailure(message: e.message));
+      }
       loggerError('Failed to fetch data from $table: $e');
       return Left(CreateFailure(message: 'Failed to fetch data: $e'));
     }
@@ -157,7 +163,11 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
 
       logger('Data inserted successfully into $response');
       return Right(response['id'].toString());
-    } catch (e) {
+    } catch (e, stackTrace) {
+      if (e is SupabaseException) {
+        loggerError('StackTrace: $stackTrace');
+        return Left(UnknownFailure(message: e.message));
+      }
       loggerError('Failed to insert data into $table: $e');
       return Left(CreateFailure(message: 'Failed to insert data: $e'));
     }

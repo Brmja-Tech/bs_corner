@@ -5,7 +5,7 @@ class ShiftModel extends Equatable {
   final DateTime startTime;
   final DateTime endTime;
   final String userId;
-  final double totalCollectedMoney;
+  final num totalCollectedMoney;
   final String shiftUserName;
 
   const ShiftModel({
@@ -19,7 +19,7 @@ class ShiftModel extends Equatable {
 
   factory ShiftModel.fromJson(Map<String, dynamic> json) {
     return ShiftModel(
-      id: json['id'],
+      id: json['id'].toString(),
       startTime: DateTime.parse(json['start_time']),
       endTime: DateTime.parse(json['end_time']),
       userId: json['user_id'],

@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
+import 'package:pscorner/core/extensions/string_extension.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/shifts/data/datasources/shifts_data_source.dart';
+import 'package:pscorner/features/shifts/data/models/shift_model.dart';
 import 'package:pscorner/features/shifts/domain/usecases/delete_shift_use_case.dart';
 import 'package:pscorner/features/shifts/domain/usecases/fetch_all_shifts_use_case.dart';
 import 'package:pscorner/features/shifts/domain/usecases/insert_shift_use_case.dart';
@@ -40,17 +42,17 @@ class ShiftsBloc extends Cubit<ShiftsState> {
             status: ShiftsStateStatus.error, errorMessage: l.message));
       },
       (r) {
-        emit(state.copyWith(status: ShiftsStateStatus.success, shifts: [
-          ...state.shifts,
-          {
-            'id': r,
-            'total_collected_money': totalCollectedMoney,
-            'from_time': fromTime,
-            'to_time': toTime,
-            'user_id': userId,
-            'shift_user_name': userName
-          }
-        ]));
+        final shift = ShiftModel(
+          id: r,
+          startTime: fromTime.toDateTime,
+          endTime: toTime.toDateTime,
+          userId: userId,
+          totalCollectedMoney: totalCollectedMoney,
+          shiftUserName: userName,
+        );
+        emit(state.copyWith(
+            status: ShiftsStateStatus.success,
+            shifts: [shift ,...state.shifts]));
       },
     );
   }

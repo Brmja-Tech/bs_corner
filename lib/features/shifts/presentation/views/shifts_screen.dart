@@ -31,14 +31,15 @@ class ShiftsScreen extends StatelessWidget {
                 style: context.appTextTheme.displayLarge?.copyWith(fontSize: 25),
               ),
             ),
+            BlocBuilder<ShiftsBloc, ShiftsState>(builder: (context,state){
+              if(state.isLoading){
+                return const LinearProgressIndicator();
+              }
+              return Container();
+            }),
             AppGaps.gap48Vertical,
             BlocBuilder<ShiftsBloc, ShiftsState>(
               builder: (context, state) {
-                if (state.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
@@ -77,16 +78,16 @@ class ShiftsScreen extends StatelessWidget {
                         return DataRow(cells: [
         
                           DataCell(Label(
-                            text: item['shift_user_name'] ?? '',
+                            text: item.shiftUserName,
                             // Access 'name' from the map
                             style: context.appTextTheme.headlineSmall,
                           )),
                           DataCell(Label(
-                            text: formatDateTime(item['from_time']),
+                            text: formatDateTime(item.startTime.toString()),
                             style: context.appTextTheme.headlineSmall,
                           )),
                           DataCell(Label(
-                            text: formatDateTime(item['to_time']),
+                            text: formatDateTime(item.endTime.toString()),
                             style: context.appTextTheme.headlineSmall,
                           )),
                           DataCell(CustomButton(text: 'عرض', onPressed: () {})),

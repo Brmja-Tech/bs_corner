@@ -4,11 +4,12 @@ import 'package:pscorner/core/data/supabase/supabase_consumer.dart';
 import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/features/shifts/data/models/shift_model.dart';
 
 abstract interface class ShiftDataSource {
   Future<Either<Failure, String>> insertShift(InsertShiftParams params);
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
+  Future<Either<Failure, List<ShiftModel>>> fetchAllShifts(
       NoParams noParams);
 
   Future<Either<Failure, int>> updateShift(UpdateShiftParams params);
@@ -43,33 +44,14 @@ class ShiftDataSourceImpl implements ShiftDataSource {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllShifts(
+  Future<Either<Failure, List<ShiftModel>>> fetchAllShifts(
       NoParams noParams) async {
     try {
-      // Perform a JOIN query to fetch shifts and associated usernames
-      const query = '''
-      SELECT 
-        shifts.id AS shift_id, 
-        shifts.total_collected_money, 
-        shifts.from_time, 
-        shifts.to_time, 
-        shifts.user_id, 
-        users.username AS shift_user_name
-      FROM 
-        shifts
-      LEFT JOIN 
-        users 
-      ON 
-        shifts.user_id = users.id
-    ''';
-
-      // Execute the query using the database consumer
-      final result = await _databaseConsumer.rawGet(query);
-
-      return result.fold(
-          (left) => Left(UnknownFailure(
-              message: 'Failed to fetch shifts ${left.message}')),
-          (right) => Right(right));
+      final result = await _supabaseConsumer.getAll('shifts');
+      return result.fold((l) => Left(l), (data) {
+        final shifts = data.map((e) => ShiftModel.fromJson(e)).toList();
+        return Right(shifts);
+      });
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch shifts: $e'));
     }
