@@ -27,15 +27,14 @@ class RoomGridBuilder extends StatelessWidget {
             children: [
               GridItemWidget(
                 price: 50,
-                isMultiplayer:true,
                 id: item.id.toString(),
                 openTime: true,
-                state: 'not running',
+                state: item.isActive,
                 deviceType: 'PS5',
                 initialTime:  '00:00:00',
                 initialMultiTime:'00:00:00',
               ),
-              if ('state' != 'not running')
+              if (item.isActive)
                 Positioned(
                     top: 0,
                     right: 0,

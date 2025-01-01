@@ -60,7 +60,7 @@ class RoomsBloc extends Cubit<RoomsState> {
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (id) {
       logger('id $id');
-      final newRoom = RoomModel(id: id, title: deviceType);
+      final newRoom = RoomModel(id: id, title: deviceType, isActive: false);
       emit(state.copyWith(
           status: RoomsStateStatus.success, rooms: [newRoom, ...state.rooms]));
     });
@@ -79,25 +79,15 @@ class RoomsBloc extends Cubit<RoomsState> {
   }
 
   Future<void> updateItem(
-      {required String id,
-      String? deviceType,
-      String? roomState,
-      String? time,
-      String? multTime,
-      bool? openTime,
-      bool? isMultiplayer,
-      num? price}) async {
-    // loggerWarn(id);
+      {required String id, bool? isActive, String? title}) async {
     emit(state.copyWith(status: RoomsStateStatus.loading));
-    final result = await _updateRoomUseCase(UpdateRoomParams(
-      id: id,
-      price: price,
-      deviceType: deviceType,
-      isMultiplayer: isMultiplayer,
-      openTime: openTime,
-      state: roomState,
-      time: time,
-      multTime: multTime,
+    final updates = <String, dynamic>{};
+    if (isActive != null) updates['is_active'] = isActive;
+    if (title != null) updates['title'] = title;
+    updates['id'] = id;
+
+    final result = await _updateRoomUseCase(UpdateParams(
+      updates: updates,
     ));
 
     result.fold((failure) {
@@ -105,9 +95,15 @@ class RoomsBloc extends Cubit<RoomsState> {
       emit(state.copyWith(
           status: RoomsStateStatus.error, errorMessage: failure.message));
     }, (updated) {
-
-      emit(state.copyWith(
-          status: RoomsStateStatus.success));
+      final updatedRooms = state.rooms.map((room) {
+        if (room.id == id) {
+          return RoomModel(
+              id: room.id, title: title ?? room.title, isActive: isActive ?? room.isActive);
+        } else {
+          return room;
+        }
+      }).toList();
+      emit(state.copyWith(status: RoomsStateStatus.success,rooms: updatedRooms));
     });
   }
 
@@ -165,8 +161,7 @@ class RoomsBloc extends Cubit<RoomsState> {
             status: RoomsStateStatus.error, errorMessage: failure.message));
       },
       (_) {
-        emit(state.copyWith(
-            status: RoomsStateStatus.success));
+        emit(state.copyWith(status: RoomsStateStatus.success));
       },
     );
   }

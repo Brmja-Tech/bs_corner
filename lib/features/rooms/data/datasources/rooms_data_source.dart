@@ -17,7 +17,7 @@ abstract interface class RoomDataSource {
 
   Future<Either<Failure, void>> clearTable(String tableName);
 
-  Future<Either<Failure, int>> updateRoom(UpdateRoomParams params);
+  Future<Either<Failure, int>> updateRoom(UpdateParams params);
 
   Future<Either<Failure, void>> transferRoomData(TransferRoomDataParams params);
 
@@ -86,25 +86,14 @@ class RoomDataSourceImpl implements RoomDataSource {
   }
 
   @override
-  Future<Either<Failure, int>> updateRoom(UpdateRoomParams params) async {
+  Future<Either<Failure, int>> updateRoom(UpdateParams params) async {
     try {
-      final data = <String, dynamic>{};
-
-      if (params.deviceType != null) data['device_type'] = params.deviceType;
-      if (params.state != null) data['state'] = params.state;
-      if (params.openTime != null) data['open_time'] = params.openTime! ? 1 : 0;
-      if (params.isMultiplayer != null) {
-        data['is_multiplayer'] = params.isMultiplayer! ? 1 : 0;
-      }
-      if (params.price != null) data['price'] = params.price;
-      if (params.time != null) data['time'] = params.time;
-      if (params.multTime != null) data['multi_time'] = params.multTime;
-      return await _databaseConsumer.update(
-        'rooms',
-        data,
-        where: 'id = ?',
-        whereArgs: [params.id],
-      );
+      final result =
+          await _supabaseConsumer.update('rooms', params.updates, filters: {
+        'id': params.updates['id'],
+      });
+      return result.fold(
+          (failure) => Left(failure), (data) => Right(data ? 1 : 0));
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to update room: $e'));
     }
@@ -327,28 +316,17 @@ class InsertRoomParams extends Equatable {
 
 class UpdateRoomParams extends Equatable {
   final String id; // Room ID to update
-  final String? deviceType;
-  final String? state;
-  final bool? openTime;
-  final bool? isMultiplayer;
-  final num? price;
-  final String? time;
-  final String? multTime;
+  final bool? isActive;
+  final String? title;
 
   const UpdateRoomParams({
     required this.id,
-    this.deviceType,
-    this.state,
-    this.openTime,
-    this.isMultiplayer,
-    this.price,
-    this.time,
-    this.multTime,
+    this.isActive,
+    this.title,
   });
 
   @override
-  List<Object?> get props =>
-      [id, deviceType, state, openTime, isMultiplayer, price, time, multTime];
+  List<Object?> get props => [id, isActive, title];
 }
 
 class TransferRoomDataParams extends Equatable {
