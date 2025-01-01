@@ -160,6 +160,7 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   Future<Either<Failure, List<T>>> getAll(String table,
       {Map<String, dynamic>? filters}) async {
     try {
+      loggerWarn('message');
       var query = _client.from(table).select();
 
       if (filters != null) {

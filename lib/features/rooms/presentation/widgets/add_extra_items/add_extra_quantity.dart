@@ -2,10 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
 import 'package:pscorner/core/stateless/flexible_image.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
+import 'package:pscorner/features/recipes/presentation/blocs/recipes_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_state.dart';
 import 'package:pscorner/features/rooms/presentation/blocs/rooms_cubit.dart';
@@ -215,16 +217,8 @@ class AddExtraQuantity extends StatelessWidget {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 20),
                                       onPressed: () {
-                                        context
-                                            .read<RoomsBloc>()
-                                            .insertRoomConsumption(
-                                              context: context,
-                                              quantity: context
-                                                  .read<RestaurantsBloc>()
-                                                  .state
-                                                  .quantity,
-                                              roomId: roomId,
-                                            );
+                                        
+                                        insertConsumption(context);
                                       }),
                                 )
                               ],
@@ -242,4 +236,24 @@ class AddExtraQuantity extends StatelessWidget {
       ),
     );
   }
+
+  void insertConsumption(BuildContext context) {
+    try{
+      
+    
+    context
+        .read<RoomsBloc>()
+        .insertRoomConsumption(
+          context: context,
+          quantity: context
+              .read<RestaurantsBloc>()
+              .state
+              .quantity,
+          roomId: roomId,
+        );
+    context.read<RecipesBloc>().updateRecipe(id: id);
+  }catch(e){
+    loggerError(e);
+    }
+    }
 }

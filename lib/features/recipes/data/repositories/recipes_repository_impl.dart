@@ -25,7 +25,7 @@ class RecipesRepositoryImpl implements RecipesRepository {
     return _recipeDataSource.insertRecipe(params);
   }
   @override
-  Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params) {
+  Future<Either<Failure, int>> updateRecipe(UpdateParams params) {
     return _recipeDataSource.updateRecipe(params);
   }
   @override

@@ -9,10 +9,9 @@ import 'package:pscorner/features/recipes/data/models/recipe_model.dart';
 abstract interface class RecipeDataSource {
   Future<Either<Failure, String>> insertRecipe(InsertRecipeParams params);
 
-  Future<Either<Failure, List<RecipeModel>>> fetchAllRecipes(
-      NoParams noParams);
+  Future<Either<Failure, List<RecipeModel>>> fetchAllRecipes(NoParams noParams);
 
-  Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params);
+  Future<Either<Failure, int>> updateRecipe(UpdateParams params);
 
   Future<Either<Failure, int>> deleteRecipe(int id);
 
@@ -47,34 +46,29 @@ class RecipeDataSourceImpl implements RecipeDataSource {
       NoParams noParams) async {
     try {
       // Fetch all recipes from the 'recipes' table
-       final result = await _supabaseConsumer.getAll('recipes');
-       return result.fold((left)=>Left(UnknownFailure(message: 'Failed to fetch recipes: ${left.message}')),(data){
-        final recipes = data.map((e)=>RecipeModel.fromJson(e)).toList();
-         return Right(recipes);
-       });
-
+      final result = await _supabaseConsumer.getAll('recipes');
+      return result.fold(
+          (left) => Left(UnknownFailure(
+              message: 'Failed to fetch recipes: ${left.message}')), (data) {
+        final recipes = data.map((e) => RecipeModel.fromJson(e)).toList();
+        return Right(recipes);
+      });
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch recipes: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params) async {
+  Future<Either<Failure, int>> updateRecipe(UpdateParams params) async {
     try {
-      final data = <String, dynamic>{};
-
-      if (params.name != null) data['name'] = params.name;
-      if (params.ingredientName != null)
-        data['ingredient_name'] = params.ingredientName;
-      if (params.quantity != null) data['quantity'] = params.quantity;
-
-      // Update recipe data in the 'recipes' table based on the recipe ID
-      return await _databaseConsumer.update(
-        'recipes',
-        data,
-        where: 'id = ?',
-        whereArgs: [params.id],
-      );
+      final result =
+          await _supabaseConsumer.update('recipes', params.updates, filters: {
+        'id': params.updates['id'],
+      });
+      return result.fold(
+          (l) => Left(
+              UnknownFailure(message: 'Failed to update recipe: ${l.message}')),
+          (r) => Right(r ? 1 : 0));
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to update recipe: $e'));
     }

@@ -10,7 +10,7 @@ abstract class RecipesRepository {
 
   Future<Either<Failure, List<RecipeModel>>> fetchAllRecipes(NoParams noParams);
 
-  Future<Either<Failure, int>> updateRecipe(UpdateRecipeParams params);
+  Future<Either<Failure, int>> updateRecipe(UpdateParams params);
 
   Future<Either<Failure, int>> deleteRecipe(int id);
 

@@ -79,16 +79,17 @@ class RecipesBloc extends Cubit<RecipesState> {
     required int id,
     double? quantity,
     String? name,
-    double? weight,
     String? ingredientName,
   }) async {
     emit(state.copyWith(status: RecipesStateStatus.loading));
+    final updates = <String, dynamic>{};
+    updates['id'] = id;
+    if (quantity != null) updates['quantity'] = quantity;
+    if (name != null) updates['name'] = name;
+    if(ingredientName != null) updates['ingredient_unit'] = ingredientName;
 
-    final result = await _updateRecipesUseCase(UpdateRecipeParams(
-      id: id,
-      quantity: quantity,
-      name: name,
-      ingredientName: ingredientName,
+    final result = await _updateRecipesUseCase(UpdateParams(
+      updates: updates
     ));
     result
         .fold((failure) => emit(state.copyWith(errorMessage: failure.message)),

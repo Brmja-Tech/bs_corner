@@ -182,7 +182,7 @@ class RoomDataSourceImpl implements RoomDataSource {
     try {
       final filters = {'room_id': roomId};
 
-      final result = await _supabaseConsumer.getJoin(filters: filters);
+      final result = await _supabaseConsumer.getAll('room-consumption',filters: filters);
 
       return result.fold(
             (failure) => Left(failure),
