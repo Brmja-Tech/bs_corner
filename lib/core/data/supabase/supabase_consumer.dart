@@ -23,6 +23,10 @@ abstract interface class SupabaseConsumer<T> {
 
   Future<Either<Failure, void>> signOut();
 
+  Future<Either<Failure, List<T>>> getJoin({
+    Map<String, dynamic>? filters,
+  });
+
   // Data Operations
   Future<Either<Failure, String>> insert(String table, T data);
 
@@ -46,7 +50,7 @@ abstract interface class SupabaseConsumer<T> {
   Future<Either<Failure, void>> unsubscribeFromTable(String table);
 
   // Batch Operations
-  Future<Either<Failure, List<T>>> batchInsert(String table, List<T> data);
+  Future<Either<Failure, bool>> batchInsert(String table, List<T> data);
 
   Future<Either<Failure, List<T>>> batchUpdate(String table, List<T> data);
 
@@ -74,9 +78,30 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   }
 
   @override
-  Future<Either<Failure, List<T>>> batchInsert(String table, List<T> data) {
-    // TODO: implement batchInsert
-    throw UnimplementedError();
+  Future<Either<Failure, bool>> batchInsert(String table, List<T> data) async {
+    try {
+      if (data.isEmpty) {
+        return Right(true);
+      }
+
+      final response = await _client
+          .from(table)
+          .insert(data.map((e) => e as Object).toList())
+          .select();
+
+      logger('Batch insert successful: $response');
+
+      final insertedData = response.map<T>((item) => item as T).toList();
+      logger('insertedData: $insertedData');
+      return Right(true);
+    } catch (e, stackTrace) {
+      if (e is SupabaseException) {
+        loggerError('StackTrace: $stackTrace');
+        return Left(UnknownFailure(message: e.message));
+      }
+      loggerError('Failed to batch insert data into $table: $e');
+      return Left(CreateFailure(message: 'Failed to batch insert data: $e'));
+    }
   }
 
   @override
@@ -156,6 +181,56 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
       }
       loggerError('Failed to fetch data from $table: $e');
       return Left(CreateFailure(message: 'Failed to fetch data: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<T>>> getJoin({
+    Map<String, dynamic>? filters,
+  }) async {
+    try {
+      // Step 1: Fetch the restaurant_item_id dynamically
+      final restaurantResponse = await _client
+          .from('room-consumption')
+          .select('restaurant_item_id')
+          .single();
+
+      if (restaurantResponse['restaurant_item_id'] == null) {
+        return Left(UnknownFailure(message: 'Restaurant item ID not found'));
+      }
+
+      final restaurantId = restaurantResponse['restaurant_item_id'];
+      loggerWarn('Fetched restaurant item ID: $restaurantId');
+
+      // Step 2: Construct the join query
+      var query = _client.from('room-consumption').select(
+          'id, room_id, restaurant_item_id, price, quantity, restaurant-items(name, image)');
+
+      // Apply filters if any
+      if (filters != null) {
+        filters.forEach((key, value) {
+          query = query.eq(key, value);
+        });
+      }
+
+      // Apply room-specific filter
+      query = query.eq('restaurant_item_id', restaurantId);
+
+      // Step 3: Execute the query
+      final response = await query;
+      logger('Data fetched successfully with join: $response');
+
+      // Step 4: Map the response to a List of Maps
+      final dataList = (response as List).map((json) => json as T).toList();
+
+      return Right(dataList);
+    } catch (e, stackTrace) {
+      if (e is SupabaseException) {
+        loggerError('StackTrace: $stackTrace');
+        return Left(UnknownFailure(message: e.message));
+      }
+      loggerError('Failed to fetch data with join: $e');
+      return Left(UnknownFailure(message: 'Failed to fetch data: $e'));
     }
   }
 
@@ -266,8 +341,6 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
       filters.forEach((key, value) {
         query = query.eq(key, value);
       });
-
-      final response = await query;
 
       // logger(
       //     'Data updated successfully in $table with filters $filters: $updates $response');

@@ -157,21 +157,19 @@ class RoomDataSourceImpl implements RoomDataSource {
   Future<Either<Failure, void>> insertRoomConsumption(
       BatchInsertConsumptionParams params) async {
     try {
-      // Prepare the data list for batch insert
-      final dataList = params.dataList.map((data) {
+      final data = params.dataList.map((item) {
         return {
+          'restaurant_item_id': item.id,
+          'price': item.price,
+          'quantity': item.quantity,
           'room_id': params.roomId,
-          'restaurant_id': data.id,
-          'quantity': data.quantity,
-          'price': data.price,
         };
       }).toList();
-
-      // Call batchInsert to insert all records
-      return await _databaseConsumer.batchInsert(BatchInsertParams(
-        table: 'room_consumptions',
-        dataList: dataList,
-      ));
+      final result = await _supabaseConsumer.batchInsert(
+        'room-consumption',
+        data,
+      );
+      return result.fold((l) => Left(l), (r) => Right(null));
     } catch (e) {
       return Left(
           UnknownFailure(message: 'Failed to insert room consumptions: $e'));
@@ -182,24 +180,13 @@ class RoomDataSourceImpl implements RoomDataSource {
   Future<Either<Failure, List<Map<String, dynamic>>>>
       fetchRoomConsumptionsByRoom(String roomId) async {
     try {
-      const query = '''
-    SELECT 
-      room_consumptions.*, 
-      restaurants.* 
-    FROM 
-      room_consumptions
-    LEFT JOIN 
-      restaurants
-    ON 
-      room_consumptions.restaurant_id = restaurants.id
-    WHERE 
-      room_consumptions.room_id = ?;
-    ''';
+      final filters = {'room_id': roomId};
 
-      // Execute the raw query
-      return await _databaseConsumer.rawGet(
-        query,
-        whereArgs: [roomId],
+      final result = await _supabaseConsumer.getJoin(filters: filters);
+
+      return result.fold(
+            (failure) => Left(failure),
+            (response) => Right(response as List<Map<String, dynamic>>),
       );
     } catch (e) {
       return Left(

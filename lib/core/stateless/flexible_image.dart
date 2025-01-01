@@ -10,6 +10,7 @@ class FlexibleImage extends StatelessWidget {
   final Widget? placeholder;
   final double? width;
   final double? height;
+
   const FlexibleImage({
     super.key,
     required this.imagePathOrData,
@@ -37,33 +38,31 @@ class FlexibleImage extends StatelessWidget {
     Widget imageWidget;
     if (imagePathOrData is String) {
       if (_isFileImage(imagePathOrData)) {
-        // File image
         imageWidget = Image.file(
           File(imagePathOrData),
           fit: BoxFit.cover,
         );
       } else if (_isNetworkImage(imagePathOrData)) {
-        // Network image
         imageWidget = CachedNetworkImage(
           imageUrl: imagePathOrData,
           placeholder: (context, url) => SizedBox(
             width: 25,
             height: 25,
-            child: Center(child: placeholder ?? const CircularProgressIndicator()),
+            child:
+                Center(child: placeholder ?? const CircularProgressIndicator()),
           ),
           errorWidget: (context, url, error) => const Icon(Icons.error),
           fit: BoxFit.cover,
         );
       } else {
-        // Asset image (fallback)
         imageWidget = Image.asset(
           imagePathOrData,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported),
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.image_not_supported),
         );
       }
     } else if (_isMemoryImage(imagePathOrData)) {
-      // Memory image
       imageWidget = Image.memory(
         imagePathOrData,
         fit: BoxFit.cover,

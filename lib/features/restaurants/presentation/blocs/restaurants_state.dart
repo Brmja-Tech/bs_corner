@@ -52,7 +52,8 @@ class RestaurantsState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
+  List<Object?> get props =>
+      [
         status,
         errorMessage,
         restaurants,
@@ -69,6 +70,12 @@ class ItemQuantity extends Equatable {
 
   const ItemQuantity(
       {required this.id, required this.price, required this.quantity});
+
+  Map<String, dynamic> toJson() => {
+        'restaurant_item_id': id,
+        'price': price,
+        'quantity': quantity
+  };
 
   @override
   List<Object?> get props => [id, price, quantity];
