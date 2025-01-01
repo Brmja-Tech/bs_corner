@@ -308,15 +308,21 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
   Future<Either<Failure, String>> updateEndTime(
       {required String roomId}) async {
     try {
-      final response =
-          await _client.rpc('set_end_time', params: {'room_id': roomId});
-
-      if (response.error != null) {
-        return Left(CreateFailure(message: response.error!.message));
+      // final response =
+      //     await _client.rpc('set_latest_end_time', params: {'room_id': roomId});
+      // final response = await _client.functions
+      //     .invoke('update_end_time', queryParameters: {'room_id': roomId});
+//final response = await _client.from('timers').update({'end_time': SupabaseQueryBuilder.('NOW()')}).eq('room_id', roomId);
+      final response = await _client
+          .rpc('update_end_time', params: {'input_room_id': roomId.toString()});
+      if (response.data == null) {
+        logger('Failed to update end time: $response');
+        return Left(CreateFailure(message: response.status.toString()));
       }
-
+      logger(response);
       return Right('End time updated successfully');
     } catch (e) {
+      loggerError(e.toString());
       throw UnimplementedError();
     }
   }

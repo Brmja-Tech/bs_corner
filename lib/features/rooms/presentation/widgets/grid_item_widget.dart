@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
@@ -53,13 +52,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TimersCubit, TimersState>(
-      listener: (context, state) {
-        if (state is TimerFailure) {
-          context.showErrorMessage('يوجد مشكلة في بدأ الغرفة');
-        } else if (state is TimerSuccess) {
-          context.showSuccessMessage(state.message);
-        }
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.all(8.0),
@@ -81,7 +74,6 @@ class _GridItemWidgetState extends State<GridItemWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (state is TimersLoading) const LinearProgressIndicator(),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -104,7 +96,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                   ),
                 ),
                 const Spacer(),
-                if (widget.state == 'not running')
+                if (!widget.state)
                   Image.asset(
                     'assets/images/playstation.png',
                     width: 100,
@@ -112,36 +104,34 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                     fit: BoxFit.contain,
                   ),
                 const Spacer(),
-                if (widget.state == 'pre-booked') ...[
-                  const Text(
-                    'غرفه محجوزه',
-                    style: TextStyle(
-                        color: Colors.green, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.read<RoomsBloc>().updateItem(
-                            id: widget.id,
-                            roomState: 'running',
-                            multTime: "00:00:00",
-                            time: '00:00:00');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
-                      ),
-                      child: const Text(
-                        'ابدأ الان',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
+                // if (!widget.state) ...[
+                //   const Text(
+                //     'غرفه محجوزه',
+                //     style:
+                //         TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                //   ),
+                //   const SizedBox(height: 8),
+                //   Padding(
+                //     padding: const EdgeInsets.only(bottom: 8.0),
+                //     child: ElevatedButton(
+                //       onPressed: () {
+                //         context.read<RoomsBloc>().updateItem(
+                //               id: widget.id,
+                //               isActive: true,
+                //             );
+                //       },
+                //       style: ElevatedButton.styleFrom(
+                //         backgroundColor: const Color.fromRGBO(44, 102, 153, 1),
+                //       ),
+                //       child: const Text(
+                //         'ابدأ الان',
+                //         style: TextStyle(color: Colors.white, fontSize: 16),
+                //       ),
+                //     ),
+                //   ),
+                // ],
                 // State-based display
-                if (widget.state != 'pre-booked' &&
-                    widget.state != 'not running') ...[
+                if (widget.state) ...[
                   Column(
                     children: [
                       Padding(
@@ -175,18 +165,12 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                         onDatabaseUpdate: (duration) {
                           if (isPaused) return;
                           // loggerWarn('Multi player ${widget.isMultiplayer}');
-                          if (widget.isMultiplayer) {
-                            loggerWarn('updating regular time $duration');
-                            context
-                                .read<RoomsBloc>()
-                                .updateItem(id: widget.id, multTime: duration);
-                          } else {
-                            loggerWarn('updating Multi time $duration');
 
-                            context
-                                .read<RoomsBloc>()
-                                .updateItem(id: widget.id, time: duration);
-                          }
+                          loggerWarn('updating Multi time $duration');
+
+                          context.read<RoomsBloc>().updateItem(
+                                id: widget.id,
+                              );
                         },
                         onElapsedTimeUpdate: (duration) {
                           // logger(isPaused);
@@ -203,28 +187,30 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          if (widget.state == 'paused')
+                          if (!widget.state)
                             RoomActionWidget(
                               onTap: () {
                                 setState(() {
                                   isPaused = false;
                                 });
-                                context.read<RoomsBloc>().updateItem(
-                                    id: widget.id, roomState: 'running');
+                                context
+                                    .read<RoomsBloc>()
+                                    .updateItem(id: widget.id, isActive: false);
                               },
                               icon: Icons.play_arrow,
                               backgroundColor:
                                   const Color.fromRGBO(76, 106, 242, 1),
                               text: 'استمرار',
                             ),
-                          if (widget.state == 'running')
+                          if (widget.state)
                             RoomActionWidget(
                               onTap: () {
                                 setState(() {
                                   isPaused = true;
                                 });
-                                context.read<RoomsBloc>().updateItem(
-                                    id: widget.id, roomState: 'paused');
+                                context
+                                    .read<RoomsBloc>()
+                                    .updateItem(id: widget.id, isActive: false);
                               },
                               icon: Icons.pause,
                               backgroundColor:
@@ -233,16 +219,15 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             ),
                           RoomActionWidget(
                             onTap: () {
+                              context.read<TimersCubit>().stopTimer(
+                                    roomId: widget.id,
+                                  );
                               setState(() {
                                 _elapsedTime = '00:00:00';
                               });
                               context
                                   .read<RoomsBloc>()
-                                  .updateItem(
-                                      id: widget.id,
-                                      roomState: 'not running',
-                                      time: '00:00:00',
-                                      multTime: '00:00:00')
+                                  .updateItem(id: widget.id, isActive: false)
                                   .then((value) {
                                 final roomConsumptions = context
                                     .read<RoomsBloc>()
@@ -270,16 +255,9 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             onTap: () {
                               _showAvailableRooms(
                                 context,
-                                isMultiplayer: widget.isMultiplayer,
-                                openTime: widget.openTime,
                                 deviceType: widget.deviceType,
                                 id: widget.id,
-                                state: widget.state,
                                 price: widget.price,
-                                elapsedTime:
-                                    !widget.isMultiplayer ? _elapsedTime : null,
-                                elapsedMultiTime:
-                                    widget.isMultiplayer ? _elapsedTime : null,
                               );
                             },
                             icon: Icons.loop,
@@ -291,7 +269,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             listener: (context, state) {
                               if (state.isSuccess) {
                                 // Find the room that matches the current widget.id
-                                final currentRoom = state.rooms.firstWhere(
+                                state.rooms.firstWhere(
                                   (room) => room.id == widget.id.toString(),
                                 );
                               }
@@ -299,22 +277,13 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             child: RoomActionWidget(
                               onTap: () {
                                 context.read<RoomsBloc>().updateItem(
-                                    id: widget.id,
-                                    multTime: widget.isMultiplayer
-                                        ? _elapsedTime
-                                        : null,
-                                    time: !widget.isMultiplayer
-                                        ? _elapsedTime
-                                        : null,
-                                    isMultiplayer: !widget.isMultiplayer);
-                                setState(() {
-                                  widget.isMultiplayer = !widget.isMultiplayer;
-                                });
+                                      id: widget.id,
+                                    );
                               },
                               icon: Icons.swap_horiz,
                               backgroundColor:
                                   const Color.fromRGBO(154, 147, 179, 1),
-                              text: widget.isMultiplayer
+                              text: false
                                   ? 'مالتي الى\n سنجل'
                                   : 'سنجل الى\n مالتي',
                             ),
@@ -323,15 +292,16 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       ),
                     ],
                   ),
-                ] else if (widget.state == 'not running') ...[
+                ] else if (!widget.state) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: ElevatedButton(
-                          onPressed: () => context.read<RoomsBloc>().updateItem(
-                              id: widget.id, roomState: 'pre-booked'),
+                          onPressed: () => context
+                              .read<RoomsBloc>()
+                              .updateItem(id: widget.id, isActive: true),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromRGBO(241, 217, 138, 1),
@@ -347,16 +317,13 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: ElevatedButton(
                           onPressed: () {
+                            context.read<TimersCubit>().startTimer(
+                                  roomId: widget.id,
+                                );
                             setState(() {});
                             context
-                                .read<TimersCubit>()
-                                .startTimer(roomId: widget.id);
-                            // context.read<RoomsBloc>().updateItem(
-                            //       id: widget.id,
-                            //       roomState: 'running',
-                            //       time: '00:00:00',
-                            //       multTime: '00:00:00',
-                            //     );
+                                .read<RoomsBloc>()
+                                .updateItem(id: widget.id, isActive: true);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:

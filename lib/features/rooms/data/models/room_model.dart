@@ -4,6 +4,7 @@ class RoomModel extends Equatable {
   final String id;
   final String title;
   final bool isActive;
+
   const RoomModel({
     required this.id,
     required this.title,
@@ -15,7 +16,11 @@ class RoomModel extends Equatable {
         title: json['title'],
         isActive: json['is_active'],
       );
-
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'is_active': isActive,
+      };
   @override
-  List<Object?> get props => [id, title,isActive];
+  List<Object?> get props => [id, title, isActive];
 }
