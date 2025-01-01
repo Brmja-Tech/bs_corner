@@ -17,19 +17,17 @@ class GridItemWidget extends StatefulWidget {
   final num price;
   final String id;
   final String deviceType;
-  final String state;
+  final bool state;
   final bool openTime;
-  bool isMultiplayer;
   final String initialTime;
   final String initialMultiTime;
 
-  GridItemWidget({
+  const GridItemWidget({
     super.key,
     required this.id,
     required this.deviceType,
     required this.state,
     required this.openTime,
-    required this.isMultiplayer,
     required this.price,
     required this.initialTime,
     required this.initialMultiTime,
@@ -389,12 +387,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
     BuildContext context, {
     required String id,
     required String deviceType,
-    required String state,
-    required bool openTime,
-    required bool isMultiplayer,
     required num price,
-    required String? elapsedTime,
-    required String? elapsedMultiTime,
   }) {
     showDialog(
       context: context,
@@ -436,15 +429,15 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                             setState(() {
                               selectedRoomId = value!;
                             });
-                            context.read<RoomsBloc>().transferRoomData(
-                                sourceId: id,
-                                targetId: value!,
-                                targetState: state,
-                                targetIsMultiplayer: isMultiplayer,
-                                targetOpenTime: openTime,
-                                targetPrice: price,
-                                targetElapsedTime: elapsedTime,
-                                targetElapsedMultiTime: elapsedMultiTime);
+                            // context.read<RoomsBloc>().transferRoomData(
+                            //     sourceId: id,
+                            //     targetId: value!,
+                            //     targetState: state,
+                            //     targetIsMultiplayer: isMultiplayer,
+                            //     targetOpenTime: openTime,
+                            //     targetPrice: price,
+                            //     targetElapsedTime: elapsedTime,
+                            //     targetElapsedMultiTime: elapsedMultiTime);
                           },
                         ),
                       );

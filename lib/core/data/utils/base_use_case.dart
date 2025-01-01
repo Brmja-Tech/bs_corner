@@ -65,3 +65,11 @@ class PaginationParams extends Equatable {
   @override
   List<Object?> get props => [page, limit];
 }
+
+class UpdateParams {
+  final Map<String, dynamic> updates;
+
+  UpdateParams({
+    required this.updates,
+  });
+}
