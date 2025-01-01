@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/extensions/string_extension.dart';
-import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateful/custom_drop_down_form_field.dart';
 import 'package:pscorner/core/stateless/custom_app_bar.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
@@ -40,7 +39,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
   String type = '';
 
-  String get selectedType => type == 'مأكولات' ? 'dish' : 'drink';
+  String get selectedType => type == 'مأكولات' ? 'food' : 'beverage';
 
 // Method to pick an image
   Future<void> _pickImage() async {
@@ -207,10 +206,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                 text: 'إضافه',
                                 width: context.width * 0.2,
                                 onPressed: () {
-                                  logger(_selectedImage?.path);
-                                  logger(_nameController.text);
-                                  logger(_priceController.text);
-                                  logger(selectedType);
+                                  // logger(_selectedImage?.path);
+                                  // logger(_nameController.text);
+                                  // logger(_priceController.text);
+                                  // logger(selectedType);
                                   if (_selectedImage == null) {
                                     context
                                         .showErrorMessage('ادخل صورة المنتج');
@@ -282,11 +281,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
   }
 
   void insertItem(BuildContext context) {
+
+    // loggerWarn(selectedType == 'food');
+
     context.read<RestaurantsBloc>().insertItem(
           name: _nameController.text.trim(),
           imagePath: _selectedImage!.path,
           price: _priceController.text.trim().numerate,
-          type: selectedType == 'مأكولات'
+          type: selectedType == 'food'
               ? ItemTypeEnum.food
               : ItemTypeEnum.beverage,
         );

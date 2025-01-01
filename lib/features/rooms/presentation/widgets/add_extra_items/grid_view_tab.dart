@@ -1,11 +1,12 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pscorner/core/stateless/flexible_image.dart';
+import 'package:pscorner/features/restaurants/data/models/restaurant_model.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 
 class GridViewTab extends StatelessWidget {
-  final List<Map<String, dynamic>> data;
+  final List<RestaurantModel> data;
 
   const GridViewTab({super.key, required this.data});
 
@@ -37,14 +38,8 @@ class GridViewTab extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(12.0)),
-                      child: Image.file(
-                        File(item['image']),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.broken_image, size: 50);
-                        },
-                      ),
+                      child: FlexibleImage(imagePathOrData: item.imagePath
+                      )
                     ),
                   ),
                   Padding(
@@ -52,7 +47,7 @@ class GridViewTab extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          item['name'],
+                          item.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -63,7 +58,7 @@ class GridViewTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 4.0),
                         Text(
-                          "${item['price']} ج",
+                          "${item.price} ج",
                           style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,

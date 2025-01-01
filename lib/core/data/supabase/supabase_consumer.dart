@@ -269,8 +269,8 @@ class SupabaseConsumerImpl<T> implements SupabaseConsumer<T> {
 
       final response = await query;
 
-      logger(
-          'Data updated successfully in $table with filters $filters: $updates $response');
+      // logger(
+      //     'Data updated successfully in $table with filters $filters: $updates $response');
       return Right(true);
     } catch (e) {
       loggerError('Failed to update data in $table: $e');

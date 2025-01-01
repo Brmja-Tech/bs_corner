@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
 import 'package:pscorner/core/stateless/custom_button.dart';
+import 'package:pscorner/core/stateless/flexible_image.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/core/stateless/label.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
@@ -29,10 +29,6 @@ class AddExtraQuantity extends StatelessWidget {
             Row(
               textDirection: TextDirection.ltr,
               children: [
-                Label(
-                  text: 'Room $roomId',
-                  color: Colors.black,
-                ),
                 AppGaps.gap28Horizontal,
                 Label(
                   text: deviceType,
@@ -80,7 +76,7 @@ class AddExtraQuantity extends StatelessWidget {
                                 // textDirection: TextDirection.ltr,
                                 children: [
                                   Label(
-                                    text: item['price'].toString(),
+                                    text: item.price.toString(),
                                     color: Colors.black,
                                   ),
                                   AppGaps.gap28Horizontal,
@@ -94,22 +90,22 @@ class AddExtraQuantity extends StatelessWidget {
                                               final currentQuantity = state
                                                   .quantity
                                                   .firstWhere(
-                                                      (e) => e.id == item['id'],
+                                                      (e) => e.id == item.id,
                                                       orElse: () =>
                                                           ItemQuantity(
-                                                              id: item['id'],
+                                                              id: item.id,
                                                               quantity: 0,
-                                                              price: item[
-                                                                  'price']))
+                                                              price:
+                                                                  item.price))
                                                   .quantity;
 
                                               context
                                                   .read<RestaurantsBloc>()
                                                   .setQuantity(
-                                                    id: item['id'],
+                                                    id: item.id,
                                                     quantity:
                                                         currentQuantity + 1,
-                                                    price: item['price'],
+                                                    price: item.price,
                                                   );
                                             },
                                           ),
@@ -119,23 +115,23 @@ class AddExtraQuantity extends StatelessWidget {
                                               final currentQuantity = state
                                                   .quantity
                                                   .firstWhere(
-                                                      (e) => e.id == item['id'],
+                                                      (e) => e.id == item.id,
                                                       orElse: () =>
                                                           ItemQuantity(
-                                                              id: item['id'],
+                                                              id: item.id,
                                                               quantity: 0,
-                                                              price: item[
-                                                                  'price']))
+                                                              price:
+                                                                  item.price))
                                                   .quantity;
 
                                               if (currentQuantity > 0) {
                                                 context
                                                     .read<RestaurantsBloc>()
                                                     .setQuantity(
-                                                      id: item['id'],
+                                                      id: item.id,
                                                       quantity:
                                                           currentQuantity - 1,
-                                                      price: item['price'],
+                                                      price: item.price,
                                                     );
                                               }
                                             },
@@ -144,12 +140,11 @@ class AddExtraQuantity extends StatelessWidget {
                                       ),
                                       Label(
                                         text: state.quantity
-                                            .firstWhere(
-                                                (e) => e.id == item['id'],
+                                            .firstWhere((e) => e.id == item.id,
                                                 orElse: () => ItemQuantity(
-                                                    id: item['id'],
+                                                    id: item.id,
                                                     quantity: 0,
-                                                    price: item['price']))
+                                                    price: item.price))
                                             .quantity
                                             .toString(),
                                         color: Colors.black,
@@ -158,7 +153,7 @@ class AddExtraQuantity extends StatelessWidget {
                                   ),
                                   const Spacer(),
                                   Label(
-                                    text: item['name'],
+                                    text: item.name,
                                     fontWeight: FontWeight.bold,
                                     // fontSize: 20,
                                     maxLines: 5,
@@ -166,13 +161,10 @@ class AddExtraQuantity extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                     selectable: false,
                                   ),
+
                                   AppGaps.gap8Horizontal,
                                   if (context.width > 1200)
-                                    CircleAvatar(
-                                      radius: 30,
-                                      backgroundImage:
-                                          FileImage(File(item['image'])),
-                                    )
+                                    FlexibleImage(imagePathOrData: item.imagePath,isCircular: true,width: 60,height: 60,)
                                 ],
                               );
                             },
@@ -226,7 +218,7 @@ class AddExtraQuantity extends StatelessWidget {
                                         context
                                             .read<RoomsBloc>()
                                             .insertRoomConsumption(
-                                          context: context,
+                                              context: context,
                                               quantity: context
                                                   .read<RestaurantsBloc>()
                                                   .state

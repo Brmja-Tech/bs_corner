@@ -8,9 +8,10 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/data/utils/either.dart';
 import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
+import 'package:pscorner/features/restaurants/data/models/restaurant_model.dart';
 
 abstract interface class RestaurantDataSource {
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
+  Future<Either<Failure, List<RestaurantModel>>> fetchAllItems(
       NoParams noParams);
 
   Future<Either<Failure, int>> deleteItem(int id);
@@ -31,10 +32,14 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   RestaurantDataSourceImpl(this._databaseConsumer, this._supabaseConsumer);
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> fetchAllItems(
+  Future<Either<Failure, List<RestaurantModel>>> fetchAllItems(
       NoParams noParams) async {
     try {
-      return await _databaseConsumer.get('restaurants');
+      final result = await _supabaseConsumer.getAll('restaurant-items');
+      return result.fold((l) => Left(l), (data) {
+        final items = data.map((e) => RestaurantModel.fromJson(e)).toList();
+        return Right(items);
+      });
     } catch (e) {
       return Left(UnknownFailure(message: 'Failed to fetch items: $e'));
     }
@@ -75,7 +80,8 @@ class RestaurantDataSourceImpl implements RestaurantDataSource {
   }
 
   @override
-  Future<Either<Failure, String>> insertItemWithRecipes(InsertItemWithRecipesParams params) async {
+  Future<Either<Failure, String>> insertItemWithRecipes(
+      InsertItemWithRecipesParams params) async {
     try {
       String fileName =
           '${DateTime.now().millisecondsSinceEpoch}.jpg'; // Unique file name

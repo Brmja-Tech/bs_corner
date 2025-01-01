@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
-import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/core/stateless/gaps.dart';
 import 'package:pscorner/features/home/presentation/widgets/home_widget.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
@@ -157,7 +156,7 @@ class _GridItemWidgetState extends State<GridItemWidget> {
                       if (isPaused) return;
                       // loggerWarn('Multi player ${widget.isMultiplayer}');
 
-                      loggerWarn('updating Multi time $duration');
+                      // loggerWarn('updating Multi time $duration');
 
                       context.read<RoomsBloc>().updateItem(
                             id: widget.id,

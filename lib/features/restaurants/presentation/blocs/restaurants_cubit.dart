@@ -3,6 +3,7 @@ import 'package:pscorner/core/data/utils/base_use_case.dart';
 import 'package:pscorner/core/enums/item_type_enum.dart';
 import 'package:pscorner/core/helper/functions.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
+import 'package:pscorner/features/restaurants/data/models/restaurant_model.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/delete_restaurant_item_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/fetch_all_restaurants_department_use_case.dart';
 import 'package:pscorner/features/restaurants/domain/usecases/fetch_recipes_by_restaurant_use_case.dart';
@@ -66,15 +67,16 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
           status: RestaurantsStateStatus.error, errorMessage: failure.message));
     }, (id) {
       logger('id $id');
+      final newItem = RestaurantModel(
+        id: id,
+        name: name,
+        imagePath: imagePath,
+        price: price,
+        type: type.name,
+      );
       emit(state.copyWith(status: RestaurantsStateStatus.added, restaurants: [
+        newItem,
         ...state.restaurants,
-        {
-          'id': id,
-          'name': name,
-          'image': imagePath,
-          'price': price.toString(),
-          'type': type
-        }
       ]));
     });
   }
@@ -128,25 +130,25 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
     });
   }
 
-  void selectItem(Map<String, dynamic> item) {
-    final List<Map<String, dynamic>> selectedItems = [...state.selectedItems];
+  void selectItem(RestaurantModel item) {
+    final List<RestaurantModel> selectedItems = [...state.selectedItems];
 
     final isAlreadySelected =
-        selectedItems.any((selectedItem) => selectedItem['id'] == item['id']);
+        selectedItems.any((selectedItem) => selectedItem.id == item.id);
 
     if (!isAlreadySelected) {
       selectedItems.add(item);
       emit(state.copyWith(selectedItems: selectedItems, quantity: [
         ...state.quantity,
-        ItemQuantity(id: item['id'], quantity: 1, price: item['price'])
+        ItemQuantity(id: item.id, quantity: 1, price: item.price)
       ]));
     } else {}
   }
 
   void setQuantity(
-      {required int id, required int quantity, required num price}) {
+      {required String id, required int quantity, required num price}) {
     final List<ItemQuantity> quantityList = [...state.quantity];
-    final List<Map<String, dynamic>> selectedItems = [...state.selectedItems];
+    final List<RestaurantModel> selectedItems = [...state.selectedItems];
 
     // Check if the item already exists in the quantity list
     final existingItemIndex = quantityList.indexWhere((item) => item.id == id);
@@ -155,7 +157,7 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
       if (quantity == 0) {
         // Remove the item from both quantity list and selected items if quantity is 0
         quantityList.removeAt(existingItemIndex);
-        selectedItems.removeWhere((selectedItem) => selectedItem['id'] == id);
+        selectedItems.removeWhere((selectedItem) => selectedItem.id == id);
       } else {
         // Update the quantity of the existing item
         quantityList[existingItemIndex] = ItemQuantity(
@@ -170,11 +172,11 @@ class RestaurantsBloc extends Cubit<RestaurantsState> {
         // Add a new item with the specified quantity
         quantityList
             .add(ItemQuantity(id: id, quantity: quantity, price: price));
-        if (!selectedItems.any((selectedItem) => selectedItem['id'] == id)) {
-          selectedItems.add({
-            'id': id,
-            'price': price
-          }); // Adjust selected item format as needed
+        if (!selectedItems.any((selectedItem) => selectedItem.id == id)) {
+          // selectedItems.add({
+          //   'id': id,
+          //   'price': price
+          // }); // Adjust selected item format as needed
         }
         // loggerWarn('Item added: $id with quantity: $quantity');
       }

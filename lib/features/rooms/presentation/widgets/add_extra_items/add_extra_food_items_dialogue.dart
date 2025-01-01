@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pscorner/core/extensions/context_extension.dart';
+import 'package:pscorner/features/restaurants/data/models/restaurant_model.dart';
 import 'package:pscorner/features/restaurants/presentation/blocs/restaurants_cubit.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/add_extra_quantity.dart';
 import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/view_all_extras.dart';
@@ -8,7 +9,7 @@ import 'package:pscorner/features/rooms/presentation/widgets/add_extra_items/vie
 void showExtraRequestsDialog(BuildContext context, {
   required String roomId,
   required String deviceType,
-  required List<Map<String, dynamic>> restaurantItems,
+  required List<RestaurantModel> restaurantItems,
 }) {
   showDialog(
     context: context,

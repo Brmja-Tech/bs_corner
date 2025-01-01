@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:pscorner/features/restaurants/data/datasources/restaurants_data_source.dart';
+import 'package:pscorner/features/restaurants/data/models/restaurant_model.dart';
 
 enum RestaurantsStateStatus { initial, loading, success, error, added }
 
@@ -18,8 +19,8 @@ extension RestaurantsStateStatusX on RestaurantsState {
 class RestaurantsState extends Equatable {
   final RestaurantsStateStatus status;
   final String? errorMessage;
-  final List<Map<String, dynamic>> restaurants;
-  final List<Map<String, dynamic>> selectedItems;
+  final List<RestaurantModel> restaurants;
+  final List<RestaurantModel> selectedItems;
   final List<Recipe> recipes;
   final List<ItemQuantity> quantity;
 
@@ -34,8 +35,8 @@ class RestaurantsState extends Equatable {
 
   RestaurantsState copyWith({
     RestaurantsStateStatus? status,
-    List<Map<String, dynamic>>? restaurants,
-    List<Map<String, dynamic>>? selectedItems,
+    List<RestaurantModel>? restaurants,
+    List<RestaurantModel>? selectedItems,
     List<Recipe>? recipes,
     List<ItemQuantity>? quantity,
     String? errorMessage,
@@ -62,7 +63,7 @@ class RestaurantsState extends Equatable {
 }
 
 class ItemQuantity extends Equatable {
-  final int id;
+  final String id;
   final num price;
   final int quantity;
 
